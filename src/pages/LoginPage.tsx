@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
       if (success) {
         toast({
           title: "Login successful",
-          description: "Welcome back to DressSync!",
+          description: "Welcome back to DressSync!"
         });
         // Navigation will be handled by the Navigate component above
       } else {
@@ -81,11 +81,11 @@ const LoginPage: React.FC = () => {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
+              {error &&
+              <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
-              )}
+              }
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -98,8 +98,8 @@ const LoginPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
-                    disabled={isLoading}
-                  />
+                    disabled={isLoading} />
+
                 </div>
               </div>
 
@@ -114,24 +114,24 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
-                    disabled={isLoading}
-                  />
+                    disabled={isLoading} />
+
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
+                disabled={isLoading}>
+
+                {isLoading ?
+                <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
+                  </> :
+
+                'Sign In'
+                }
               </Button>
             </form>
 
@@ -145,8 +145,8 @@ const LoginPage: React.FC = () => {
                   size="sm"
                   onClick={() => fillDemoCredentials('manager')}
                   disabled={isLoading}
-                  className="flex flex-col items-center p-3 h-auto"
-                >
+                  className="flex flex-col items-center p-3 h-auto">
+
                   <Badge variant="default" className="mb-1">Manager</Badge>
                   <span className="text-xs text-gray-600">Full Access</span>
                 </Button>
@@ -157,8 +157,8 @@ const LoginPage: React.FC = () => {
                   size="sm"
                   onClick={() => fillDemoCredentials('agent')}
                   disabled={isLoading}
-                  className="flex flex-col items-center p-3 h-auto"
-                >
+                  className="flex flex-col items-center p-3 h-auto">
+
                   <Badge variant="secondary" className="mb-1">Sales Agent</Badge>
                   <span className="text-xs text-gray-600">Order Management</span>
                 </Button>
@@ -172,8 +172,8 @@ const LoginPage: React.FC = () => {
           <p>&copy; 2024 DressSync. All rights reserved.</p>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LoginPage;

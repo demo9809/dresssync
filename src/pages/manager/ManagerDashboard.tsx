@@ -3,21 +3,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
-  ShoppingCart, 
-  DollarSign, 
-  Package, 
-  Users, 
-  TrendingUp, 
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  BarChart3,
-  Calendar
+  ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, AlertTriangle, 
+  CheckCircle, BarChart3, Calendar, Plus, Edit, Trash2, Search, Eye, 
+  FileText, Filter, Download, RefreshCw 
 } from 'lucide-react';
-import { orderService } from '@/services/orderService';
-import { stockService } from '@/services/stockService';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import ReportsAndAnalytics from '@/components/ReportsAndAnalytics';
 
 interface DashboardStats {
   totalOrders: number;
@@ -25,14 +25,67 @@ interface DashboardStats {
   pendingOrders: number;
   completedOrders: number;
   averageOrderValue: number;
+  totalAgents: number;
+  activeAgents: number;
+  lowStockItems: number;
+}
+
+interface Agent {
+  ID: number;
+  user_id: number;
+  agent_code: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  territory: string;
+  commission_rate: number;
+  hire_date: string;
+  status: string;
+  target_sales: number;
+}
+
+interface Order {
+  ID: number;
+  order_number: string;
+  agent_id: number;
+  customer_name: string;
+  customer_phone: string;
+  product_type: string;
+  product_color: string;
+  total_quantity: number;
+  order_status: string;
+  total_amount: number;
+  paid_amount: number;
+  payment_status: string;
+  delivery_date: string;
+  order_type: string;
+}
+
+interface StockItem {
+  ID: number;
+  product_type: string;
+  color: string;
+  neck_type: string;
+  size: string;
+  quantity: number;
+  min_threshold: number;
+  cost_per_unit: number;
+  selling_price: number;
+  supplier: string;
 }
 
 const ManagerDashboard: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
-  const [upcomingDeliveries, setUpcomingDeliveries] = useState<any[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   useEffect(() => {
     loadDashboardData();
@@ -41,23 +94,165 @@ const ManagerDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      
-      // Load analytics
-      const analytics = await orderService.getSalesAnalytics();
-      setStats(analytics);
-      
-      // Load low stock items
-      const lowStock = await stockService.getLowStockItems();
-      setLowStockItems(lowStock.slice(0, 5)); // Show top 5
-      
-      // Load upcoming deliveries
-      const upcoming = await orderService.getUpcomingDeliveries(7);
-      setUpcomingDeliveries(upcoming.slice(0, 5)); // Show next 5
-      
+      await Promise.all([
+        loadAgents(),
+        loadOrders(),
+        loadStockItems()
+      ]);
+      calculateStats();
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load dashboard data"
+      });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadAgents = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11424', {
+        PageNo: 1,
+        PageSize: 100,
+        OrderByField: 'ID',
+        IsAsc: false,
+        Filters: []
+      });
+      if (error) throw error;
+      setAgents(data.List || []);
+    } catch (error) {
+      console.error('Error loading agents:', error);
+    }
+  };
+
+  const loadOrders = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11425', {
+        PageNo: 1,
+        PageSize: 100,
+        OrderByField: 'ID',
+        IsAsc: false,
+        Filters: []
+      });
+      if (error) throw error;
+      setOrders(data.List || []);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    }
+  };
+
+  const loadStockItems = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11426', {
+        PageNo: 1,
+        PageSize: 100,
+        OrderByField: 'ID',
+        IsAsc: false,
+        Filters: []
+      });
+      if (error) throw error;
+      setStockItems(data.List || []);
+    } catch (error) {
+      console.error('Error loading stock items:', error);
+    }
+  };
+
+  const calculateStats = () => {
+    const totalOrders = orders.length;
+    const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+    const pendingOrders = orders.filter(order => 
+      order.order_status === 'Pending' || order.order_status === 'In Production'
+    ).length;
+    const completedOrders = orders.filter(order => order.order_status === 'Delivered').length;
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalAgents = agents.length;
+    const activeAgents = agents.filter(agent => agent.status === 'Active').length;
+    const lowStockItems = stockItems.filter(item => item.quantity <= item.min_threshold).length;
+
+    setStats({
+      totalOrders,
+      totalRevenue,
+      pendingOrders,
+      completedOrders,
+      averageOrderValue,
+      totalAgents,
+      activeAgents,
+      lowStockItems
+    });
+  };
+
+  const updateOrderStatus = async (orderId: number, newStatus: string) => {
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('11425', {
+        ID: orderId,
+        order_status: newStatus
+      });
+      if (error) throw error;
+      
+      await loadOrders();
+      calculateStats();
+      toast({
+        title: "Success",
+        description: "Order status updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update order status"
+      });
+    }
+  };
+
+  const updateAgentStatus = async (agentId: number, newStatus: string) => {
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('11424', {
+        ID: agentId,
+        status: newStatus
+      });
+      if (error) throw error;
+      
+      await loadAgents();
+      calculateStats();
+      toast({
+        title: "Success",
+        description: "Agent status updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating agent:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update agent status"
+      });
+    }
+  };
+
+  const updateStockQuantity = async (stockId: number, newQuantity: number) => {
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('11426', {
+        ID: stockId,
+        quantity: newQuantity
+      });
+      if (error) throw error;
+      
+      await loadStockItems();
+      calculateStats();
+      toast({
+        title: "Success",
+        description: "Stock quantity updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update stock quantity"
+      });
     }
   };
 
@@ -92,20 +287,51 @@ const ManagerDashboard: React.FC = () => {
       description: 'Total earnings'
     },
     {
-      title: 'Pending Orders',
-      value: stats?.pendingOrders || 0,
-      icon: Clock,
-      color: 'bg-yellow-500',
-      description: 'Awaiting fulfillment'
+      title: 'Active Agents',
+      value: `${stats?.activeAgents || 0}/${stats?.totalAgents || 0}`,
+      icon: Users,
+      color: 'bg-purple-500',
+      description: 'Active agents'
     },
     {
-      title: 'Completed Orders',
-      value: stats?.completedOrders || 0,
-      icon: CheckCircle,
-      color: 'bg-purple-500',
-      description: 'Successfully delivered'
+      title: 'Low Stock Alerts',
+      value: stats?.lowStockItems || 0,
+      icon: AlertTriangle,
+      color: 'bg-yellow-500',
+      description: 'Items need restocking'
     }
   ];
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending': return 'default';
+      case 'in production': return 'secondary';
+      case 'shipped': return 'outline';
+      case 'delivered': return 'default';
+      case 'cancelled': return 'destructive';
+      case 'active': return 'default';
+      case 'inactive': return 'secondary';
+      default: return 'outline';
+    }
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = searchTerm === '' || 
+      order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === '' || order.order_status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredAgents = agents.filter(agent => {
+    const matchesSearch = searchTerm === '' ||
+      agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  const lowStockItems = stockItems.filter(item => item.quantity <= item.min_threshold);
 
   return (
     <div className="space-y-6">
@@ -119,9 +345,10 @@ const ManagerDashboard: React.FC = () => {
           <Badge variant="default" className="bg-blue-100 text-blue-800">
             Manager Access
           </Badge>
-          <span className="text-sm text-gray-500">
-            {new Date().toLocaleDateString()}
-          </span>
+          <Button onClick={loadDashboardData} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
         </div>
       </div>
 
@@ -148,177 +375,320 @@ const ManagerDashboard: React.FC = () => {
         })}
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BarChart3 className="w-5 h-5" />
-            <span>Quick Actions</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button className="flex items-center justify-center space-x-2 h-12">
-              <ShoppingCart className="w-4 h-4" />
-              <span>View All Orders</span>
-            </Button>
-            <Button variant="outline" className="flex items-center justify-center space-x-2 h-12">
-              <Package className="w-4 h-4" />
-              <span>Manage Stock</span>
-            </Button>
-            <Button variant="outline" className="flex items-center justify-center space-x-2 h-12">
-              <Users className="w-4 h-4" />
-              <span>Agent Management</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Main Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="stock">Stock Management</TabsTrigger>
+          <TabsTrigger value="agents">Agent Management</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Low Stock Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-500" />
-              <span>Low Stock Alerts</span>
-            </CardTitle>
-            <CardDescription>Items below minimum threshold</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {lowStockItems.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
-                <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                <p>All items are well stocked!</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {lowStockItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {item.productType} - {item.color}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Size {item.size} • {item.neckType}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-yellow-700">
-                        {item.quantity} left
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Min: {item.minThreshold}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="w-full mt-3">
-                  View All Stock
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Deliveries */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-blue-500" />
-              <span>Upcoming Deliveries</span>
-            </CardTitle>
-            <CardDescription>Orders due in the next 7 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {upcomingDeliveries.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
-                <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p>No upcoming deliveries</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {upcomingDeliveries.map((order) => {
-                  const daysUntilDelivery = Math.ceil(
-                    (new Date(order.delivery.deliveryDate).getTime() - new Date().getTime()) / 
-                    (1000 * 60 * 60 * 24)
-                  );
-                  
-                  return (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Orders */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Recent Orders</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {orders.slice(0, 5).map((order) => (
+                    <div key={order.ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">{order.customer.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {order.quantity.total} × {order.product.type}
-                        </p>
+                        <p className="font-medium">{order.order_number}</p>
+                        <p className="text-sm text-gray-600">{order.customer_name}</p>
                       </div>
                       <div className="text-right">
-                        <Badge 
-                          variant={daysUntilDelivery <= 2 ? "destructive" : "secondary"}
-                          className="mb-1"
-                        >
-                          {daysUntilDelivery === 0 ? 'Today' : 
-                           daysUntilDelivery === 1 ? 'Tomorrow' : 
-                           `${daysUntilDelivery} days`}
+                        <Badge variant={getStatusBadgeVariant(order.order_status)}>
+                          {order.order_status}
                         </Badge>
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.delivery.deliveryDate).toLocaleDateString()}
-                        </p>
+                        <p className="text-sm text-gray-600 mt-1">${order.total_amount}</p>
                       </div>
                     </div>
-                  );
-                })}
-                <Button variant="outline" className="w-full mt-3">
-                  View All Orders
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Performance Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-green-500" />
-            <span>Performance Overview</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-600">Order Completion Rate</span>
-                <span className="text-sm font-bold text-gray-900">
-                  {stats ? Math.round((stats.completedOrders / stats.totalOrders) * 100) : 0}%
-                </span>
-              </div>
-              <Progress 
-                value={stats ? (stats.completedOrders / stats.totalOrders) * 100 : 0} 
-                className="h-2"
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-600">Average Order Value</span>
-                <span className="text-sm font-bold text-gray-900">
-                  ${stats?.averageOrderValue.toFixed(2) || '0.00'}
-                </span>
-              </div>
-              <Progress value={75} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-600">On-time Delivery</span>
-                <span className="text-sm font-bold text-gray-900">92%</span>
-              </div>
-              <Progress value={92} className="h-2" />
-            </div>
+            {/* Low Stock Alerts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                  <span>Low Stock Alerts</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {lowStockItems.length === 0 ? (
+                  <div className="text-center py-6 text-gray-500">
+                    <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                    <p>All items are well stocked!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {lowStockItems.slice(0, 5).map((item) => (
+                      <div key={item.ID} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div>
+                          <p className="font-medium">{item.product_type} - {item.color}</p>
+                          <p className="text-sm text-gray-600">Size {item.size}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-yellow-700">{item.quantity} left</p>
+                          <p className="text-xs text-gray-500">Min: {item.min_threshold}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        {/* Orders Management Tab */}
+        <TabsContent value="orders" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <CardTitle>Orders Management</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search orders..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-48"
+                    />
+                  </div>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Status</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="In Production">In Production</SelectItem>
+                      <SelectItem value="Shipped">Shipped</SelectItem>
+                      <SelectItem value="Delivered">Delivered</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Delivery Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders.map((order) => (
+                    <TableRow key={order.ID}>
+                      <TableCell className="font-medium">{order.order_number}</TableCell>
+                      <TableCell>{order.customer_name}</TableCell>
+                      <TableCell>{order.product_type} - {order.product_color}</TableCell>
+                      <TableCell>{order.total_quantity}</TableCell>
+                      <TableCell>${order.total_amount}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(order.order_status)}>
+                          {order.order_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(order.delivery_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Select onValueChange={(value) => updateOrderStatus(order.ID, value)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Update Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Pending">Pending</SelectItem>
+                              <SelectItem value="In Production">In Production</SelectItem>
+                              <SelectItem value="Shipped">Shipped</SelectItem>
+                              <SelectItem value="Delivered">Delivered</SelectItem>
+                              <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Stock Management Tab */}
+        <TabsContent value="stock" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stock Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Color</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Current Stock</TableHead>
+                    <TableHead>Min Threshold</TableHead>
+                    <TableHead>Cost Price</TableHead>
+                    <TableHead>Selling Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stockItems.map((item) => (
+                    <TableRow key={item.ID}>
+                      <TableCell className="font-medium">{item.product_type}</TableCell>
+                      <TableCell>{item.color}</TableCell>
+                      <TableCell>{item.size}</TableCell>
+                      <TableCell>
+                        <span className={item.quantity <= item.min_threshold ? 'text-red-600 font-bold' : ''}>
+                          {item.quantity}
+                        </span>
+                      </TableCell>
+                      <TableCell>{item.min_threshold}</TableCell>
+                      <TableCell>${item.cost_per_unit}</TableCell>
+                      <TableCell>${item.selling_price}</TableCell>
+                      <TableCell>
+                        {item.quantity <= item.min_threshold ? (
+                          <Badge variant="destructive">Low Stock</Badge>
+                        ) : (
+                          <Badge variant="default">In Stock</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Update Stock Quantity</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Product: {item.product_type} - {item.color} - {item.size}</Label>
+                              </div>
+                              <div>
+                                <Label htmlFor="quantity">New Quantity</Label>
+                                <Input
+                                  id="quantity"
+                                  type="number"
+                                  defaultValue={item.quantity}
+                                  onChange={(e) => {
+                                    if (e.target.value && parseInt(e.target.value) >= 0) {
+                                      updateStockQuantity(item.ID, parseInt(e.target.value));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Agent Management Tab */}
+        <TabsContent value="agents" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <CardTitle>Agent Management</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search agents..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-48"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Agent Code</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Territory</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Commission Rate</TableHead>
+                    <TableHead>Target Sales</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAgents.map((agent) => (
+                    <TableRow key={agent.ID}>
+                      <TableCell className="font-medium">{agent.agent_code}</TableCell>
+                      <TableCell>{agent.first_name} {agent.last_name}</TableCell>
+                      <TableCell>{agent.territory}</TableCell>
+                      <TableCell>{agent.phone}</TableCell>
+                      <TableCell>{agent.commission_rate}%</TableCell>
+                      <TableCell>${agent.target_sales.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(agent.status)}>
+                          {agent.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Select onValueChange={(value) => updateAgentStatus(agent.ID, value)}>
+                            <SelectTrigger className="w-24">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Active">Active</SelectItem>
+                              <SelectItem value="Inactive">Inactive</SelectItem>
+                              <SelectItem value="Suspended">Suspended</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Reports Tab */}
+        <TabsContent value="reports" className="space-y-6">
+          <ReportsAndAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

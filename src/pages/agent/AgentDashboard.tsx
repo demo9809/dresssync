@@ -4,17 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Plus, 
-  ShoppingCart, 
-  Clock, 
-  CheckCircle, 
+import {
+  Plus,
+  ShoppingCart,
+  Clock,
+  CheckCircle,
   Calendar,
   TrendingUp,
   DollarSign,
   Package,
-  AlertTriangle
-} from 'lucide-react';
+  AlertTriangle } from
+'lucide-react';
 import { orderService } from '@/services/orderService';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -40,19 +40,19 @@ const AgentDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load agent-specific analytics
       const analytics = await orderService.getSalesAnalytics(user?.id);
       setStats(analytics);
-      
+
       // Load upcoming deliveries for this agent
       const upcoming = await orderService.getUpcomingDeliveries(7, user?.id);
       setUpcomingDeliveries(upcoming.slice(0, 5));
-      
+
       // Load recent orders
       const orders = await orderService.getOrders(user?.id);
       setRecentOrders(orders.slice(0, 5));
-      
+
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -66,45 +66,45 @@ const AgentDashboard: React.FC = () => {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-            ))}
+            {[...Array(4)].map((_, i) =>
+            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            )}
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const statCards = [
-    {
-      title: 'My Orders',
-      value: stats?.totalOrders || 0,
-      icon: ShoppingCart,
-      color: 'bg-blue-500',
-      description: 'Total orders placed'
-    },
-    {
-      title: 'My Revenue',
-      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
-      icon: DollarSign,
-      color: 'bg-green-500',
-      description: 'Total sales value'
-    },
-    {
-      title: 'Pending',
-      value: stats?.pendingOrders || 0,
-      icon: Clock,
-      color: 'bg-yellow-500',
-      description: 'Awaiting delivery'
-    },
-    {
-      title: 'Completed',
-      value: stats?.completedOrders || 0,
-      icon: CheckCircle,
-      color: 'bg-purple-500',
-      description: 'Successfully delivered'
-    }
-  ];
+  {
+    title: 'My Orders',
+    value: stats?.totalOrders || 0,
+    icon: ShoppingCart,
+    color: 'bg-blue-500',
+    description: 'Total orders placed'
+  },
+  {
+    title: 'My Revenue',
+    value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+    icon: DollarSign,
+    color: 'bg-green-500',
+    description: 'Total sales value'
+  },
+  {
+    title: 'Pending',
+    value: stats?.pendingOrders || 0,
+    icon: Clock,
+    color: 'bg-yellow-500',
+    description: 'Awaiting delivery'
+  },
+  {
+    title: 'Completed',
+    value: stats?.completedOrders || 0,
+    icon: CheckCircle,
+    color: 'bg-purple-500',
+    description: 'Successfully delivered'
+  }];
+
 
   return (
     <div className="space-y-6">
@@ -142,8 +142,8 @@ const AgentDashboard: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
@@ -190,22 +190,22 @@ const AgentDashboard: React.FC = () => {
             <CardDescription>Orders due in the next 7 days</CardDescription>
           </CardHeader>
           <CardContent>
-            {upcomingDeliveries.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
+            {upcomingDeliveries.length === 0 ?
+            <div className="text-center py-6 text-gray-500">
                 <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <p>No upcoming deliveries</p>
                 <p className="text-sm">All caught up!</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
+              </div> :
+
+            <div className="space-y-3">
                 {upcomingDeliveries.map((order) => {
-                  const daysUntilDelivery = Math.ceil(
-                    (new Date(order.delivery.deliveryDate).getTime() - new Date().getTime()) / 
-                    (1000 * 60 * 60 * 24)
-                  );
-                  
-                  return (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                const daysUntilDelivery = Math.ceil(
+                  (new Date(order.delivery.deliveryDate).getTime() - new Date().getTime()) / (
+                  1000 * 60 * 60 * 24)
+                );
+
+                return (
+                  <div key={order.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
                       <div>
                         <p className="font-medium text-gray-900">{order.customer.name}</p>
                         <p className="text-sm text-gray-600">
@@ -214,28 +214,28 @@ const AgentDashboard: React.FC = () => {
                         <p className="text-xs text-gray-500">Order: {order.id}</p>
                       </div>
                       <div className="text-right">
-                        <Badge 
-                          variant={daysUntilDelivery <= 2 ? "destructive" : "secondary"}
-                          className="mb-1"
-                        >
-                          {daysUntilDelivery === 0 ? 'Today' : 
-                           daysUntilDelivery === 1 ? 'Tomorrow' : 
-                           `${daysUntilDelivery} days`}
+                        <Badge
+                        variant={daysUntilDelivery <= 2 ? "destructive" : "secondary"}
+                        className="mb-1">
+
+                          {daysUntilDelivery === 0 ? 'Today' :
+                        daysUntilDelivery === 1 ? 'Tomorrow' :
+                        `${daysUntilDelivery} days`}
                         </Badge>
                         <p className="text-xs text-gray-500">
                           {new Date(order.delivery.deliveryDate).toLocaleDateString()}
                         </p>
                       </div>
-                    </div>
-                  );
-                })}
+                    </div>);
+
+              })}
                 <Link to="/agent/orders">
                   <Button variant="outline" className="w-full mt-3">
                     View All Orders
                   </Button>
                 </Link>
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -249,8 +249,8 @@ const AgentDashboard: React.FC = () => {
             <CardDescription>Your latest order entries</CardDescription>
           </CardHeader>
           <CardContent>
-            {recentOrders.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
+            {recentOrders.length === 0 ?
+            <div className="text-center py-6 text-gray-500">
                 <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <p>No orders yet</p>
                 <Link to="/agent/orders/new">
@@ -258,11 +258,11 @@ const AgentDashboard: React.FC = () => {
                     Create First Order
                   </Button>
                 </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+              </div> :
+
+            <div className="space-y-3">
+                {recentOrders.map((order) =>
+              <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div>
                       <p className="font-medium text-gray-900">{order.customer.name}</p>
                       <p className="text-sm text-gray-600">
@@ -273,15 +273,15 @@ const AgentDashboard: React.FC = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <Badge 
-                        variant={
-                          order.delivery.status === 'Delivered' ? 'default' :
-                          order.delivery.status === 'In Production' ? 'secondary' :
-                          order.delivery.status === 'Shipped' ? 'outline' :
-                          'destructive'
-                        }
-                        className="mb-1"
-                      >
+                      <Badge
+                    variant={
+                    order.delivery.status === 'Delivered' ? 'default' :
+                    order.delivery.status === 'In Production' ? 'secondary' :
+                    order.delivery.status === 'Shipped' ? 'outline' :
+                    'destructive'
+                    }
+                    className="mb-1">
+
                         {order.delivery.status}
                       </Badge>
                       <p className="text-xs text-gray-500">
@@ -289,14 +289,14 @@ const AgentDashboard: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                ))}
+              )}
                 <Link to="/agent/orders">
                   <Button variant="outline" className="w-full mt-3">
                     View All Orders
                   </Button>
                 </Link>
               </div>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
@@ -315,13 +315,13 @@ const AgentDashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">Order Success Rate</span>
                 <span className="text-sm font-bold text-gray-900">
-                  {stats && stats.totalOrders > 0 ? Math.round((stats.completedOrders / stats.totalOrders) * 100) : 0}%
+                  {stats && stats.totalOrders > 0 ? Math.round(stats.completedOrders / stats.totalOrders * 100) : 0}%
                 </span>
               </div>
-              <Progress 
-                value={stats && stats.totalOrders > 0 ? (stats.completedOrders / stats.totalOrders) * 100 : 0} 
-                className="h-2"
-              />
+              <Progress
+                value={stats && stats.totalOrders > 0 ? stats.completedOrders / stats.totalOrders * 100 : 0}
+                className="h-2" />
+
             </div>
             
             <div>
@@ -338,19 +338,19 @@ const AgentDashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">This Month's Goal</span>
                 <span className="text-sm font-bold text-gray-900">
-                  {Math.min(100, Math.round(((stats?.totalRevenue || 0) / 5000) * 100))}%
+                  {Math.min(100, Math.round((stats?.totalRevenue || 0) / 5000 * 100))}%
                 </span>
               </div>
-              <Progress 
-                value={Math.min(100, ((stats?.totalRevenue || 0) / 5000) * 100)} 
-                className="h-2" 
-              />
+              <Progress
+                value={Math.min(100, (stats?.totalRevenue || 0) / 5000 * 100)}
+                className="h-2" />
+
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default AgentDashboard;

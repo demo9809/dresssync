@@ -10,17 +10,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Save, 
-  AlertTriangle, 
-  CheckCircle, 
-  FileText, 
+import {
+  Save,
+  AlertTriangle,
+  CheckCircle,
+  FileText,
   Upload,
   User,
   Package,
   Calendar,
-  DollarSign
-} from 'lucide-react';
+  DollarSign } from
+'lucide-react';
 import SizeBreakdown from '@/components/SizeBreakdown';
 import { orderService, Order, Customer, SizeBreakdown as SizeBreakdownType } from '@/services/orderService';
 import { stockService, productConfig } from '@/services/stockService';
@@ -31,7 +31,7 @@ import { toast } from '@/hooks/use-toast';
 const NewOrder: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   // Form state
   const [customer, setCustomer] = useState<Customer>({
     name: '',
@@ -44,7 +44,7 @@ const NewOrder: React.FC = () => {
       zipCode: ''
     }
   });
-  
+
   const [product, setProduct] = useState({
     type: '',
     color: '',
@@ -52,27 +52,27 @@ const NewOrder: React.FC = () => {
     specialInstructions: '',
     fileUpload: ''
   });
-  
+
   const [quantity, setQuantity] = useState({
     total: 0,
     sizeBreakdown: {} as SizeBreakdownType
   });
-  
+
   const [delivery, setDelivery] = useState({
     eventDate: '',
     deliveryDate: '',
     status: 'Pending' as const
   });
-  
+
   const [payment, setPayment] = useState({
     amount: 0,
     paid: 0,
     pending: 0,
     status: 'Pending' as const
   });
-  
+
   const [orderType, setOrderType] = useState<'From Stock' | 'Custom Order' | 'Mixed Order'>('From Stock');
-  
+
   // State management
   const [availableStock, setAvailableStock] = useState<Record<string, number>>({});
   const [duplicateOrders, setDuplicateOrders] = useState<Order[]>([]);
@@ -94,7 +94,7 @@ const NewOrder: React.FC = () => {
 
   useEffect(() => {
     // Calculate pending payment when amount or paid changes
-    setPayment(prev => ({
+    setPayment((prev) => ({
       ...prev,
       pending: prev.amount - prev.paid,
       status: prev.paid === 0 ? 'Pending' : prev.paid >= prev.amount ? 'Complete' : 'Partial'
@@ -105,7 +105,7 @@ const NewOrder: React.FC = () => {
     try {
       const stock = await stockService.getStock(product.type, product.color, product.neckType);
       const stockMap: Record<string, number> = {};
-      stock.forEach(item => {
+      stock.forEach((item) => {
         stockMap[item.size] = item.quantity;
       });
       setAvailableStock(stockMap);
@@ -146,7 +146,7 @@ const NewOrder: React.FC = () => {
 
     // Quantity validation
     if (quantity.total <= 0) newErrors.quantity = 'Total quantity must be greater than 0';
-    
+
     const sizeTotal = Object.values(quantity.sizeBreakdown).reduce((sum, qty) => sum + qty, 0);
     if (sizeTotal !== quantity.total) {
       newErrors.sizeBreakdown = 'Size breakdown must equal total quantity';
@@ -155,7 +155,7 @@ const NewOrder: React.FC = () => {
     // Delivery validation
     if (!delivery.eventDate) newErrors.eventDate = 'Event date is required';
     if (!delivery.deliveryDate) newErrors.deliveryDate = 'Delivery date is required';
-    
+
     const eventDate = new Date(delivery.eventDate);
     const deliveryDate = new Date(delivery.deliveryDate);
     if (deliveryDate >= eventDate) {
@@ -191,7 +191,7 @@ const NewOrder: React.FC = () => {
           product.neckType,
           quantity.sizeBreakdown
         );
-        
+
         if (!availability.available) {
           toast({
             title: "Insufficient Stock",
@@ -229,12 +229,12 @@ const NewOrder: React.FC = () => {
 
       toast({
         title: "Order Created Successfully",
-        description: `Order ${newOrder.id} has been created and saved.`,
+        description: `Order ${newOrder.id} has been created and saved.`
       });
 
       // Navigate to order details or orders list
       navigate('/agent/orders');
-      
+
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
@@ -303,8 +303,8 @@ const NewOrder: React.FC = () => {
       </div>
 
       {/* Duplicate Orders Warning */}
-      {duplicateOrders.length > 0 && (
-        <Alert variant="destructive">
+      {duplicateOrders.length > 0 &&
+      <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <strong>Potential Duplicate Orders Found!</strong> 
@@ -312,7 +312,7 @@ const NewOrder: React.FC = () => {
             with similar details. Please verify before proceeding.
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Order Form */}
       <Card>
@@ -357,10 +357,10 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="customerName"
                     value={customer.name}
-                    onChange={(e) => setCustomer(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => setCustomer((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="Enter customer name"
-                    className={errors.customerName ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerName ? 'border-red-500' : ''} />
+
                   {errors.customerName && <p className="text-sm text-red-600">{errors.customerName}</p>}
                 </div>
                 
@@ -369,10 +369,10 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="customerPhone"
                     value={customer.phone}
-                    onChange={(e) => setCustomer(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => setCustomer((prev) => ({ ...prev, phone: e.target.value }))}
                     placeholder="+1234567890"
-                    className={errors.customerPhone ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerPhone ? 'border-red-500' : ''} />
+
                   {errors.customerPhone && <p className="text-sm text-red-600">{errors.customerPhone}</p>}
                 </div>
                 
@@ -381,10 +381,10 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="customerWhatsapp"
                     value={customer.whatsapp}
-                    onChange={(e) => setCustomer(prev => ({ ...prev, whatsapp: e.target.value }))}
+                    onChange={(e) => setCustomer((prev) => ({ ...prev, whatsapp: e.target.value }))}
                     placeholder="+1234567890"
-                    className={errors.customerWhatsapp ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerWhatsapp ? 'border-red-500' : ''} />
+
                   {errors.customerWhatsapp && <p className="text-sm text-red-600">{errors.customerWhatsapp}</p>}
                 </div>
               </div>
@@ -397,13 +397,13 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="street"
                     value={customer.address.street}
-                    onChange={(e) => setCustomer(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setCustomer((prev) => ({
+                      ...prev,
                       address: { ...prev.address, street: e.target.value }
                     }))}
                     placeholder="123 Main Street"
-                    className={errors.customerStreet ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerStreet ? 'border-red-500' : ''} />
+
                   {errors.customerStreet && <p className="text-sm text-red-600">{errors.customerStreet}</p>}
                 </div>
                 
@@ -412,13 +412,13 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="city"
                     value={customer.address.city}
-                    onChange={(e) => setCustomer(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setCustomer((prev) => ({
+                      ...prev,
                       address: { ...prev.address, city: e.target.value }
                     }))}
                     placeholder="New York"
-                    className={errors.customerCity ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerCity ? 'border-red-500' : ''} />
+
                   {errors.customerCity && <p className="text-sm text-red-600">{errors.customerCity}</p>}
                 </div>
                 
@@ -427,13 +427,13 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="state"
                     value={customer.address.state}
-                    onChange={(e) => setCustomer(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setCustomer((prev) => ({
+                      ...prev,
                       address: { ...prev.address, state: e.target.value }
                     }))}
                     placeholder="NY"
-                    className={errors.customerState ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerState ? 'border-red-500' : ''} />
+
                   {errors.customerState && <p className="text-sm text-red-600">{errors.customerState}</p>}
                 </div>
                 
@@ -442,13 +442,13 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="zipCode"
                     value={customer.address.zipCode}
-                    onChange={(e) => setCustomer(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setCustomer((prev) => ({
+                      ...prev,
                       address: { ...prev.address, zipCode: e.target.value }
                     }))}
                     placeholder="10001"
-                    className={errors.customerZip ? 'border-red-500' : ''}
-                  />
+                    className={errors.customerZip ? 'border-red-500' : ''} />
+
                   {errors.customerZip && <p className="text-sm text-red-600">{errors.customerZip}</p>}
                 </div>
               </div>
@@ -459,17 +459,17 @@ const NewOrder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Product Type *</Label>
-                  <Select 
-                    value={product.type} 
-                    onValueChange={(value) => setProduct(prev => ({ ...prev, type: value }))}
-                  >
+                  <Select
+                    value={product.type}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, type: value }))}>
+
                     <SelectTrigger className={errors.productType ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select product type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {productConfig.productTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      {productConfig.productTypes.map((type) =>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   {errors.productType && <p className="text-sm text-red-600">{errors.productType}</p>}
@@ -477,17 +477,17 @@ const NewOrder: React.FC = () => {
                 
                 <div className="space-y-2">
                   <Label>Color *</Label>
-                  <Select 
-                    value={product.color} 
-                    onValueChange={(value) => setProduct(prev => ({ ...prev, color: value }))}
-                  >
+                  <Select
+                    value={product.color}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, color: value }))}>
+
                     <SelectTrigger className={errors.productColor ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select color" />
                     </SelectTrigger>
                     <SelectContent>
-                      {productConfig.colors.map(color => (
-                        <SelectItem key={color} value={color}>{color}</SelectItem>
-                      ))}
+                      {productConfig.colors.map((color) =>
+                      <SelectItem key={color} value={color}>{color}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   {errors.productColor && <p className="text-sm text-red-600">{errors.productColor}</p>}
@@ -495,17 +495,17 @@ const NewOrder: React.FC = () => {
                 
                 <div className="space-y-2">
                   <Label>Neck Type *</Label>
-                  <Select 
-                    value={product.neckType} 
-                    onValueChange={(value) => setProduct(prev => ({ ...prev, neckType: value }))}
-                  >
+                  <Select
+                    value={product.neckType}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, neckType: value }))}>
+
                     <SelectTrigger className={errors.productNeck ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select neck type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {productConfig.neckTypes.map(neck => (
-                        <SelectItem key={neck} value={neck}>{neck}</SelectItem>
-                      ))}
+                      {productConfig.neckTypes.map((neck) =>
+                      <SelectItem key={neck} value={neck}>{neck}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   {errors.productNeck && <p className="text-sm text-red-600">{errors.productNeck}</p>}
@@ -514,10 +514,10 @@ const NewOrder: React.FC = () => {
               
               <div className="space-y-2">
                 <Label>Order Type</Label>
-                <Select 
-                  value={orderType} 
-                  onValueChange={(value) => setOrderType(value as typeof orderType)}
-                >
+                <Select
+                  value={orderType}
+                  onValueChange={(value) => setOrderType(value as typeof orderType)}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -534,10 +534,10 @@ const NewOrder: React.FC = () => {
                 <Textarea
                   id="specialInstructions"
                   value={product.specialInstructions}
-                  onChange={(e) => setProduct(prev => ({ ...prev, specialInstructions: e.target.value }))}
+                  onChange={(e) => setProduct((prev) => ({ ...prev, specialInstructions: e.target.value }))}
                   placeholder="Any special requirements, logo placement, etc."
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
               
               <div className="space-y-2">
@@ -560,27 +560,27 @@ const NewOrder: React.FC = () => {
                   id="totalQuantity"
                   type="number"
                   value={quantity.total}
-                  onChange={(e) => setQuantity(prev => ({ ...prev, total: parseInt(e.target.value) || 0 }))}
+                  onChange={(e) => setQuantity((prev) => ({ ...prev, total: parseInt(e.target.value) || 0 }))}
                   placeholder="Enter total quantity"
                   min="1"
-                  className={errors.quantity ? 'border-red-500' : ''}
-                />
+                  className={errors.quantity ? 'border-red-500' : ''} />
+
                 {errors.quantity && <p className="text-sm text-red-600">{errors.quantity}</p>}
               </div>
               
               <SizeBreakdown
                 totalQuantity={quantity.total}
                 sizeBreakdown={quantity.sizeBreakdown}
-                onSizeBreakdownChange={(breakdown) => setQuantity(prev => ({ ...prev, sizeBreakdown: breakdown }))}
-                availableStock={orderType === 'From Stock' || orderType === 'Mixed Order' ? availableStock : undefined}
-              />
+                onSizeBreakdownChange={(breakdown) => setQuantity((prev) => ({ ...prev, sizeBreakdown: breakdown }))}
+                availableStock={orderType === 'From Stock' || orderType === 'Mixed Order' ? availableStock : undefined} />
+
               
-              {errors.sizeBreakdown && (
-                <Alert variant="destructive">
+              {errors.sizeBreakdown &&
+              <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{errors.sizeBreakdown}</AlertDescription>
                 </Alert>
-              )}
+              }
             </TabsContent>
 
             {/* Delivery Information Tab */}
@@ -592,9 +592,9 @@ const NewOrder: React.FC = () => {
                     id="eventDate"
                     type="date"
                     value={delivery.eventDate}
-                    onChange={(e) => setDelivery(prev => ({ ...prev, eventDate: e.target.value }))}
-                    className={errors.eventDate ? 'border-red-500' : ''}
-                  />
+                    onChange={(e) => setDelivery((prev) => ({ ...prev, eventDate: e.target.value }))}
+                    className={errors.eventDate ? 'border-red-500' : ''} />
+
                   {errors.eventDate && <p className="text-sm text-red-600">{errors.eventDate}</p>}
                 </div>
                 
@@ -604,9 +604,9 @@ const NewOrder: React.FC = () => {
                     id="deliveryDate"
                     type="date"
                     value={delivery.deliveryDate}
-                    onChange={(e) => setDelivery(prev => ({ ...prev, deliveryDate: e.target.value }))}
-                    className={errors.deliveryDate ? 'border-red-500' : ''}
-                  />
+                    onChange={(e) => setDelivery((prev) => ({ ...prev, deliveryDate: e.target.value }))}
+                    className={errors.deliveryDate ? 'border-red-500' : ''} />
+
                   {errors.deliveryDate && <p className="text-sm text-red-600">{errors.deliveryDate}</p>}
                   <p className="text-xs text-gray-500">Must be before event date</p>
                 </div>
@@ -623,10 +623,10 @@ const NewOrder: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={payment.amount}
-                    onChange={(e) => setPayment(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                    onChange={(e) => setPayment((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentAmount ? 'border-red-500' : ''}
-                  />
+                    className={errors.paymentAmount ? 'border-red-500' : ''} />
+
                   {errors.paymentAmount && <p className="text-sm text-red-600">{errors.paymentAmount}</p>}
                 </div>
                 
@@ -637,10 +637,10 @@ const NewOrder: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={payment.paid}
-                    onChange={(e) => setPayment(prev => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
+                    onChange={(e) => setPayment((prev) => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentPaid ? 'border-red-500' : ''}
-                  />
+                    className={errors.paymentPaid ? 'border-red-500' : ''} />
+
                   {errors.paymentPaid && <p className="text-sm text-red-600">{errors.paymentPaid}</p>}
                 </div>
                 
@@ -651,14 +651,14 @@ const NewOrder: React.FC = () => {
                       <span className="font-medium">Pending: </span>
                       ${payment.pending.toFixed(2)}
                     </p>
-                    <Badge 
+                    <Badge
                       variant={
-                        payment.status === 'Complete' ? 'default' :
-                        payment.status === 'Partial' ? 'secondary' :
-                        'destructive'
+                      payment.status === 'Complete' ? 'default' :
+                      payment.status === 'Partial' ? 'secondary' :
+                      'destructive'
                       }
-                      className="mt-1"
-                    >
+                      className="mt-1">
+
                       {payment.status}
                     </Badge>
                   </div>
@@ -670,20 +670,20 @@ const NewOrder: React.FC = () => {
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t space-y-4 sm:space-y-0">
             <div className="flex space-x-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={prevTab}
-                disabled={currentTab === 'customer'}
-              >
+                disabled={currentTab === 'customer'}>
+
                 Previous
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={nextTab}
-                disabled={currentTab === 'payment'}
-              >
+                disabled={currentTab === 'payment'}>
+
                 Next
               </Button>
             </div>
@@ -693,8 +693,8 @@ const NewOrder: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={handleGeneratePreview}
-                className="flex items-center space-x-2"
-              >
+                className="flex items-center space-x-2">
+
                 <FileText className="w-4 h-4" />
                 <span>Preview PDF</span>
               </Button>
@@ -702,26 +702,26 @@ const NewOrder: React.FC = () => {
               <Button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600"
-              >
-                {isLoading ? (
-                  <>
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
+
+                {isLoading ?
+                <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Creating...</span>
-                  </>
-                ) : (
-                  <>
+                  </> :
+
+                <>
                     <Save className="w-4 h-4" />
                     <span>Create Order</span>
                   </>
-                )}
+                }
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NewOrder;

@@ -5,16 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Search, 
-  Plus, 
-  FileText, 
-  Eye, 
+import {
+  Search,
+  Plus,
+  FileText,
+  Eye,
   Filter,
   Calendar,
   DollarSign,
-  Package
-} from 'lucide-react';
+  Package } from
+'lucide-react';
 import { orderService, Order } from '@/services/orderService';
 import { pdfService } from '@/services/pdfService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,17 +59,17 @@ const OrderList: React.FC = () => {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(order => 
-        order.id.toLowerCase().includes(query) ||
-        order.customer.name.toLowerCase().includes(query) ||
-        order.product.type.toLowerCase().includes(query) ||
-        order.product.color.toLowerCase().includes(query)
+      filtered = filtered.filter((order) =>
+      order.id.toLowerCase().includes(query) ||
+      order.customer.name.toLowerCase().includes(query) ||
+      order.product.type.toLowerCase().includes(query) ||
+      order.product.color.toLowerCase().includes(query)
       );
     }
 
     // Filter by status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.delivery.status === statusFilter);
+      filtered = filtered.filter((order) => order.delivery.status === statusFilter);
     }
 
     // Sort by creation date (newest first)
@@ -83,7 +83,7 @@ const OrderList: React.FC = () => {
       await pdfService.downloadOrderPDF(order);
       toast({
         title: "PDF Downloaded",
-        description: `Order ${order.id} details have been downloaded.`,
+        description: `Order ${order.id} details have been downloaded.`
       });
     } catch (error) {
       console.error('Error downloading PDF:', error);
@@ -97,21 +97,21 @@ const OrderList: React.FC = () => {
 
   const getStatusBadgeVariant = (status: Order['delivery']['status']) => {
     switch (status) {
-      case 'Delivered': return 'default';
-      case 'Shipped': return 'secondary';
-      case 'In Production': return 'outline';
-      case 'Pending': return 'destructive';
-      case 'Cancelled': return 'destructive';
-      default: return 'secondary';
+      case 'Delivered':return 'default';
+      case 'Shipped':return 'secondary';
+      case 'In Production':return 'outline';
+      case 'Pending':return 'destructive';
+      case 'Cancelled':return 'destructive';
+      default:return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: Order['payment']['status']) => {
     switch (status) {
-      case 'Complete': return 'default';
-      case 'Partial': return 'secondary';
-      case 'Pending': return 'destructive';
-      default: return 'secondary';
+      case 'Complete':return 'default';
+      case 'Partial':return 'secondary';
+      case 'Pending':return 'destructive';
+      default:return 'secondary';
     }
   };
 
@@ -120,12 +120,12 @@ const OrderList: React.FC = () => {
       <div className="space-y-6">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
-          ))}
+          {[...Array(5)].map((_, i) =>
+          <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
+          )}
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -155,8 +155,8 @@ const OrderList: React.FC = () => {
                   placeholder="Search orders by ID, customer name, or product..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             
@@ -178,43 +178,43 @@ const OrderList: React.FC = () => {
             </div>
           </div>
           
-          {filteredOrders.length > 0 && (
-            <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+          {filteredOrders.length > 0 &&
+          <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
               <span>Showing {filteredOrders.length} of {orders.length} orders</span>
               <span>Total value: ${filteredOrders.reduce((sum, order) => sum + order.payment.amount, 0).toLocaleString()}</span>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
       {/* Orders List */}
-      {filteredOrders.length === 0 ? (
-        <Card>
+      {filteredOrders.length === 0 ?
+      <Card>
           <CardContent className="text-center py-12">
             <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               {orders.length === 0 ? 'No orders yet' : 'No matching orders'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {orders.length === 0 
-                ? 'Start creating orders to track your sales'
-                : 'Try adjusting your search or filter criteria'
-              }
+              {orders.length === 0 ?
+            'Start creating orders to track your sales' :
+            'Try adjusting your search or filter criteria'
+            }
             </p>
-            {orders.length === 0 && (
-              <Link to="/agent/orders/new">
+            {orders.length === 0 &&
+          <Link to="/agent/orders/new">
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Order
                 </Button>
               </Link>
-            )}
+          }
           </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => (
-            <Card key={order.id} className="hover:shadow-md transition-shadow">
+        </Card> :
+
+      <div className="space-y-4">
+          {filteredOrders.map((order) =>
+        <Card key={order.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1">
@@ -275,11 +275,11 @@ const OrderList: React.FC = () => {
                     
                     {/* Size Breakdown */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {Object.entries(order.quantity.sizeBreakdown).map(([size, qty]) => (
-                        <Badge key={size} variant="outline" className="text-xs">
+                      {Object.entries(order.quantity.sizeBreakdown).map(([size, qty]) =>
+                  <Badge key={size} variant="outline" className="text-xs">
                           {size}: {qty}
                         </Badge>
-                      ))}
+                  )}
                     </div>
                   </div>
                   
@@ -289,12 +289,12 @@ const OrderList: React.FC = () => {
                       <span>View</span>
                     </Button>
                     
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center space-x-2"
-                      onClick={() => handleDownloadPDF(order)}
-                    >
+                    <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                  onClick={() => handleDownloadPDF(order)}>
+
                       <FileText className="w-4 h-4" />
                       <span>PDF</span>
                     </Button>
@@ -302,11 +302,11 @@ const OrderList: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+        )}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default OrderList;

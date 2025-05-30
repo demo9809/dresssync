@@ -28,7 +28,7 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
 
   useEffect(() => {
     // Initialize active sizes from existing breakdown
-    const existingSizes = Object.keys(sizeBreakdown).filter(size => sizeBreakdown[size] > 0);
+    const existingSizes = Object.keys(sizeBreakdown).filter((size) => sizeBreakdown[size] > 0);
     if (existingSizes.length > 0) {
       setActiveSizes(existingSizes);
     } else if (activeSizes.length === 0) {
@@ -43,7 +43,7 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
 
   const validateSizes = () => {
     const newErrors: Record<string, string> = {};
-    
+
     Object.entries(sizeBreakdown).forEach(([size, quantity]) => {
       if (quantity < 0) {
         newErrors[size] = 'Quantity cannot be negative';
@@ -71,7 +71,7 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
   };
 
   const removeSize = (size: string) => {
-    setActiveSizes(activeSizes.filter(s => s !== size));
+    setActiveSizes(activeSizes.filter((s) => s !== size));
     const newBreakdown = { ...sizeBreakdown };
     delete newBreakdown[size];
     onSizeBreakdownChange(newBreakdown);
@@ -84,15 +84,15 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
 
   const autoDistribute = () => {
     if (activeSizes.length === 0 || totalQuantity === 0) return;
-    
+
     const baseQuantity = Math.floor(totalQuantity / activeSizes.length);
     const remainder = totalQuantity % activeSizes.length;
-    
+
     const newBreakdown: Record<string, number> = {};
     activeSizes.forEach((size, index) => {
       newBreakdown[size] = baseQuantity + (index < remainder ? 1 : 0);
     });
-    
+
     onSizeBreakdownChange(newBreakdown);
   };
 
@@ -114,17 +114,17 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
         <CardTitle className="flex items-center justify-between">
           <span>Size Breakdown</span>
           <div className="flex items-center space-x-2">
-            {isValid ? (
-              <Badge variant="default" className="bg-green-100 text-green-800">
+            {isValid ?
+            <Badge variant="default" className="bg-green-100 text-green-800">
                 <CheckCircle size={14} className="mr-1" />
                 Valid
-              </Badge>
-            ) : (
-              <Badge variant="destructive">
+              </Badge> :
+
+            <Badge variant="destructive">
                 <AlertTriangle size={14} className="mr-1" />
                 Check totals
               </Badge>
-            )}
+            }
           </div>
         </CardTitle>
       </CardHeader>
@@ -137,28 +137,28 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
             variant="outline"
             size="sm"
             onClick={autoDistribute}
-            disabled={disabled || activeSizes.length === 0 || totalQuantity === 0}
-          >
+            disabled={disabled || activeSizes.length === 0 || totalQuantity === 0}>
+
             Auto Distribute
           </Button>
           
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <span>Total: {currentTotal}/{totalQuantity}</span>
-            {remainingToDistribute !== 0 && (
-              <span className={remainingToDistribute > 0 ? 'text-orange-600' : 'text-red-600'}>
+            {remainingToDistribute !== 0 &&
+            <span className={remainingToDistribute > 0 ? 'text-orange-600' : 'text-red-600'}>
                 ({remainingToDistribute > 0 ? '+' : ''}{remainingToDistribute})
               </span>
-            )}
+            }
           </div>
         </div>
 
         {/* Error Messages */}
-        {errors.total && (
-          <Alert variant="destructive">
+        {errors.total &&
+        <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{errors.total}</AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Active Sizes */}
         <div className="space-y-3">
@@ -172,11 +172,11 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
               <div key={size} className="flex items-center space-x-3 p-3 border rounded-lg bg-gray-50">
                 <div className="flex-1">
                   <Label className="font-medium">Size {size}</Label>
-                  {available !== undefined && (
-                    <p className="text-xs text-gray-500 mt-1">
+                  {available !== undefined &&
+                  <p className="text-xs text-gray-500 mt-1">
                       Available: {available} pieces
                     </p>
-                  )}
+                  }
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -185,8 +185,8 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => updateQuantity(size, quantity - 1)}
-                    disabled={disabled || quantity <= 0}
-                  >
+                    disabled={disabled || quantity <= 0}>
+
                     <Minus size={14} />
                   </Button>
                   
@@ -196,39 +196,39 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
                     onChange={(e) => updateQuantity(size, parseInt(e.target.value) || 0)}
                     className={`w-20 text-center ${hasError ? 'border-red-500' : ''}`}
                     min="0"
-                    disabled={disabled}
-                  />
+                    disabled={disabled} />
+
                   
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => updateQuantity(size, quantity + 1)}
-                    disabled={disabled}
-                  >
+                    disabled={disabled}>
+
                     <Plus size={14} />
                   </Button>
                 </div>
 
                 {/* Stock Status Indicator */}
-                {available !== undefined && (
-                  <div className="flex items-center">
+                {available !== undefined &&
+                <div className="flex items-center">
                     <div
-                      className={`w-3 h-3 rounded-full ${
-                        stockStatus === 'sufficient' ? 'bg-green-500' :
-                        stockStatus === 'low' ? 'bg-yellow-500' :
-                        stockStatus === 'insufficient' ? 'bg-red-500' :
-                        'bg-gray-400'
-                      }`}
-                      title={
-                        stockStatus === 'sufficient' ? 'Sufficient stock' :
-                        stockStatus === 'low' ? 'Low stock' :
-                        stockStatus === 'insufficient' ? 'Insufficient stock' :
-                        'Stock unknown'
-                      }
-                    />
+                    className={`w-3 h-3 rounded-full ${
+                    stockStatus === 'sufficient' ? 'bg-green-500' :
+                    stockStatus === 'low' ? 'bg-yellow-500' :
+                    stockStatus === 'insufficient' ? 'bg-red-500' :
+                    'bg-gray-400'}`
+                    }
+                    title={
+                    stockStatus === 'sufficient' ? 'Sufficient stock' :
+                    stockStatus === 'low' ? 'Low stock' :
+                    stockStatus === 'insufficient' ? 'Insufficient stock' :
+                    'Stock unknown'
+                    } />
+
                   </div>
-                )}
+                }
 
                 <Button
                   type="button"
@@ -236,37 +236,37 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
                   size="sm"
                   onClick={() => removeSize(size)}
                   disabled={disabled || activeSizes.length <= 1}
-                  className="text-red-600 hover:text-red-700"
-                >
+                  className="text-red-600 hover:text-red-700">
+
                   Remove
                 </Button>
 
-                {hasError && (
-                  <div className="text-xs text-red-600 mt-1">{hasError}</div>
-                )}
-              </div>
-            );
+                {hasError &&
+                <div className="text-xs text-red-600 mt-1">{hasError}</div>
+                }
+              </div>);
+
           })}
         </div>
 
         {/* Add Size Dropdown */}
         <div className="flex flex-wrap gap-2">
           <Label className="text-sm font-medium text-gray-700">Add Size:</Label>
-          {productConfig.sizes
-            .filter(size => !activeSizes.includes(size))
-            .map(size => (
-              <Button
-                key={size}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => addSize(size)}
-                disabled={disabled}
-                className="text-xs"
-              >
+          {productConfig.sizes.
+          filter((size) => !activeSizes.includes(size)).
+          map((size) =>
+          <Button
+            key={size}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => addSize(size)}
+            disabled={disabled}
+            className="text-xs">
+
                 + {size}
               </Button>
-            ))}
+          )}
         </div>
 
         {/* Summary */}
@@ -285,8 +285,8 @@ const SizeBreakdown: React.FC<SizeBreakdownProps> = ({
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default SizeBreakdown;

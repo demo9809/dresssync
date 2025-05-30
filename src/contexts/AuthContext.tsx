@@ -18,7 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock users for demonstration
-const mockUsers: Record<string, User & { password: string }> = {
+const mockUsers: Record<string, User & {password: string;}> = {
   'manager@dresssync.com': {
     id: '1',
     name: 'John Manager',
@@ -37,7 +37,7 @@ const mockUsers: Record<string, User & { password: string }> = {
   }
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,10 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const userData = mockUsers[email];
     if (userData && userData.password === password) {
       const { password: _, ...userWithoutPassword } = userData;
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       return true;
     }
-    
+
     setIsLoading(false);
     return false;
   };
@@ -77,8 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };
 
 export const useAuth = () => {

@@ -263,13 +263,13 @@ export const pdfService = {
     // Convert HTML to blob URL for download
     const blob = new Blob([htmlContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    
+
     return url;
   },
 
   downloadOrderPDF: async (order: Order): Promise<void> => {
     const pdfUrl = await pdfService.generateOrderPDF(order);
-    
+
     // Create download link
     const link = document.createElement('a');
     link.href = pdfUrl;
@@ -277,14 +277,14 @@ export const pdfService = {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Clean up
     setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
   },
 
   printOrderPDF: async (order: Order): Promise<void> => {
     const pdfUrl = await pdfService.generateOrderPDF(order);
-    
+
     // Open in new window for printing
     const printWindow = window.open(pdfUrl, '_blank');
     if (printWindow) {
