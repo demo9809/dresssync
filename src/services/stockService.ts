@@ -235,23 +235,95 @@ export const stockService = {
   }
 };
 
-// Product configuration
+// Product configuration - now dynamic from database
 export const productConfig = {
+  // Get product types from database
+  getProductTypes: async (): Promise<string[]> => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11428', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: 'display_order',
+        IsAsc: true,
+        Filters: [
+          { name: 'config_type', op: 'Equal', value: 'product_type' },
+          { name: 'is_active', op: 'Equal', value: true }
+        ]
+      });
+      if (error) throw error;
+      return data.List?.map((item: any) => item.config_value) || [];
+    } catch (error) {
+      console.error('Error fetching product types:', error);
+      return ['T-shirt', 'Jersey', 'Uniform', 'Polo Shirt', 'Hoodie']; // Fallback
+    }
+  },
+
+  // Get colors from database
+  getColors: async (): Promise<string[]> => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11428', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: 'display_order',
+        IsAsc: true,
+        Filters: [
+          { name: 'config_type', op: 'Equal', value: 'color' },
+          { name: 'is_active', op: 'Equal', value: true }
+        ]
+      });
+      if (error) throw error;
+      return data.List?.map((item: any) => item.config_value) || [];
+    } catch (error) {
+      console.error('Error fetching colors:', error);
+      return ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green']; // Fallback
+    }
+  },
+
+  // Get neck types from database
+  getNeckTypes: async (): Promise<string[]> => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11428', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: 'display_order',
+        IsAsc: true,
+        Filters: [
+          { name: 'config_type', op: 'Equal', value: 'neck_type' },
+          { name: 'is_active', op: 'Equal', value: true }
+        ]
+      });
+      if (error) throw error;
+      return data.List?.map((item: any) => item.config_value) || [];
+    } catch (error) {
+      console.error('Error fetching neck types:', error);
+      return ['Round Neck', 'V-Neck', 'Polo Collar', 'Henley']; // Fallback
+    }
+  },
+
+  // Get sizes from database
+  getSizes: async (): Promise<string[]> => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage('11428', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: 'display_order',
+        IsAsc: true,
+        Filters: [
+          { name: 'config_type', op: 'Equal', value: 'size' },
+          { name: 'is_active', op: 'Equal', value: true }
+        ]
+      });
+      if (error) throw error;
+      return data.List?.map((item: any) => item.config_value) || [];
+    } catch (error) {
+      console.error('Error fetching sizes:', error);
+      return ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']; // Fallback
+    }
+  },
+
+  // Legacy static arrays for backward compatibility
   productTypes: ['T-shirt', 'Jersey', 'Uniform', 'Polo Shirt', 'Hoodie'],
-
-  colors: [
-  'Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow', 'Orange',
-  'Purple', 'Pink', 'Grey', 'Maroon', 'Lime Green', 'Sky Blue', 'Dark Green',
-  'Brown', 'Beige', 'Teal', 'Coral', 'Lavender', 'Mint', 'Cream', 'Burgundy',
-  'Olive', 'Turquoise', 'Magenta', 'Gold', 'Silver', 'Bronze', 'Copper',
-  'Charcoal', 'Ivory', 'Peach', 'Salmon', 'Khaki', 'Denim', 'Crimson',
-  'Emerald', 'Sapphire', 'Ruby'],
-
-
-  neckTypes: [
-  'Round Neck', 'V-Neck', 'Polo Collar', 'Henley', 'Crew Neck',
-  'Scoop Neck', 'Boat Neck', 'High Neck', 'Mock Neck'],
-
-
+  colors: ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow'],
+  neckTypes: ['Round Neck', 'V-Neck', 'Polo Collar', 'Henley', 'Crew Neck'],
   sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
 };

@@ -5,17 +5,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  Package, 
-  Users, 
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Package,
+  Users,
   ShoppingCart,
   Calendar,
-  Download
-} from 'lucide-react';
+  Download } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReportData {
@@ -56,7 +56,7 @@ const ReportsPage: React.FC = () => {
   const fetchReportData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch orders data
       const { data: ordersData, error: ordersError } = await window.ezsite.apis.tablePage(11425, {
         PageNo: 1,
@@ -99,10 +99,10 @@ const ReportsPage: React.FC = () => {
       const totalOrders = orders.length;
       const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total_amount, 0);
       const totalAgents = agents.length;
-      const stockValue = stockItems.reduce((sum: number, item: any) => sum + (item.quantity * item.cost_per_unit), 0);
+      const stockValue = stockItems.reduce((sum: number, item: any) => sum + item.quantity * item.cost_per_unit, 0);
 
       // Calculate monthly growth (mock calculation)
-      const monthlyGrowth = Math.round((Math.random() * 20) - 5); // -5% to +15%
+      const monthlyGrowth = Math.round(Math.random() * 20 - 5); // -5% to +15%
 
       // Top products analysis
       const productMap = new Map();
@@ -122,9 +122,9 @@ const ReportsPage: React.FC = () => {
         }
       });
 
-      const topProducts = Array.from(productMap.values())
-        .sort((a, b) => b.revenue - a.revenue)
-        .slice(0, 5);
+      const topProducts = Array.from(productMap.values()).
+      sort((a, b) => b.revenue - a.revenue).
+      slice(0, 5);
 
       // Agent performance analysis
       const agentMap = new Map();
@@ -153,13 +153,13 @@ const ReportsPage: React.FC = () => {
 
       // Mock order trends (last 6 months)
       const orderTrends = [
-        { month: 'Jan', orders: Math.floor(Math.random() * 50) + 20, revenue: Math.floor(Math.random() * 100000) + 50000 },
-        { month: 'Feb', orders: Math.floor(Math.random() * 50) + 25, revenue: Math.floor(Math.random() * 120000) + 60000 },
-        { month: 'Mar', orders: Math.floor(Math.random() * 60) + 30, revenue: Math.floor(Math.random() * 150000) + 70000 },
-        { month: 'Apr', orders: Math.floor(Math.random() * 70) + 35, revenue: Math.floor(Math.random() * 180000) + 80000 },
-        { month: 'May', orders: Math.floor(Math.random() * 80) + 40, revenue: Math.floor(Math.random() * 200000) + 90000 },
-        { month: 'Jun', orders: totalOrders % 12, revenue: totalRevenue % 200000 }
-      ];
+      { month: 'Jan', orders: Math.floor(Math.random() * 50) + 20, revenue: Math.floor(Math.random() * 100000) + 50000 },
+      { month: 'Feb', orders: Math.floor(Math.random() * 50) + 25, revenue: Math.floor(Math.random() * 120000) + 60000 },
+      { month: 'Mar', orders: Math.floor(Math.random() * 60) + 30, revenue: Math.floor(Math.random() * 150000) + 70000 },
+      { month: 'Apr', orders: Math.floor(Math.random() * 70) + 35, revenue: Math.floor(Math.random() * 180000) + 80000 },
+      { month: 'May', orders: Math.floor(Math.random() * 80) + 40, revenue: Math.floor(Math.random() * 200000) + 90000 },
+      { month: 'Jun', orders: totalOrders % 12, revenue: totalRevenue % 200000 }];
+
 
       setReportData({
         totalOrders,
@@ -196,16 +196,16 @@ const ReportsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading report data...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!reportData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">No report data available</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -244,11 +244,11 @@ const ReportsPage: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
                 <p className="text-2xl font-bold text-gray-900">{reportData.totalOrders}</p>
                 <div className="flex items-center mt-1">
-                  {reportData.monthlyGrowth >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
-                  )}
+                  {reportData.monthlyGrowth >= 0 ?
+                  <TrendingUp className="w-4 h-4 text-green-600 mr-1" /> :
+
+                  <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                  }
                   <span className={`text-sm font-medium ${reportData.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {Math.abs(reportData.monthlyGrowth)}%
                   </span>
@@ -316,8 +316,8 @@ const ReportsPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reportData.topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between">
+              {reportData.topProducts.map((product, index) =>
+              <div key={index} className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">{product.product_type}</div>
                     <div className="text-sm text-gray-500">{product.color} • Qty: {product.quantity}</div>
@@ -329,7 +329,7 @@ const ReportsPage: React.FC = () => {
                     </Badge>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -342,12 +342,12 @@ const ReportsPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reportData.orderTrends.map((trend, index) => (
-                <div key={index} className="flex items-center justify-between">
+              {reportData.orderTrends.map((trend, index) =>
+              <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 text-sm font-medium">{trend.month}</div>
                     <div className="flex-1">
-                      <Progress value={(trend.orders / 100) * 100} className="h-2" />
+                      <Progress value={trend.orders / 100 * 100} className="h-2" />
                     </div>
                   </div>
                   <div className="text-right">
@@ -355,7 +355,7 @@ const ReportsPage: React.FC = () => {
                     <div className="text-sm text-gray-500">₹{trend.revenue.toLocaleString()}</div>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -382,7 +382,7 @@ const ReportsPage: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {reportData.agentPerformance.map((agent, index) => {
-                  const achievementPercentage = Math.round((agent.revenue / agent.target) * 100);
+                  const achievementPercentage = Math.round(agent.revenue / agent.target * 100);
                   return (
                     <TableRow key={index}>
                       <TableCell>
@@ -402,33 +402,33 @@ const ReportsPage: React.FC = () => {
                       <TableCell>
                         <Badge
                           variant={
-                            achievementPercentage >= 100 ? 'default' :
-                            achievementPercentage >= 80 ? 'secondary' :
-                            'outline'
-                          }
-                        >
+                          achievementPercentage >= 100 ? 'default' :
+                          achievementPercentage >= 80 ? 'secondary' :
+                          'outline'
+                          }>
+
                           {achievementPercentage >= 100 ? 'Exceeded' :
-                           achievementPercentage >= 80 ? 'On Track' :
-                           'Below Target'}
+                          achievementPercentage >= 80 ? 'On Track' :
+                          'Below Target'}
                         </Badge>
                       </TableCell>
-                    </TableRow>
-                  );
+                    </TableRow>);
+
                 })}
               </TableBody>
             </Table>
           </div>
-          {reportData.agentPerformance.length === 0 && (
-            <div className="text-center py-8">
+          {reportData.agentPerformance.length === 0 &&
+          <div className="text-center py-8">
               <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No performance data</h3>
               <p className="mt-1 text-sm text-gray-500">No agent performance data available for the selected period.</p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ReportsPage;

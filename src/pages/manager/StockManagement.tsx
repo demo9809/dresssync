@@ -174,30 +174,30 @@ const StockManagement: React.FC = () => {
     setIsAddDialogOpen(true);
   };
 
-  const filteredItems = stockItems.filter(item => {
-    const matchesSearch = 
-      item.product_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.batch_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filterType === 'all' || 
-      (filterType === 'low_stock' && item.quantity <= item.min_threshold) ||
-      (filterType === 'out_of_stock' && item.quantity === 0);
+  const filteredItems = stockItems.filter((item) => {
+    const matchesSearch =
+    item.product_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.batch_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter = filterType === 'all' ||
+    filterType === 'low_stock' && item.quantity <= item.min_threshold ||
+    filterType === 'out_of_stock' && item.quantity === 0;
 
     return matchesSearch && matchesFilter;
   });
 
-  const lowStockCount = stockItems.filter(item => item.quantity <= item.min_threshold).length;
-  const outOfStockCount = stockItems.filter(item => item.quantity === 0).length;
-  const totalValue = stockItems.reduce((sum, item) => sum + (item.quantity * item.cost_per_unit), 0);
+  const lowStockCount = stockItems.filter((item) => item.quantity <= item.min_threshold).length;
+  const outOfStockCount = stockItems.filter((item) => item.quantity === 0).length;
+  const totalValue = stockItems.reduce((sum, item) => sum + item.quantity * item.cost_per_unit, 0);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading stock items...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -225,27 +225,27 @@ const StockManagement: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="product_type">Product Type</Label>
-                  <Select value={formData.product_type} onValueChange={(value) => setFormData(prev => ({ ...prev, product_type: value }))}>
+                  <Select value={formData.product_type} onValueChange={(value) => setFormData((prev) => ({ ...prev, product_type: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select product type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {productTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      {productTypes.map((type) =>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="color">Color</Label>
-                  <Select value={formData.color} onValueChange={(value) => setFormData(prev => ({ ...prev, color: value }))}>
+                  <Select value={formData.color} onValueChange={(value) => setFormData((prev) => ({ ...prev, color: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select color" />
                     </SelectTrigger>
                     <SelectContent>
-                      {colors.map(color => (
-                        <SelectItem key={color} value={color}>{color}</SelectItem>
-                      ))}
+                      {colors.map((color) =>
+                      <SelectItem key={color} value={color}>{color}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -253,27 +253,27 @@ const StockManagement: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="neck_type">Neck Type</Label>
-                  <Select value={formData.neck_type} onValueChange={(value) => setFormData(prev => ({ ...prev, neck_type: value }))}>
+                  <Select value={formData.neck_type} onValueChange={(value) => setFormData((prev) => ({ ...prev, neck_type: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select neck type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {neckTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      {neckTypes.map((type) =>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="size">Size</Label>
-                  <Select value={formData.size} onValueChange={(value) => setFormData(prev => ({ ...prev, size: value }))}>
+                  <Select value={formData.size} onValueChange={(value) => setFormData((prev) => ({ ...prev, size: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select size" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sizes.map(size => (
-                        <SelectItem key={size} value={size}>{size}</SelectItem>
-                      ))}
+                      {sizes.map((size) =>
+                      <SelectItem key={size} value={size}>{size}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -285,8 +285,8 @@ const StockManagement: React.FC = () => {
                     id="quantity"
                     type="number"
                     value={formData.quantity}
-                    onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))} />
+
                 </div>
                 <div>
                   <Label htmlFor="min_threshold">Min Threshold</Label>
@@ -294,8 +294,8 @@ const StockManagement: React.FC = () => {
                     id="min_threshold"
                     type="number"
                     value={formData.min_threshold}
-                    onChange={(e) => setFormData(prev => ({ ...prev, min_threshold: parseInt(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, min_threshold: parseInt(e.target.value) || 0 }))} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -306,8 +306,8 @@ const StockManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.cost_per_unit}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cost_per_unit: parseFloat(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, cost_per_unit: parseFloat(e.target.value) || 0 }))} />
+
                 </div>
                 <div>
                   <Label htmlFor="selling_price">Selling Price</Label>
@@ -316,8 +316,8 @@ const StockManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.selling_price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, selling_price: parseFloat(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, selling_price: parseFloat(e.target.value) || 0 }))} />
+
                 </div>
               </div>
               <div>
@@ -325,16 +325,16 @@ const StockManagement: React.FC = () => {
                 <Input
                   id="batch_number"
                   value={formData.batch_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, batch_number: e.target.value }))}
-                />
+                  onChange={(e) => setFormData((prev) => ({ ...prev, batch_number: e.target.value }))} />
+
               </div>
               <div>
                 <Label htmlFor="supplier">Supplier</Label>
                 <Input
                   id="supplier"
                   value={formData.supplier}
-                  onChange={(e) => setFormData(prev => ({ ...prev, supplier: e.target.value }))}
-                />
+                  onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))} />
+
               </div>
               <div>
                 <Label htmlFor="purchase_date">Purchase Date</Label>
@@ -342,8 +342,8 @@ const StockManagement: React.FC = () => {
                   id="purchase_date"
                   type="date"
                   value={formData.purchase_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, purchase_date: e.target.value }))}
-                />
+                  onChange={(e) => setFormData((prev) => ({ ...prev, purchase_date: e.target.value }))} />
+
               </div>
             </div>
             <DialogFooter>
@@ -418,8 +418,8 @@ const StockManagement: React.FC = () => {
                   placeholder="Search by product type, color, batch number, or supplier..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             <Select value={filterType} onValueChange={setFilterType}>
@@ -461,8 +461,8 @@ const StockManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
+                {filteredItems.map((item) =>
+                <TableRow key={item.id}>
                     <TableCell>
                       <div>
                         <div className="font-medium">{item.product_type}</div>
@@ -477,13 +477,13 @@ const StockManagement: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {item.quantity === 0 ? (
-                        <Badge variant="destructive">Out of Stock</Badge>
-                      ) : item.quantity <= item.min_threshold ? (
-                        <Badge variant="outline">Low Stock</Badge>
-                      ) : (
-                        <Badge variant="secondary">In Stock</Badge>
-                      )}
+                      {item.quantity === 0 ?
+                    <Badge variant="destructive">Out of Stock</Badge> :
+                    item.quantity <= item.min_threshold ?
+                    <Badge variant="outline">Low Stock</Badge> :
+
+                    <Badge variant="secondary">In Stock</Badge>
+                    }
                     </TableCell>
                     <TableCell>₹{item.cost_per_unit}</TableCell>
                     <TableCell>₹{item.selling_price}</TableCell>
@@ -499,23 +499,23 @@ const StockManagement: React.FC = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
-          {filteredItems.length === 0 && (
-            <div className="text-center py-8">
+          {filteredItems.length === 0 &&
+          <div className="text-center py-8">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No stock items found</h3>
               <p className="mt-1 text-sm text-gray-500">
                 {searchTerm || filterType !== 'all' ? 'Try adjusting your search or filter.' : 'Get started by adding your first stock item.'}
               </p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default StockManagement;

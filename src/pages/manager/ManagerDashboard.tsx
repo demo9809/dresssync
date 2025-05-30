@@ -18,6 +18,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import ReportsAndAnalytics from '@/components/ReportsAndAnalytics';
+import AgentPasswordManagement from '@/components/AgentPasswordManagement';
+import ProductConfigurationManager from '@/components/ProductConfigurationManager';
 
 interface DashboardStats {
   totalOrders: number;
@@ -91,6 +93,12 @@ const ManagerDashboard: React.FC = () => {
     loadDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (agents.length > 0 || orders.length > 0 || stockItems.length > 0) {
+      calculateStats();
+    }
+  }, [agents, orders, stockItems]);
+
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
@@ -162,9 +170,9 @@ const ManagerDashboard: React.FC = () => {
 
   const calculateStats = () => {
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
     const pendingOrders = orders.filter((order) =>
-    order.order_status === 'Pending' || order.order_status === 'In Production'
+      order.order_status === 'Pending' || order.order_status === 'In Production'
     ).length;
     const completedOrders = orders.filter((order) => order.order_status === 'Delivered').length;
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -377,11 +385,13 @@ const ManagerDashboard: React.FC = () => {
 
       {/* Main Content with Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="stock">Stock Management</TabsTrigger>
-          <TabsTrigger value="agents">Agent Management</TabsTrigger>
+          <TabsTrigger value="stock">Stock</TabsTrigger>
+          <TabsTrigger value="agents">Agents</TabsTrigger>
+          <TabsTrigger value="passwords">Passwords</TabsTrigger>
+          <TabsTrigger value="config">Configuration</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -465,7 +475,6 @@ const ManagerDashboard: React.FC = () => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-48" />
-
                   </div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger className="w-40">
@@ -484,53 +493,76 @@ const ManagerDashboard: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Delivery Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOrders.map((order) =>
-                  <TableRow key={order.ID}>
-                      <TableCell className="font-medium">{order.order_number}</TableCell>
-                      <TableCell>{order.customer_name}</TableCell>
-                      <TableCell>{order.product_type} - {order.product_color}</TableCell>
-                      <TableCell>{order.total_quantity}</TableCell>
-                      <TableCell>${order.total_amount}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(order.order_status)}>
-                          {order.order_status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{new Date(order.delivery_date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Select onValueChange={(value) => updateOrderStatus(order.ID, value)}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Update Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Pending">Pending</SelectItem>
-                              <SelectItem value="In Production">In Production</SelectItem>
-                              <SelectItem value="Shipped">Shipped</SelectItem>
-                              <SelectItem value="Delivered">Delivered</SelectItem>
-                              <SelectItem value="Cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              {filteredOrders.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchTerm || filterStatus ? 'Try adjusting your search or filter.' : 'Orders will appear here when agents create them.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Order #</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Delivery Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOrders.map((order) => (
+                        <TableRow key={order.ID}>
+                          <TableCell className="font-medium">
+                            {order.order_number || `ORD-${order.ID}`}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{order.customer_name || 'N/A'}</div>
+                              <div className="text-sm text-gray-500">{order.customer_phone || ''}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {order.product_type} - {order.product_color}
+                          </TableCell>
+                          <TableCell>{order.total_quantity || 0}</TableCell>
+                          <TableCell>${(order.total_amount || 0).toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Badge variant={getStatusBadgeVariant(order.order_status)}>
+                              {order.order_status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString() : 'Not set'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Select onValueChange={(value) => updateOrderStatus(order.ID, value)}>
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Update" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Pending">Pending</SelectItem>
+                                  <SelectItem value="In Production">In Production</SelectItem>
+                                  <SelectItem value="Shipped">Shipped</SelectItem>
+                                  <SelectItem value="Delivered">Delivered</SelectItem>
+                                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -682,6 +714,16 @@ const ManagerDashboard: React.FC = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Password Management Tab */}
+        <TabsContent value="passwords" className="space-y-6">
+          <AgentPasswordManagement />
+        </TabsContent>
+
+        {/* Configuration Management Tab */}
+        <TabsContent value="config" className="space-y-6">
+          <ProductConfigurationManager />
         </TabsContent>
 
         {/* Reports Tab */}

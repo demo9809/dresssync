@@ -49,9 +49,9 @@ const AgentManagement: React.FC = () => {
   });
 
   const territories = [
-    'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi',
-    'Gurgaon', 'Noida', 'Faridabad', 'Ghaziabad', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune'
-  ];
+  'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi',
+  'Gurgaon', 'Noida', 'Faridabad', 'Ghaziabad', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune'];
+
 
   const statusOptions = ['Active', 'Inactive', 'Suspended'];
 
@@ -198,30 +198,30 @@ const AgentManagement: React.FC = () => {
     setIsAddDialogOpen(true);
   };
 
-  const filteredAgents = agents.filter(agent => {
-    const matchesSearch = 
-      agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.territory.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredAgents = agents.filter((agent) => {
+    const matchesSearch =
+    agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.territory.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesFilter = filterStatus === 'all' || agent.status === filterStatus;
 
     return matchesSearch && matchesFilter;
   });
 
-  const activeAgents = agents.filter(agent => agent.status === 'Active').length;
-  const inactiveAgents = agents.filter(agent => agent.status === 'Inactive').length;
-  const suspendedAgents = agents.filter(agent => agent.status === 'Suspended').length;
+  const activeAgents = agents.filter((agent) => agent.status === 'Active').length;
+  const inactiveAgents = agents.filter((agent) => agent.status === 'Inactive').length;
+  const suspendedAgents = agents.filter((agent) => agent.status === 'Suspended').length;
   const avgCommissionRate = agents.length > 0 ? agents.reduce((sum, agent) => sum + agent.commission_rate, 0) / agents.length : 0;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading agents...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -252,18 +252,18 @@ const AgentManagement: React.FC = () => {
                   <Input
                     id="first_name"
                     value={formData.first_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                    required
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, first_name: e.target.value }))}
+                    required />
+
                 </div>
                 <div>
                   <Label htmlFor="last_name">Last Name *</Label>
                   <Input
                     id="last_name"
                     value={formData.last_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                    required
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, last_name: e.target.value }))}
+                    required />
+
                 </div>
               </div>
               <div>
@@ -272,29 +272,29 @@ const AgentManagement: React.FC = () => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  required
-                />
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="phone">Phone *</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  required
-                />
+                  onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="territory">Territory</Label>
-                <Select value={formData.territory} onValueChange={(value) => setFormData(prev => ({ ...prev, territory: value }))}>
+                <Select value={formData.territory} onValueChange={(value) => setFormData((prev) => ({ ...prev, territory: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select territory" />
                   </SelectTrigger>
                   <SelectContent>
-                    {territories.map(territory => (
-                      <SelectItem key={territory} value={territory}>{territory}</SelectItem>
-                    ))}
+                    {territories.map((territory) =>
+                    <SelectItem key={territory} value={territory}>{territory}</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -308,8 +308,8 @@ const AgentManagement: React.FC = () => {
                     min="0"
                     max="100"
                     value={formData.commission_rate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, commission_rate: parseFloat(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, commission_rate: parseFloat(e.target.value) || 0 }))} />
+
                 </div>
                 <div>
                   <Label htmlFor="target_sales">Target Sales (₹)</Label>
@@ -317,8 +317,8 @@ const AgentManagement: React.FC = () => {
                     id="target_sales"
                     type="number"
                     value={formData.target_sales}
-                    onChange={(e) => setFormData(prev => ({ ...prev, target_sales: parseInt(e.target.value) || 0 }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, target_sales: parseInt(e.target.value) || 0 }))} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -328,34 +328,34 @@ const AgentManagement: React.FC = () => {
                     id="hire_date"
                     type="date"
                     value={formData.hire_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hire_date: e.target.value }))}
-                  />
+                    onChange={(e) => setFormData((prev) => ({ ...prev, hire_date: e.target.value }))} />
+
                 </div>
                 <div>
                   <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <Select value={formData.status} onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map(status => (
-                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                      ))}
+                      {statusOptions.map((status) =>
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              {editingAgent && (
-                <div>
+              {editingAgent &&
+              <div>
                   <Label htmlFor="agent_code">Agent Code</Label>
                   <Input
-                    id="agent_code"
-                    value={formData.agent_code}
-                    disabled
-                    className="bg-gray-100"
-                  />
+                  id="agent_code"
+                  value={formData.agent_code}
+                  disabled
+                  className="bg-gray-100" />
+
                 </div>
-              )}
+              }
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={resetForm}>Cancel</Button>
@@ -429,8 +429,8 @@ const AgentManagement: React.FC = () => {
                   placeholder="Search by name, email, agent code, or territory..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -473,8 +473,8 @@ const AgentManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAgents.map((agent) => (
-                  <TableRow key={agent.id}>
+                {filteredAgents.map((agent) =>
+                <TableRow key={agent.id}>
                     <TableCell>
                       <div>
                         <div className="font-medium">{agent.first_name} {agent.last_name}</div>
@@ -494,13 +494,13 @@ const AgentManagement: React.FC = () => {
                     <TableCell>{agent.commission_rate}%</TableCell>
                     <TableCell>₹{agent.target_sales.toLocaleString()}</TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={
-                          agent.status === 'Active' ? 'default' : 
-                          agent.status === 'Inactive' ? 'secondary' : 
-                          'destructive'
-                        }
-                      >
+                      <Badge
+                      variant={
+                      agent.status === 'Active' ? 'default' :
+                      agent.status === 'Inactive' ? 'secondary' :
+                      'destructive'
+                      }>
+
                         {agent.status}
                       </Badge>
                     </TableCell>
@@ -521,23 +521,23 @@ const AgentManagement: React.FC = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
-          {filteredAgents.length === 0 && (
-            <div className="text-center py-8">
+          {filteredAgents.length === 0 &&
+          <div className="text-center py-8">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No agents found</h3>
               <p className="mt-1 text-sm text-gray-500">
                 {searchTerm || filterStatus !== 'all' ? 'Try adjusting your search or filter.' : 'Get started by adding your first agent.'}
               </p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default AgentManagement;

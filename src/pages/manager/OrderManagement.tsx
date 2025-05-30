@@ -127,13 +127,13 @@ const OrderManagement: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer_phone.includes(searchTerm) ||
-      order.product_type.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customer_phone.includes(searchTerm) ||
+    order.product_type.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = filterStatus === 'all' || order.order_status === filterStatus;
     const matchesPayment = filterPayment === 'all' || order.payment_status === filterPayment;
 
@@ -142,23 +142,23 @@ const OrderManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending': return 'outline';
-      case 'Confirmed': return 'secondary';
-      case 'In Production': return 'default';
-      case 'Ready for Delivery': return 'default';
-      case 'Shipped': return 'default';
-      case 'Delivered': return 'default';
-      case 'Cancelled': return 'destructive';
-      default: return 'outline';
+      case 'Pending':return 'outline';
+      case 'Confirmed':return 'secondary';
+      case 'In Production':return 'default';
+      case 'Ready for Delivery':return 'default';
+      case 'Shipped':return 'default';
+      case 'Delivered':return 'default';
+      case 'Cancelled':return 'destructive';
+      default:return 'outline';
     }
   };
 
   const getPaymentColor = (status: string) => {
     switch (status) {
-      case 'Pending': return 'outline';
-      case 'Partial': return 'outline';
-      case 'Complete': return 'default';
-      default: return 'outline';
+      case 'Pending':return 'outline';
+      case 'Partial':return 'outline';
+      case 'Complete':return 'default';
+      default:return 'outline';
     }
   };
 
@@ -172,16 +172,16 @@ const OrderManagement: React.FC = () => {
 
   // Calculate summary statistics
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(order => order.order_status === 'Pending').length;
+  const pendingOrders = orders.filter((order) => order.order_status === 'Pending').length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
-  const pendingPayments = orders.filter(order => order.payment_status !== 'Complete').length;
+  const pendingPayments = orders.filter((order) => order.payment_status !== 'Complete').length;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading orders...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -255,8 +255,8 @@ const OrderManagement: React.FC = () => {
                   placeholder="Search by order number, customer name, phone, or product..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -265,9 +265,9 @@ const OrderManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {orderStatuses.map(status => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
-                ))}
+                {orderStatuses.map((status) =>
+                <SelectItem key={status} value={status}>{status}</SelectItem>
+                )}
               </SelectContent>
             </Select>
             <Select value={filterPayment} onValueChange={setFilterPayment}>
@@ -276,9 +276,9 @@ const OrderManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Payments</SelectItem>
-                {paymentStatuses.map(status => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
-                ))}
+                {paymentStatuses.map((status) =>
+                <SelectItem key={status} value={status}>{status}</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -310,8 +310,8 @@ const OrderManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
+                {filteredOrders.map((order) =>
+                <TableRow key={order.id}>
                     <TableCell>
                       <div className="font-medium">{order.order_number}</div>
                       <div className="text-sm text-gray-500">{order.order_type}</div>
@@ -364,19 +364,19 @@ const OrderManagement: React.FC = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-8">
+          {filteredOrders.length === 0 &&
+          <div className="text-center py-8">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
               <p className="mt-1 text-sm text-gray-500">
                 {searchTerm || filterStatus !== 'all' || filterPayment !== 'all' ? 'Try adjusting your search or filters.' : 'No orders have been placed yet.'}
               </p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -389,8 +389,8 @@ const OrderManagement: React.FC = () => {
               Complete order information for #{selectedOrder?.order_number}
             </DialogDescription>
           </DialogHeader>
-          {selectedOrder && (
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+          {selectedOrder &&
+          <div className="space-y-4 max-h-96 overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-medium text-gray-900">Customer Information</h4>
@@ -415,11 +415,11 @@ const OrderManagement: React.FC = () => {
               <div>
                 <h4 className="font-medium text-gray-900">Size Breakdown</h4>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {Object.entries(parseSizeBreakdown(selectedOrder.size_breakdown)).map(([size, qty]) => (
-                    <Badge key={size} variant="outline">
+                  {Object.entries(parseSizeBreakdown(selectedOrder.size_breakdown)).map(([size, qty]) =>
+                <Badge key={size} variant="outline">
                       {size}: {qty as number}
                     </Badge>
-                  ))}
+                )}
                 </div>
               </div>
 
@@ -442,14 +442,14 @@ const OrderManagement: React.FC = () => {
                 </div>
               </div>
 
-              {selectedOrder.special_instructions && (
-                <div>
+              {selectedOrder.special_instructions &&
+            <div>
                   <h4 className="font-medium text-gray-900">Special Instructions</h4>
                   <p className="mt-2 text-sm text-gray-600">{selectedOrder.special_instructions}</p>
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
 
@@ -465,28 +465,28 @@ const OrderManagement: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Order Status</label>
-              <Select value={editData.order_status} onValueChange={(value) => setEditData(prev => ({ ...prev, order_status: value }))}>
+              <Select value={editData.order_status} onValueChange={(value) => setEditData((prev) => ({ ...prev, order_status: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select order status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {orderStatuses.map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
+                  {orderStatuses.map((status) =>
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <label className="text-sm font-medium">Payment Status</label>
-              <Select value={editData.payment_status} onValueChange={(value) => setEditData(prev => ({ ...prev, payment_status: value }))}>
+              <Select value={editData.payment_status} onValueChange={(value) => setEditData((prev) => ({ ...prev, payment_status: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select payment status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {paymentStatuses.map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
+                  {paymentStatuses.map((status) =>
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -497,8 +497,8 @@ const OrderManagement: React.FC = () => {
                 type="number"
                 step="0.01"
                 value={editData.paid_amount}
-                onChange={(e) => setEditData(prev => ({ ...prev, paid_amount: parseFloat(e.target.value) || 0 }))}
-              />
+                onChange={(e) => setEditData((prev) => ({ ...prev, paid_amount: parseFloat(e.target.value) || 0 }))} />
+
             </div>
 
             <div>
@@ -506,17 +506,17 @@ const OrderManagement: React.FC = () => {
               <Input
                 type="date"
                 value={editData.delivery_date}
-                onChange={(e) => setEditData(prev => ({ ...prev, delivery_date: e.target.value }))}
-              />
+                onChange={(e) => setEditData((prev) => ({ ...prev, delivery_date: e.target.value }))} />
+
             </div>
 
             <div>
               <label className="text-sm font-medium">Special Instructions</label>
               <Textarea
                 value={editData.special_instructions}
-                onChange={(e) => setEditData(prev => ({ ...prev, special_instructions: e.target.value }))}
-                rows={3}
-              />
+                onChange={(e) => setEditData((prev) => ({ ...prev, special_instructions: e.target.value }))}
+                rows={3} />
+
             </div>
           </div>
           <DialogFooter>
@@ -525,8 +525,8 @@ const OrderManagement: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default OrderManagement;
