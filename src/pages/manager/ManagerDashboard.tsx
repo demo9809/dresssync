@@ -387,7 +387,7 @@ const ManagerDashboard: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" data-id="jhvittfju" data-path="src/pages/manager/ManagerDashboard.tsx">
         <TabsList className="grid w-full grid-cols-7" data-id="6s1g42qme" data-path="src/pages/manager/ManagerDashboard.tsx">
           <TabsTrigger value="overview" data-id="cnaw3tw5k" data-path="src/pages/manager/ManagerDashboard.tsx">Overview</TabsTrigger>
-          // <TabsTrigger value="orders" data-id="25bwx0gh9" data-path="src/pages/manager/ManagerDashboard.tsx">Orders</TabsTrigger>
+          <TabsTrigger value="orders" data-id="25bwx0gh9" data-path="src/pages/manager/ManagerDashboard.tsx">Orders</TabsTrigger>
           <TabsTrigger value="stock" data-id="boqj7h7yv" data-path="src/pages/manager/ManagerDashboard.tsx">Stock</TabsTrigger>
           <TabsTrigger value="agents" data-id="6er7shsps" data-path="src/pages/manager/ManagerDashboard.tsx">Agents</TabsTrigger>
           <TabsTrigger value="passwords" data-id="ivcpf9a5v" data-path="src/pages/manager/ManagerDashboard.tsx">Passwords</TabsTrigger>
