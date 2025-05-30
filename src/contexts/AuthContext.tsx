@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading }} data-id="9734mc20u" data-path="src/contexts/AuthContext.tsx">
       {children}
     </AuthContext.Provider>);
 

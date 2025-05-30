@@ -246,9 +246,9 @@ export const productConfig = {
         OrderByField: 'display_order',
         IsAsc: true,
         Filters: [
-          { name: 'config_type', op: 'Equal', value: 'product_type' },
-          { name: 'is_active', op: 'Equal', value: true }
-        ]
+        { name: 'config_type', op: 'Equal', value: 'product_type' },
+        { name: 'is_active', op: 'Equal', value: true }]
+
       });
       if (error) throw error;
       return data.List?.map((item: any) => item.config_value) || [];
@@ -267,9 +267,9 @@ export const productConfig = {
         OrderByField: 'display_order',
         IsAsc: true,
         Filters: [
-          { name: 'config_type', op: 'Equal', value: 'color' },
-          { name: 'is_active', op: 'Equal', value: true }
-        ]
+        { name: 'config_type', op: 'Equal', value: 'color' },
+        { name: 'is_active', op: 'Equal', value: true }]
+
       });
       if (error) throw error;
       return data.List?.map((item: any) => item.config_value) || [];
@@ -288,9 +288,9 @@ export const productConfig = {
         OrderByField: 'display_order',
         IsAsc: true,
         Filters: [
-          { name: 'config_type', op: 'Equal', value: 'neck_type' },
-          { name: 'is_active', op: 'Equal', value: true }
-        ]
+        { name: 'config_type', op: 'Equal', value: 'neck_type' },
+        { name: 'is_active', op: 'Equal', value: true }]
+
       });
       if (error) throw error;
       return data.List?.map((item: any) => item.config_value) || [];
@@ -309,9 +309,9 @@ export const productConfig = {
         OrderByField: 'display_order',
         IsAsc: true,
         Filters: [
-          { name: 'config_type', op: 'Equal', value: 'size' },
-          { name: 'is_active', op: 'Equal', value: true }
-        ]
+        { name: 'config_type', op: 'Equal', value: 'size' },
+        { name: 'is_active', op: 'Equal', value: true }]
+
       });
       if (error) throw error;
       return data.List?.map((item: any) => item.config_value) || [];
