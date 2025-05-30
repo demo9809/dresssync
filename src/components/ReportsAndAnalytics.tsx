@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { 
+import {
   BarChart3, TrendingUp, DollarSign, Users, Package, Calendar,
-  Download, FileText, PieChart, Activity, Target
-} from 'lucide-react';
+  Download, FileText, PieChart, Activity, Target } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReportData {
@@ -66,7 +66,7 @@ const ReportsAndAnalytics: React.FC = () => {
   const loadReportData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load orders data
       const { data: ordersData, error: ordersError } = await window.ezsite.apis.tablePage('11425', {
         PageNo: 1,
@@ -75,9 +75,9 @@ const ReportsAndAnalytics: React.FC = () => {
         IsAsc: false,
         Filters: []
       });
-      
+
       if (ordersError) throw ordersError;
-      
+
       // Load agents data
       const { data: agentsData, error: agentsError } = await window.ezsite.apis.tablePage('11424', {
         PageNo: 1,
@@ -86,9 +86,9 @@ const ReportsAndAnalytics: React.FC = () => {
         IsAsc: false,
         Filters: []
       });
-      
+
       if (agentsError) throw agentsError;
-      
+
       // Load stock data
       const { data: stockData, error: stockError } = await window.ezsite.apis.tablePage('11426', {
         PageNo: 1,
@@ -97,7 +97,7 @@ const ReportsAndAnalytics: React.FC = () => {
         IsAsc: false,
         Filters: []
       });
-      
+
       if (stockError) throw stockError;
 
       // Process the data to generate reports
@@ -106,11 +106,11 @@ const ReportsAndAnalytics: React.FC = () => {
       const stock = stockData.List || [];
 
       // Calculate agent performance
-      const agentPerformance: AgentPerformance[] = agents.map(agent => {
-        const agentOrders = orders.filter(order => order.agent_id === agent.ID);
+      const agentPerformance: AgentPerformance[] = agents.map((agent) => {
+        const agentOrders = orders.filter((order) => order.agent_id === agent.ID);
         const totalSales = agentOrders.reduce((sum, order) => sum + order.total_amount, 0);
         const ordersCount = agentOrders.length;
-        const achievement = agent.target_sales > 0 ? (totalSales / agent.target_sales) * 100 : 0;
+        const achievement = agent.target_sales > 0 ? totalSales / agent.target_sales * 100 : 0;
         const commission = totalSales * (agent.commission_rate / 100);
 
         return {
@@ -131,12 +131,12 @@ const ReportsAndAnalytics: React.FC = () => {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
         const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-        
-        const monthOrders = orders.filter(order => {
+
+        const monthOrders = orders.filter((order) => {
           const orderDate = new Date(order.delivery_date);
           return orderDate >= monthStart && orderDate <= monthEnd;
         });
-        
+
         const revenue = monthOrders.reduce((sum, order) => sum + order.total_amount, 0);
         const ordersCount = monthOrders.length;
         const averageOrderValue = ordersCount > 0 ? revenue / ordersCount : 0;
@@ -151,7 +151,7 @@ const ReportsAndAnalytics: React.FC = () => {
 
       // Calculate product analysis
       const productMap = new Map();
-      orders.forEach(order => {
+      orders.forEach((order) => {
         const key = order.product_type;
         if (!productMap.has(key)) {
           productMap.set(key, {
@@ -167,12 +167,12 @@ const ReportsAndAnalytics: React.FC = () => {
         product.orders.push(order);
       });
 
-      const productAnalysis: ProductAnalysis[] = Array.from(productMap.values()).map(product => {
+      const productAnalysis: ProductAnalysis[] = Array.from(productMap.values()).map((product) => {
         const averagePrice = product.totalSold > 0 ? product.revenue / product.totalSold : 0;
         // Calculate profit margin based on stock cost
-        const stockItem = stock.find(s => s.product_type === product.productType);
+        const stockItem = stock.find((s) => s.product_type === product.productType);
         const costPrice = stockItem ? stockItem.cost_per_unit : 0;
-        const profitMargin = averagePrice > 0 && costPrice > 0 ? ((averagePrice - costPrice) / averagePrice) * 100 : 0;
+        const profitMargin = averagePrice > 0 && costPrice > 0 ? (averagePrice - costPrice) / averagePrice * 100 : 0;
 
         return {
           productType: product.productType,
@@ -187,19 +187,19 @@ const ReportsAndAnalytics: React.FC = () => {
       const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
       const totalOrders = orders.length;
       const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-      const pendingPayments = orders
-        .filter(order => order.payment_status === 'Pending' || order.payment_status === 'Partial')
-        .reduce((sum, order) => sum + (order.total_amount - order.paid_amount), 0);
-      const completedPayments = orders
-        .filter(order => order.payment_status === 'Complete')
-        .reduce((sum, order) => sum + order.paid_amount, 0);
+      const pendingPayments = orders.
+      filter((order) => order.payment_status === 'Pending' || order.payment_status === 'Partial').
+      reduce((sum, order) => sum + (order.total_amount - order.paid_amount), 0);
+      const completedPayments = orders.
+      filter((order) => order.payment_status === 'Complete').
+      reduce((sum, order) => sum + order.paid_amount, 0);
 
       const totalCost = orders.reduce((sum, order) => {
-        const stockItem = stock.find(s => s.product_type === order.product_type);
+        const stockItem = stock.find((s) => s.product_type === order.product_type);
         const costPrice = stockItem ? stockItem.cost_per_unit : 0;
-        return sum + (costPrice * order.total_quantity);
+        return sum + costPrice * order.total_quantity;
       }, 0);
-      const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : 0;
+      const profitMargin = totalRevenue > 0 ? (totalRevenue - totalCost) / totalRevenue * 100 : 0;
 
       const revenueMetrics: RevenueMetrics = {
         totalRevenue,
@@ -243,21 +243,21 @@ const ReportsAndAnalytics: React.FC = () => {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-            ))}
+            {[...Array(6)].map((_, i) =>
+            <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+            )}
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!reportData) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-gray-500">No report data available</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -366,8 +366,8 @@ const ReportsAndAnalytics: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reportData.agentPerformance.map((agent) => (
-                <div key={agent.agentId} className="space-y-2">
+              {reportData.agentPerformance.map((agent) =>
+              <div key={agent.agentId} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{agent.agentName}</span>
                     <div className="text-right">
@@ -386,7 +386,7 @@ const ReportsAndAnalytics: React.FC = () => {
                     <span>Commission: ${agent.commission.toFixed(2)}</span>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -411,8 +411,8 @@ const ReportsAndAnalytics: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reportData.productAnalysis.map((product) => (
-                  <TableRow key={product.productType}>
+                {reportData.productAnalysis.map((product) =>
+                <TableRow key={product.productType}>
                     <TableCell className="font-medium">{product.productType}</TableCell>
                     <TableCell>{product.totalSold}</TableCell>
                     <TableCell>${product.revenue.toLocaleString()}</TableCell>
@@ -422,7 +422,7 @@ const ReportsAndAnalytics: React.FC = () => {
                       </Badge>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -440,8 +440,8 @@ const ReportsAndAnalytics: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {reportData.salesByMonth.map((month) => (
-              <div key={month.month} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            {reportData.salesByMonth.map((month) =>
+            <div key={month.month} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium">{month.month}</p>
                   <p className="text-sm text-gray-600">{month.orders} orders</p>
@@ -453,7 +453,7 @@ const ReportsAndAnalytics: React.FC = () => {
                   </p>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -477,10 +477,10 @@ const ReportsAndAnalytics: React.FC = () => {
                     ${reportData.revenueMetrics.completedPayments.toLocaleString()}
                   </span>
                 </div>
-                <Progress 
-                  value={(reportData.revenueMetrics.completedPayments / reportData.revenueMetrics.totalRevenue) * 100} 
-                  className="h-2" 
-                />
+                <Progress
+                  value={reportData.revenueMetrics.completedPayments / reportData.revenueMetrics.totalRevenue * 100}
+                  className="h-2" />
+
               </div>
               <div>
                 <div className="flex justify-between items-center mb-2">
@@ -489,16 +489,16 @@ const ReportsAndAnalytics: React.FC = () => {
                     ${reportData.revenueMetrics.pendingPayments.toLocaleString()}
                   </span>
                 </div>
-                <Progress 
-                  value={(reportData.revenueMetrics.pendingPayments / reportData.revenueMetrics.totalRevenue) * 100} 
-                  className="h-2" 
-                />
+                <Progress
+                  value={reportData.revenueMetrics.pendingPayments / reportData.revenueMetrics.totalRevenue * 100}
+                  className="h-2" />
+
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-center">
                 <p className="text-3xl font-bold text-gray-900">
-                  {((reportData.revenueMetrics.completedPayments / reportData.revenueMetrics.totalRevenue) * 100).toFixed(1)}%
+                  {(reportData.revenueMetrics.completedPayments / reportData.revenueMetrics.totalRevenue * 100).toFixed(1)}%
                 </p>
                 <p className="text-sm text-gray-600">Collection Rate</p>
               </div>
@@ -532,8 +532,8 @@ const ReportsAndAnalytics: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ReportsAndAnalytics;

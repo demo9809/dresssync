@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, AlertTriangle, 
-  CheckCircle, BarChart3, Calendar, Plus, Edit, Trash2, Search, Eye, 
-  FileText, Filter, Download, RefreshCw 
-} from 'lucide-react';
+import {
+  ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, AlertTriangle,
+  CheckCircle, BarChart3, Calendar, Plus, Edit, Trash2, Search, Eye,
+  FileText, Filter, Download, RefreshCw } from
+'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import ReportsAndAnalytics from '@/components/ReportsAndAnalytics';
@@ -95,10 +95,10 @@ const ManagerDashboard: React.FC = () => {
     try {
       setIsLoading(true);
       await Promise.all([
-        loadAgents(),
-        loadOrders(),
-        loadStockItems()
-      ]);
+      loadAgents(),
+      loadOrders(),
+      loadStockItems()]
+      );
       calculateStats();
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -163,14 +163,14 @@ const ManagerDashboard: React.FC = () => {
   const calculateStats = () => {
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
-    const pendingOrders = orders.filter(order => 
-      order.order_status === 'Pending' || order.order_status === 'In Production'
+    const pendingOrders = orders.filter((order) =>
+    order.order_status === 'Pending' || order.order_status === 'In Production'
     ).length;
-    const completedOrders = orders.filter(order => order.order_status === 'Delivered').length;
+    const completedOrders = orders.filter((order) => order.order_status === 'Delivered').length;
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const totalAgents = agents.length;
-    const activeAgents = agents.filter(agent => agent.status === 'Active').length;
-    const lowStockItems = stockItems.filter(item => item.quantity <= item.min_threshold).length;
+    const activeAgents = agents.filter((agent) => agent.status === 'Active').length;
+    const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold).length;
 
     setStats({
       totalOrders,
@@ -191,7 +191,7 @@ const ManagerDashboard: React.FC = () => {
         order_status: newStatus
       });
       if (error) throw error;
-      
+
       await loadOrders();
       calculateStats();
       toast({
@@ -215,7 +215,7 @@ const ManagerDashboard: React.FC = () => {
         status: newStatus
       });
       if (error) throw error;
-      
+
       await loadAgents();
       calculateStats();
       toast({
@@ -239,7 +239,7 @@ const ManagerDashboard: React.FC = () => {
         quantity: newQuantity
       });
       if (error) throw error;
-      
+
       await loadStockItems();
       calculateStats();
       toast({
@@ -262,76 +262,76 @@ const ManagerDashboard: React.FC = () => {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-            ))}
+            {[...Array(4)].map((_, i) =>
+            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            )}
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const statCards = [
-    {
-      title: 'Total Orders',
-      value: stats?.totalOrders || 0,
-      icon: ShoppingCart,
-      color: 'bg-blue-500',
-      description: 'All time orders'
-    },
-    {
-      title: 'Total Revenue',
-      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
-      icon: DollarSign,
-      color: 'bg-green-500',
-      description: 'Total earnings'
-    },
-    {
-      title: 'Active Agents',
-      value: `${stats?.activeAgents || 0}/${stats?.totalAgents || 0}`,
-      icon: Users,
-      color: 'bg-purple-500',
-      description: 'Active agents'
-    },
-    {
-      title: 'Low Stock Alerts',
-      value: stats?.lowStockItems || 0,
-      icon: AlertTriangle,
-      color: 'bg-yellow-500',
-      description: 'Items need restocking'
-    }
-  ];
+  {
+    title: 'Total Orders',
+    value: stats?.totalOrders || 0,
+    icon: ShoppingCart,
+    color: 'bg-blue-500',
+    description: 'All time orders'
+  },
+  {
+    title: 'Total Revenue',
+    value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+    icon: DollarSign,
+    color: 'bg-green-500',
+    description: 'Total earnings'
+  },
+  {
+    title: 'Active Agents',
+    value: `${stats?.activeAgents || 0}/${stats?.totalAgents || 0}`,
+    icon: Users,
+    color: 'bg-purple-500',
+    description: 'Active agents'
+  },
+  {
+    title: 'Low Stock Alerts',
+    value: stats?.lowStockItems || 0,
+    icon: AlertTriangle,
+    color: 'bg-yellow-500',
+    description: 'Items need restocking'
+  }];
+
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending': return 'default';
-      case 'in production': return 'secondary';
-      case 'shipped': return 'outline';
-      case 'delivered': return 'default';
-      case 'cancelled': return 'destructive';
-      case 'active': return 'default';
-      case 'inactive': return 'secondary';
-      default: return 'outline';
+      case 'pending':return 'default';
+      case 'in production':return 'secondary';
+      case 'shipped':return 'outline';
+      case 'delivered':return 'default';
+      case 'cancelled':return 'destructive';
+      case 'active':return 'default';
+      case 'inactive':return 'secondary';
+      default:return 'outline';
     }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = searchTerm === '' || 
-      order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = searchTerm === '' ||
+    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === '' || order.order_status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const filteredAgents = agents.filter(agent => {
+  const filteredAgents = agents.filter((agent) => {
     const matchesSearch = searchTerm === '' ||
-      agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase());
+    agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
-  const lowStockItems = stockItems.filter(item => item.quantity <= item.min_threshold);
+  const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold);
 
   return (
     <div className="space-y-6">
@@ -370,8 +370,8 @@ const ManagerDashboard: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
@@ -398,8 +398,8 @@ const ManagerDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {orders.slice(0, 5).map((order) => (
-                    <div key={order.ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  {orders.slice(0, 5).map((order) =>
+                  <div key={order.ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium">{order.order_number}</p>
                         <p className="text-sm text-gray-600">{order.customer_name}</p>
@@ -411,7 +411,7 @@ const ManagerDashboard: React.FC = () => {
                         <p className="text-sm text-gray-600 mt-1">${order.total_amount}</p>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -425,15 +425,15 @@ const ManagerDashboard: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {lowStockItems.length === 0 ? (
-                  <div className="text-center py-6 text-gray-500">
+                {lowStockItems.length === 0 ?
+                <div className="text-center py-6 text-gray-500">
                     <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
                     <p>All items are well stocked!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {lowStockItems.slice(0, 5).map((item) => (
-                      <div key={item.ID} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  </div> :
+
+                <div className="space-y-3">
+                    {lowStockItems.slice(0, 5).map((item) =>
+                  <div key={item.ID} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                         <div>
                           <p className="font-medium">{item.product_type} - {item.color}</p>
                           <p className="text-sm text-gray-600">Size {item.size}</p>
@@ -443,9 +443,9 @@ const ManagerDashboard: React.FC = () => {
                           <p className="text-xs text-gray-500">Min: {item.min_threshold}</p>
                         </div>
                       </div>
-                    ))}
+                  )}
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
           </div>
@@ -464,8 +464,8 @@ const ManagerDashboard: React.FC = () => {
                       placeholder="Search orders..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-48"
-                    />
+                      className="w-48" />
+
                   </div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger className="w-40">
@@ -498,8 +498,8 @@ const ManagerDashboard: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
-                    <TableRow key={order.ID}>
+                  {filteredOrders.map((order) =>
+                  <TableRow key={order.ID}>
                       <TableCell className="font-medium">{order.order_number}</TableCell>
                       <TableCell>{order.customer_name}</TableCell>
                       <TableCell>{order.product_type} - {order.product_color}</TableCell>
@@ -528,7 +528,7 @@ const ManagerDashboard: React.FC = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -557,8 +557,8 @@ const ManagerDashboard: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {stockItems.map((item) => (
-                    <TableRow key={item.ID}>
+                  {stockItems.map((item) =>
+                  <TableRow key={item.ID}>
                       <TableCell className="font-medium">{item.product_type}</TableCell>
                       <TableCell>{item.color}</TableCell>
                       <TableCell>{item.size}</TableCell>
@@ -571,11 +571,11 @@ const ManagerDashboard: React.FC = () => {
                       <TableCell>${item.cost_per_unit}</TableCell>
                       <TableCell>${item.selling_price}</TableCell>
                       <TableCell>
-                        {item.quantity <= item.min_threshold ? (
-                          <Badge variant="destructive">Low Stock</Badge>
-                        ) : (
-                          <Badge variant="default">In Stock</Badge>
-                        )}
+                        {item.quantity <= item.min_threshold ?
+                      <Badge variant="destructive">Low Stock</Badge> :
+
+                      <Badge variant="default">In Stock</Badge>
+                      }
                       </TableCell>
                       <TableCell>
                         <Dialog>
@@ -595,22 +595,22 @@ const ManagerDashboard: React.FC = () => {
                               <div>
                                 <Label htmlFor="quantity">New Quantity</Label>
                                 <Input
-                                  id="quantity"
-                                  type="number"
-                                  defaultValue={item.quantity}
-                                  onChange={(e) => {
-                                    if (e.target.value && parseInt(e.target.value) >= 0) {
-                                      updateStockQuantity(item.ID, parseInt(e.target.value));
-                                    }
-                                  }}
-                                />
+                                id="quantity"
+                                type="number"
+                                defaultValue={item.quantity}
+                                onChange={(e) => {
+                                  if (e.target.value && parseInt(e.target.value) >= 0) {
+                                    updateStockQuantity(item.ID, parseInt(e.target.value));
+                                  }
+                                }} />
+
                               </div>
                             </div>
                           </DialogContent>
                         </Dialog>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -629,8 +629,8 @@ const ManagerDashboard: React.FC = () => {
                     placeholder="Search agents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-48"
-                  />
+                    className="w-48" />
+
                 </div>
               </div>
             </CardHeader>
@@ -649,8 +649,8 @@ const ManagerDashboard: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredAgents.map((agent) => (
-                    <TableRow key={agent.ID}>
+                  {filteredAgents.map((agent) =>
+                  <TableRow key={agent.ID}>
                       <TableCell className="font-medium">{agent.agent_code}</TableCell>
                       <TableCell>{agent.first_name} {agent.last_name}</TableCell>
                       <TableCell>{agent.territory}</TableCell>
@@ -677,7 +677,7 @@ const ManagerDashboard: React.FC = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -689,8 +689,8 @@ const ManagerDashboard: React.FC = () => {
           <ReportsAndAnalytics />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ManagerDashboard;
