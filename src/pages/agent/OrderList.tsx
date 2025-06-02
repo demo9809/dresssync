@@ -80,16 +80,33 @@ const OrderList: React.FC = () => {
 
   const handleDownloadPDF = async (order: Order) => {
     try {
-      await pdfService.downloadOrderPDF(order);
+      await pdfService.generateOrderPDF(order);
       toast({
-        title: "PDF Downloaded",
-        description: `Order ${order.id} details have been downloaded.`
+        title: "PDF Generated",
+        description: `Order ${order.id} PDF has been downloaded successfully.`
       });
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast({
         title: "Error",
-        description: "Failed to download PDF. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to download PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleViewOrder = (order: Order) => {
+    try {
+      pdfService.viewOrderHTML(order);
+      toast({
+        title: "Order Opened",
+        description: `Order ${order.id} details opened in new window.`
+      });
+    } catch (error) {
+      console.error('Error viewing order:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to open order view. Please try again.",
         variant: "destructive"
       });
     }
@@ -284,17 +301,22 @@ const OrderList: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-2 mt-4 lg:mt-0 lg:ml-6">
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center space-x-2"
+                      onClick={() => handleViewOrder(order)}
+                    >
                       <Eye className="w-4 h-4" />
                       <span>View</span>
                     </Button>
                     
                     <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                  onClick={() => handleDownloadPDF(order)}>
-
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center space-x-2"
+                      onClick={() => handleDownloadPDF(order)}
+                    >
                       <FileText className="w-4 h-4" />
                       <span>PDF</span>
                     </Button>

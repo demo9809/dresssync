@@ -381,7 +381,7 @@ const NewOrder: React.FC = () => {
     }
   };
 
-  const handleGeneratePreview = async () => {
+  const handleGeneratePreview = () => {
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -391,20 +391,33 @@ const NewOrder: React.FC = () => {
       return;
     }
 
-    const previewOrder: Order = {
-      id: 'PREVIEW',
-      customer,
-      product,
-      quantity,
-      delivery,
-      payment,
-      orderType,
-      agentId: user!.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    try {
+      const previewOrder: Order = {
+        id: 'PREVIEW',
+        customer,
+        product,
+        quantity,
+        delivery,
+        payment,
+        orderType,
+        agentId: user!.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-    await pdfService.printOrderPDF(previewOrder);
+      pdfService.viewOrderHTML(previewOrder);
+      toast({
+        title: "Preview Generated",
+        description: "Order preview opened in new window."
+      });
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate preview. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const checkStockBeforeQuantity = async () => {
