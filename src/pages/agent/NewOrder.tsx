@@ -71,6 +71,14 @@ const NewOrder: React.FC = () => {
     status: 'Pending' as const
   });
 
+  const [pricing, setPricing] = useState({
+    pricePerUnit: 0,
+    subtotal: 0,
+    discountPercentage: 0,
+    discountAmount: 0,
+    totalAmount: 0
+  });
+
   const [orderType, setOrderType] = useState<'From Stock' | 'Custom Order' | 'Mixed Order'>('From Stock');
 
   // State management
@@ -98,6 +106,104 @@ const NewOrder: React.FC = () => {
     }
   }, [customer.name, product.type, delivery.eventDate]);
 
+  // Calculate pricing automatically
+  useEffect(() => {
+    const calculatePricing = () => {
+      let pricePerUnit = 0;
+      
+      // Set default pricing based on order type and product type
+      if (product.type && quantity.total > 0) {
+        switch (orderType) {
+          case 'From Stock':
+            // Lower price for stock items
+            pricePerUnit = product.type === 'T-shirt' ? 15 : 
+                          product.type === 'Jersey' ? 25 : 
+                          product.type === 'Polo' ? 20 : 18;
+            break;
+          case 'Custom Order':
+            // Higher price for custom orders
+            pricePerUnit = product.type === 'T-shirt' ? 25 : 
+                          product.type === 'Jersey' ? 35 : 
+                          product.type === 'Polo' ? 30 : 28;
+            break;
+          case 'Mixed Order':
+            // Medium price for mixed orders
+            pricePerUnit = product.type === 'T-shirt' ? 20 : 
+                          product.type === 'Jersey' ? 30 : 
+                          product.type === 'Polo' ? 25 : 23;
+            break;
+        }
+        
+        // Bulk discount
+        if (quantity.total >= 100) {
+          pricePerUnit *= 0.9; // 10% discount for 100+ items
+        } else if (quantity.total >= 50) {
+          pricePerUnit *= 0.95; // 5% discount for 50+ items
+        }
+      }
+      
+      const subtotal = pricePerUnit * quantity.total;
+      const discountAmount = subtotal * (pricing.discountPercentage / 100);
+      const totalAmount = subtotal - discountAmount;
+      
+      setPricing(prev => ({
+        ...prev,
+        pricePerUnit: Math.round(pricePerUnit * 100) / 100,
+        subtotal: Math.round(subtotal * 100) / 100,
+        discountAmount: Math.round(discountAmount * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100
+      }));
+      
+      // Update payment amount
+      setPayment(prev => ({
+        ...prev,
+        amount: Math.round(totalAmount * 100) / 100
+      }));
+    };
+    
+    calculatePricing();
+  }, [product.type, quantity.total, orderType]);
+  
+  // Separate effect for discount changes to avoid infinite loop
+  useEffect(() => {
+    if (pricing.subtotal > 0) {
+      const discountAmount = pricing.subtotal * (pricing.discountPercentage / 100);
+      const totalAmount = pricing.subtotal - discountAmount;
+      
+      setPricing(prev => ({
+        ...prev,
+        discountAmount: Math.round(discountAmount * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100
+      }));
+      
+      setPayment(prev => ({
+        ...prev,
+        amount: Math.round(totalAmount * 100) / 100
+      }));
+    }
+  }, [pricing.discountPercentage, pricing.subtotal]);
+  
+  // Separate effect for price per unit changes
+  useEffect(() => {
+    if (pricing.pricePerUnit > 0 && quantity.total > 0) {
+      const subtotal = pricing.pricePerUnit * quantity.total;
+      const discountAmount = subtotal * (pricing.discountPercentage / 100);
+      const totalAmount = subtotal - discountAmount;
+      
+      setPricing(prev => ({
+        ...prev,
+        subtotal: Math.round(subtotal * 100) / 100,
+        discountAmount: Math.round(discountAmount * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100
+      }));
+      
+      setPayment(prev => ({
+        ...prev,
+        amount: Math.round(totalAmount * 100) / 100
+      }));
+    }
+  }, [pricing.pricePerUnit, quantity.total, pricing.discountPercentage]);
+
   useEffect(() => {
     // Calculate pending payment when amount or paid changes
     setPayment((prev) => ({
@@ -112,14 +218,14 @@ const NewOrder: React.FC = () => {
       const stock = await stockService.getStock(product.type, product.color, product.neckType);
       const stockMap: Record<string, number> = {};
       let hasStock = false;
-      
+
       stock.forEach((item) => {
         stockMap[item.size] = item.quantity;
         if (item.quantity > 0) {
           hasStock = true;
         }
       });
-      
+
       setAvailableStock(stockMap);
       setStockAvailable(hasStock);
       setStockCheckCompleted(true);
@@ -182,6 +288,12 @@ const NewOrder: React.FC = () => {
     if (payment.amount <= 0) newErrors.paymentAmount = 'Payment amount must be greater than 0';
     if (payment.paid < 0) newErrors.paymentPaid = 'Paid amount cannot be negative';
     if (payment.paid > payment.amount) newErrors.paymentPaid = 'Paid amount cannot exceed total amount';
+    
+    // Pricing validation
+    if (pricing.pricePerUnit <= 0) newErrors.pricePerUnit = 'Price per unit must be greater than 0';
+    if (pricing.discountPercentage < 0 || pricing.discountPercentage > 100) {
+      newErrors.discountPercentage = 'Discount must be between 0 and 100%';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -225,7 +337,13 @@ const NewOrder: React.FC = () => {
         product,
         quantity,
         delivery,
-        payment,
+        payment: {
+          ...payment,
+          pricePerUnit: pricing.pricePerUnit,
+          subtotal: pricing.subtotal,
+          discountPercentage: pricing.discountPercentage,
+          discountAmount: pricing.discountAmount
+        },
         orderType,
         agentId: user!.id
       };
@@ -305,10 +423,10 @@ const NewOrder: React.FC = () => {
     }
 
     setIsCheckingStock(true);
-    
+
     try {
       await loadAvailableStock();
-      
+
       if (!stockAvailable) {
         toast({
           title: "No Stock Available",
@@ -318,15 +436,15 @@ const NewOrder: React.FC = () => {
         setIsCheckingStock(false);
         return false;
       }
-      
+
       const totalStock = Object.values(availableStock).reduce((sum, qty) => sum + qty, 0);
-      
+
       toast({
         title: "Stock Check Complete",
         description: `Total available stock: ${totalStock} units across all sizes.`,
         variant: "default"
       });
-      
+
       setIsCheckingStock(false);
       return true;
     } catch (error) {
@@ -344,7 +462,7 @@ const NewOrder: React.FC = () => {
   const nextTab = async () => {
     const tabs = ['customer', 'product', 'quantity', 'delivery', 'payment'];
     const currentIndex = tabs.indexOf(currentTab);
-    
+
     // If moving from product to quantity, check stock first
     if (currentTab === 'product' && tabs[currentIndex + 1] === 'quantity') {
       const canProceed = await checkStockBeforeQuantity();
@@ -352,7 +470,7 @@ const NewOrder: React.FC = () => {
         return;
       }
     }
-    
+
     if (currentIndex < tabs.length - 1) {
       setCurrentTab(tabs[currentIndex + 1]);
     }
@@ -402,6 +520,33 @@ const NewOrder: React.FC = () => {
         </CardHeader>
         
         <CardContent>
+          {/* Pricing Summary - Always Visible */}
+          {quantity.total > 0 && pricing.totalAmount > 0 && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm">
+                    <span className="text-gray-600">Qty:</span>
+                    <span className="font-semibold ml-1">{quantity.total}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Price/Unit:</span>
+                    <span className="font-semibold ml-1">${pricing.pricePerUnit.toFixed(2)}</span>
+                  </div>
+                  {pricing.discountPercentage > 0 && (
+                    <div className="text-sm">
+                      <span className="text-gray-600">Discount:</span>
+                      <span className="font-semibold ml-1 text-green-600">{pricing.discountPercentage}%</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-lg font-bold text-blue-600">
+                  Total: ${pricing.totalAmount.toFixed(2)}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Tabs value={currentTab} onValueChange={setCurrentTab}>
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="customer" className="flex items-center space-x-2">
@@ -607,39 +752,39 @@ const NewOrder: React.FC = () => {
               </div>
 
               {/* Stock Status Indicator */}
-              {(orderType === 'From Stock' || orderType === 'Mixed Order') && product.type && product.color && product.neckType && (
-                <div className="space-y-2">
+              {(orderType === 'From Stock' || orderType === 'Mixed Order') && product.type && product.color && product.neckType &&
+              <div className="space-y-2">
                   <Label>Stock Status</Label>
                   <div className="p-4 border rounded-lg">
-                    {!stockCheckCompleted ? (
-                      <div className="flex items-center space-x-2">
+                    {!stockCheckCompleted ?
+                  <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                         <span className="text-sm text-gray-600">Checking stock availability...</span>
-                      </div>
-                    ) : stockAvailable ? (
-                      <div className="space-y-2">
+                      </div> :
+                  stockAvailable ?
+                  <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="w-4 h-4 text-green-600" />
                           <span className="text-sm font-medium text-green-600">Stock Available</span>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                          {Object.entries(availableStock).map(([size, qty]) => (
-                            <div key={size} className={`flex justify-between p-2 rounded ${qty > 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                          {Object.entries(availableStock).map(([size, qty]) =>
+                      <div key={size} className={`flex justify-between p-2 rounded ${qty > 0 ? 'bg-green-50' : 'bg-red-50'}`}>
                               <span className="font-medium">{size}:</span>
                               <span className={qty > 0 ? 'text-green-600' : 'text-red-600'}>{qty}</span>
                             </div>
-                          ))}
+                      )}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-2">
+                      </div> :
+
+                  <div className="flex items-center space-x-2">
                         <AlertTriangle className="w-4 h-4 text-red-600" />
                         <span className="text-sm font-medium text-red-600">No Stock Available</span>
                       </div>
-                    )}
+                  }
                   </div>
                 </div>
-              )}
+              }
               
               <div className="space-y-2">
                 <Label htmlFor="specialInstructions">Special Instructions</Label>
@@ -726,10 +871,76 @@ const NewOrder: React.FC = () => {
             </TabsContent>
 
             {/* Payment Information Tab */}
-            <TabsContent value="payment" className="space-y-4 mt-6">
+            <TabsContent value="payment" className="space-y-6 mt-6">
+              {/* Pricing Breakdown */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <DollarSign className="w-5 h-5 mr-2" />
+                  Pricing Breakdown
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Price per unit:</span>
+                      <span className="font-medium">${pricing.pricePerUnit.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Quantity:</span>
+                      <span className="font-medium">{quantity.total} units</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Subtotal:</span>
+                      <span className="font-medium">${pricing.subtotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Discount ({pricing.discountPercentage}%):</span>
+                      <span className="font-medium text-green-600">-${pricing.discountAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold text-gray-900">Total Amount:</span>
+                        <span className="text-xl font-bold text-blue-600">${pricing.totalAmount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Discount and Payment Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="paymentAmount">Total Amount ($) *</Label>
+                  <Label htmlFor="discountPercentage">Discount (%)</Label>
+                  <Input
+                    id="discountPercentage"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    value={pricing.discountPercentage}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, discountPercentage: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.0"
+                  />
+                  <p className="text-xs text-gray-500">Enter discount percentage (0-100%)</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="pricePerUnit">Price per Unit ($)</Label>
+                  <Input
+                    id="pricePerUnit"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={pricing.pricePerUnit}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, pricePerUnit: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.00"
+                  />
+                  <p className="text-xs text-gray-500">Adjust price per unit if needed</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="paymentAmount">Final Total ($) *</Label>
                   <Input
                     id="paymentAmount"
                     type="number"
@@ -737,11 +948,16 @@ const NewOrder: React.FC = () => {
                     value={payment.amount}
                     onChange={(e) => setPayment((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentAmount ? 'border-red-500' : ''} />
-
+                    className={`${errors.paymentAmount ? 'border-red-500' : ''} bg-gray-50`}
+                    readOnly
+                  />
                   {errors.paymentAmount && <p className="text-sm text-red-600">{errors.paymentAmount}</p>}
+                  <p className="text-xs text-gray-500">Auto-calculated total amount</p>
                 </div>
-                
+              </div>
+
+              {/* Payment Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="paymentPaid">Amount Paid ($)</Label>
                   <Input
@@ -751,30 +967,51 @@ const NewOrder: React.FC = () => {
                     value={payment.paid}
                     onChange={(e) => setPayment((prev) => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentPaid ? 'border-red-500' : ''} />
-
+                    className={errors.paymentPaid ? 'border-red-500' : ''}
+                  />
                   {errors.paymentPaid && <p className="text-sm text-red-600">{errors.paymentPaid}</p>}
                 </div>
                 
                 <div className="space-y-2">
                   <Label>Payment Status</Label>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm">
-                      <span className="font-medium">Pending: </span>
-                      ${payment.pending.toFixed(2)}
-                    </p>
-                    <Badge
-                      variant={
-                      payment.status === 'Complete' ? 'default' :
-                      payment.status === 'Partial' ? 'secondary' :
-                      'destructive'
-                      }
-                      className="mt-1">
-
-                      {payment.status}
-                    </Badge>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Total Amount:</span>
+                        <span className="font-medium">${payment.amount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Amount Paid:</span>
+                        <span className="font-medium">${payment.paid.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t pt-2">
+                        <span className="text-sm font-medium text-gray-900">Pending:</span>
+                        <span className="font-bold text-red-600">${payment.pending.toFixed(2)}</span>
+                      </div>
+                      <Badge
+                        variant={
+                          payment.status === 'Complete' ? 'default' :
+                          payment.status === 'Partial' ? 'secondary' :
+                          'destructive'
+                        }
+                        className="mt-2">
+                        {payment.status}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
+              </div>
+              
+              {/* Pricing Notes */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">Pricing Information:</h4>
+                <ul className="text-xs text-blue-800 space-y-1">
+                  <li>• Stock items: Lower base pricing</li>
+                  <li>• Custom orders: Premium pricing for personalization</li>
+                  <li>• Mixed orders: Balanced pricing</li>
+                  <li>• Bulk discounts: 5% off for 50+ items, 10% off for 100+ items</li>
+                  <li>• Additional discounts can be applied manually</li>
+                </ul>
               </div>
             </TabsContent>
           </Tabs>
@@ -796,14 +1033,14 @@ const NewOrder: React.FC = () => {
                 onClick={nextTab}
                 disabled={currentTab === 'payment' || isCheckingStock}>
 
-                {isCheckingStock && currentTab === 'product' ? (
-                  <>
+                {isCheckingStock && currentTab === 'product' ?
+                <>
                     <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
                     Checking Stock...
-                  </>
-                ) : (
-                  'Next'
-                )}
+                  </> :
+
+                'Next'
+                }
               </Button>
             </div>
             
