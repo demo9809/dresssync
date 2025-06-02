@@ -110,30 +110,30 @@ const NewOrder: React.FC = () => {
   useEffect(() => {
     const calculatePricing = () => {
       let pricePerUnit = 0;
-      
+
       // Set default pricing based on order type and product type
       if (product.type && quantity.total > 0) {
         switch (orderType) {
           case 'From Stock':
             // Lower price for stock items
-            pricePerUnit = product.type === 'T-shirt' ? 15 : 
-                          product.type === 'Jersey' ? 25 : 
-                          product.type === 'Polo' ? 20 : 18;
+            pricePerUnit = product.type === 'T-shirt' ? 15 :
+            product.type === 'Jersey' ? 25 :
+            product.type === 'Polo' ? 20 : 18;
             break;
           case 'Custom Order':
             // Higher price for custom orders
-            pricePerUnit = product.type === 'T-shirt' ? 25 : 
-                          product.type === 'Jersey' ? 35 : 
-                          product.type === 'Polo' ? 30 : 28;
+            pricePerUnit = product.type === 'T-shirt' ? 25 :
+            product.type === 'Jersey' ? 35 :
+            product.type === 'Polo' ? 30 : 28;
             break;
           case 'Mixed Order':
             // Medium price for mixed orders
-            pricePerUnit = product.type === 'T-shirt' ? 20 : 
-                          product.type === 'Jersey' ? 30 : 
-                          product.type === 'Polo' ? 25 : 23;
+            pricePerUnit = product.type === 'T-shirt' ? 20 :
+            product.type === 'Jersey' ? 30 :
+            product.type === 'Polo' ? 25 : 23;
             break;
         }
-        
+
         // Bulk discount
         if (quantity.total >= 100) {
           pricePerUnit *= 0.9; // 10% discount for 100+ items
@@ -141,63 +141,63 @@ const NewOrder: React.FC = () => {
           pricePerUnit *= 0.95; // 5% discount for 50+ items
         }
       }
-      
+
       const subtotal = pricePerUnit * quantity.total;
       const discountAmount = subtotal * (pricing.discountPercentage / 100);
       const totalAmount = subtotal - discountAmount;
-      
-      setPricing(prev => ({
+
+      setPricing((prev) => ({
         ...prev,
         pricePerUnit: Math.round(pricePerUnit * 100) / 100,
         subtotal: Math.round(subtotal * 100) / 100,
         discountAmount: Math.round(discountAmount * 100) / 100,
         totalAmount: Math.round(totalAmount * 100) / 100
       }));
-      
+
       // Update payment amount
-      setPayment(prev => ({
+      setPayment((prev) => ({
         ...prev,
         amount: Math.round(totalAmount * 100) / 100
       }));
     };
-    
+
     calculatePricing();
   }, [product.type, quantity.total, orderType]);
-  
+
   // Separate effect for discount changes to avoid infinite loop
   useEffect(() => {
     if (pricing.subtotal > 0) {
       const discountAmount = pricing.subtotal * (pricing.discountPercentage / 100);
       const totalAmount = pricing.subtotal - discountAmount;
-      
-      setPricing(prev => ({
+
+      setPricing((prev) => ({
         ...prev,
         discountAmount: Math.round(discountAmount * 100) / 100,
         totalAmount: Math.round(totalAmount * 100) / 100
       }));
-      
-      setPayment(prev => ({
+
+      setPayment((prev) => ({
         ...prev,
         amount: Math.round(totalAmount * 100) / 100
       }));
     }
   }, [pricing.discountPercentage, pricing.subtotal]);
-  
+
   // Separate effect for price per unit changes
   useEffect(() => {
     if (pricing.pricePerUnit > 0 && quantity.total > 0) {
       const subtotal = pricing.pricePerUnit * quantity.total;
       const discountAmount = subtotal * (pricing.discountPercentage / 100);
       const totalAmount = subtotal - discountAmount;
-      
-      setPricing(prev => ({
+
+      setPricing((prev) => ({
         ...prev,
         subtotal: Math.round(subtotal * 100) / 100,
         discountAmount: Math.round(discountAmount * 100) / 100,
         totalAmount: Math.round(totalAmount * 100) / 100
       }));
-      
-      setPayment(prev => ({
+
+      setPayment((prev) => ({
         ...prev,
         amount: Math.round(totalAmount * 100) / 100
       }));
@@ -288,7 +288,7 @@ const NewOrder: React.FC = () => {
     if (payment.amount <= 0) newErrors.paymentAmount = 'Payment amount must be greater than 0';
     if (payment.paid < 0) newErrors.paymentPaid = 'Paid amount cannot be negative';
     if (payment.paid > payment.amount) newErrors.paymentPaid = 'Paid amount cannot exceed total amount';
-    
+
     // Pricing validation
     if (pricing.pricePerUnit <= 0) newErrors.pricePerUnit = 'Price per unit must be greater than 0';
     if (pricing.discountPercentage < 0 || pricing.discountPercentage > 100) {
@@ -521,8 +521,8 @@ const NewOrder: React.FC = () => {
         
         <CardContent>
           {/* Pricing Summary - Always Visible */}
-          {quantity.total > 0 && pricing.totalAmount > 0 && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+          {quantity.total > 0 && pricing.totalAmount > 0 &&
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="text-sm">
@@ -533,19 +533,19 @@ const NewOrder: React.FC = () => {
                     <span className="text-gray-600">Price/Unit:</span>
                     <span className="font-semibold ml-1">${pricing.pricePerUnit.toFixed(2)}</span>
                   </div>
-                  {pricing.discountPercentage > 0 && (
-                    <div className="text-sm">
+                  {pricing.discountPercentage > 0 &&
+                <div className="text-sm">
                       <span className="text-gray-600">Discount:</span>
                       <span className="font-semibold ml-1 text-green-600">{pricing.discountPercentage}%</span>
                     </div>
-                  )}
+                }
                 </div>
                 <div className="text-lg font-bold text-blue-600">
                   Total: ${pricing.totalAmount.toFixed(2)}
                 </div>
               </div>
             </div>
-          )}
+          }
           
           <Tabs value={currentTab} onValueChange={setCurrentTab}>
             <TabsList className="grid w-full grid-cols-5">
@@ -920,8 +920,8 @@ const NewOrder: React.FC = () => {
                     max="100"
                     value={pricing.discountPercentage}
                     onChange={(e) => setPricing((prev) => ({ ...prev, discountPercentage: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.0"
-                  />
+                    placeholder="0.0" />
+
                   <p className="text-xs text-gray-500">Enter discount percentage (0-100%)</p>
                 </div>
                 
@@ -934,8 +934,8 @@ const NewOrder: React.FC = () => {
                     min="0"
                     value={pricing.pricePerUnit}
                     onChange={(e) => setPricing((prev) => ({ ...prev, pricePerUnit: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00"
-                  />
+                    placeholder="0.00" />
+
                   <p className="text-xs text-gray-500">Adjust price per unit if needed</p>
                 </div>
                 
@@ -949,8 +949,8 @@ const NewOrder: React.FC = () => {
                     onChange={(e) => setPayment((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
                     className={`${errors.paymentAmount ? 'border-red-500' : ''} bg-gray-50`}
-                    readOnly
-                  />
+                    readOnly />
+
                   {errors.paymentAmount && <p className="text-sm text-red-600">{errors.paymentAmount}</p>}
                   <p className="text-xs text-gray-500">Auto-calculated total amount</p>
                 </div>
@@ -967,8 +967,8 @@ const NewOrder: React.FC = () => {
                     value={payment.paid}
                     onChange={(e) => setPayment((prev) => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentPaid ? 'border-red-500' : ''}
-                  />
+                    className={errors.paymentPaid ? 'border-red-500' : ''} />
+
                   {errors.paymentPaid && <p className="text-sm text-red-600">{errors.paymentPaid}</p>}
                 </div>
                 
@@ -990,9 +990,9 @@ const NewOrder: React.FC = () => {
                       </div>
                       <Badge
                         variant={
-                          payment.status === 'Complete' ? 'default' :
-                          payment.status === 'Partial' ? 'secondary' :
-                          'destructive'
+                        payment.status === 'Complete' ? 'default' :
+                        payment.status === 'Partial' ? 'secondary' :
+                        'destructive'
                         }
                         className="mt-2">
                         {payment.status}
