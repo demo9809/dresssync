@@ -7,8 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, Edit, Package, Search, Calendar, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { Eye, Edit, Package, Search, Calendar, DollarSign, TrendingUp, AlertCircle, FileText, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import OrderViewModal from '@/components/OrderViewModal';
+import { pdfService } from '@/services/pdfService';
 
 interface Order {
   id: number;
@@ -41,7 +43,7 @@ const OrderManagement: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPayment, setFilterPayment] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     order_status: '',
@@ -110,9 +112,26 @@ const OrderManagement: React.FC = () => {
     }
   };
 
-  const openViewDialog = (order: Order) => {
+  const openViewModal = (order: Order) => {
     setSelectedOrder(order);
-    setIsViewDialogOpen(true);
+    setIsViewModalOpen(true);
+  };
+
+  const handleDownloadPDF = async (order: Order) => {
+    try {
+      await pdfService.generateOrderPDF(order);
+      toast({
+        title: "PDF Generated",
+        description: `Order ${order.order_number} PDF has been downloaded successfully.`
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to download PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const openEditDialog = (order: Order) => {
@@ -355,11 +374,14 @@ const OrderManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => openViewDialog(order)}>
+                        <Button variant="outline" size="sm" onClick={() => openViewModal(order)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => openEditDialog(order)}>
                           <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(order)}>
+                          <FileText className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -380,78 +402,12 @@ const OrderManagement: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* View Order Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>
-              Complete order information for #{selectedOrder?.order_number}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedOrder &&
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-gray-900">Customer Information</h4>
-                  <div className="mt-2 space-y-1 text-sm">
-                    <p><span className="font-medium">Name:</span> {selectedOrder.customer_name}</p>
-                    <p><span className="font-medium">Phone:</span> {selectedOrder.customer_phone}</p>
-                    <p><span className="font-medium">WhatsApp:</span> {selectedOrder.customer_whatsapp}</p>
-                    <p><span className="font-medium">Address:</span> {selectedOrder.customer_address}</p>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">Product Details</h4>
-                  <div className="mt-2 space-y-1 text-sm">
-                    <p><span className="font-medium">Type:</span> {selectedOrder.product_type}</p>
-                    <p><span className="font-medium">Color:</span> {selectedOrder.product_color}</p>
-                    <p><span className="font-medium">Neck:</span> {selectedOrder.neck_type}</p>
-                    <p><span className="font-medium">Quantity:</span> {selectedOrder.total_quantity}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-medium text-gray-900">Size Breakdown</h4>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {Object.entries(parseSizeBreakdown(selectedOrder.size_breakdown)).map(([size, qty]) =>
-                <Badge key={size} variant="outline">
-                      {size}: {qty as number}
-                    </Badge>
-                )}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-gray-900">Order Information</h4>
-                <div className="mt-2 space-y-1 text-sm">
-                  <p><span className="font-medium">Event Date:</span> {new Date(selectedOrder.event_date).toLocaleDateString()}</p>
-                  <p><span className="font-medium">Delivery Date:</span> {new Date(selectedOrder.delivery_date).toLocaleDateString()}</p>
-                  <p><span className="font-medium">Order Status:</span> <Badge variant={getStatusColor(selectedOrder.order_status)}>{selectedOrder.order_status}</Badge></p>
-                  <p><span className="font-medium">Payment Status:</span> <Badge variant={getPaymentColor(selectedOrder.payment_status)}>{selectedOrder.payment_status}</Badge></p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-gray-900">Pricing</h4>
-                <div className="mt-2 space-y-1 text-sm">
-                  <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.total_amount}</p>
-                  <p><span className="font-medium">Paid Amount:</span> ₹{selectedOrder.paid_amount}</p>
-                  <p><span className="font-medium">Balance:</span> ₹{selectedOrder.total_amount - selectedOrder.paid_amount}</p>
-                </div>
-              </div>
-
-              {selectedOrder.special_instructions &&
-            <div>
-                  <h4 className="font-medium text-gray-900">Special Instructions</h4>
-                  <p className="mt-2 text-sm text-gray-600">{selectedOrder.special_instructions}</p>
-                </div>
-            }
-            </div>
-          }
-        </DialogContent>
-      </Dialog>
+      {/* Order View Modal */}
+      <OrderViewModal
+        order={selectedOrder}
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+      />
 
       {/* Edit Order Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

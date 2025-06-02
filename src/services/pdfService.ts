@@ -1,18 +1,31 @@
-import { Order } from './orderService';
 import html2pdf from 'html2pdf.js';
 
-export interface PDFOrderData {
-  order: Order;
-  companyInfo: {
-    name: string;
-    address: string;
-    phone: string;
-    email: string;
-  };
+// Updated interface to match database structure
+export interface DatabaseOrder {
+  id: number;
+  order_number: string;
+  agent_id: number;
+  customer_name: string;
+  customer_phone: string;
+  customer_whatsapp: string;
+  customer_address: string;
+  product_type: string;
+  product_color: string;
+  neck_type: string;
+  total_quantity: number;
+  size_breakdown: string;
+  special_instructions: string;
+  event_date: string;
+  delivery_date: string;
+  order_status: string;
+  total_amount: number;
+  paid_amount: number;
+  payment_status: string;
+  order_type: string;
 }
 
 export const pdfService = {
-  generateOrderHTML: (order: Order): string => {
+  generateOrderHTML: (order: DatabaseOrder): string => {
     // Create clean, professional HTML content for A4 portrait PDF
     const htmlContent = `
       <!DOCTYPE html>
@@ -309,7 +322,7 @@ export const pdfService = {
             <div class="company-tagline">Professional Apparel Solutions</div>
             <div class="order-title">ORDER CONFIRMATION</div>
             <div class="order-details-header">
-              Order #${order.id} | Created: ${new Date(order.createdAt).toLocaleDateString()} | ${new Date(order.createdAt).toLocaleTimeString()}
+              Order #${order.order_number} | Created: ${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}
             </div>
           </div>
 
@@ -323,23 +336,19 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Name:</div>
-                      <div class="detail-value">${order.customer.name}</div>
+                      <div class="detail-value">${order.customer_name}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Phone:</div>
-                      <div class="detail-value">${order.customer.phone}</div>
+                      <div class="detail-value">${order.customer_phone}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">WhatsApp:</div>
-                      <div class="detail-value">${order.customer.whatsapp}</div>
+                      <div class="detail-value">${order.customer_whatsapp}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Address:</div>
-                      <div class="detail-value">
-                        ${order.customer.address.street}<br>
-                        ${order.customer.address.city}, ${order.customer.address.state}<br>
-                        ${order.customer.address.zipCode}
-                      </div>
+                      <div class="detail-value">${order.customer_address}</div>
                     </div>
                   </div>
                 </div>
@@ -351,24 +360,24 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Product Type:</div>
-                      <div class="detail-value">${order.product.type}</div>
+                      <div class="detail-value">${order.product_type}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Color:</div>
-                      <div class="detail-value">${order.product.color}</div>
+                      <div class="detail-value">${order.product_color}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Neck Type:</div>
-                      <div class="detail-value">${order.product.neckType}</div>
+                      <div class="detail-value">${order.neck_type}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Order Type:</div>
-                      <div class="detail-value">${order.orderType}</div>
+                      <div class="detail-value">${order.order_type}</div>
                     </div>
-                    ${order.product.specialInstructions ? `
+                    ${order.special_instructions ? `
                     <div class="detail-row">
                       <div class="detail-label">Special Instructions:</div>
-                      <div class="detail-value">${order.product.specialInstructions}</div>
+                      <div class="detail-value">${order.special_instructions}</div>
                     </div>
                     ` : ''}
                   </div>
@@ -384,17 +393,17 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Event Date:</div>
-                      <div class="detail-value">${new Date(order.delivery.eventDate).toLocaleDateString()}</div>
+                      <div class="detail-value">${new Date(order.event_date).toLocaleDateString()}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Delivery Date:</div>
-                      <div class="detail-value">${new Date(order.delivery.deliveryDate).toLocaleDateString()}</div>
+                      <div class="detail-value">${new Date(order.delivery_date).toLocaleDateString()}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Status:</div>
                       <div class="detail-value">
-                        <span class="status-badge status-${order.delivery.status.toLowerCase().replace(' ', '-')}">
-                          ${order.delivery.status}
+                        <span class="status-badge status-${order.order_status.toLowerCase().replace(' ', '-')}">
+                          ${order.order_status}
                         </span>
                       </div>
                     </div>
@@ -408,21 +417,21 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Total Amount:</div>
-                      <div class="detail-value">$${order.payment.amount.toFixed(2)}</div>
+                      <div class="detail-value">$${(order.total_amount || 0).toFixed(2)}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Amount Paid:</div>
-                      <div class="detail-value">$${order.payment.paid.toFixed(2)}</div>
+                      <div class="detail-value">$${(order.paid_amount || 0).toFixed(2)}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Pending Amount:</div>
-                      <div class="detail-value">$${order.payment.pending.toFixed(2)}</div>
+                      <div class="detail-value">$${((order.total_amount || 0) - (order.paid_amount || 0)).toFixed(2)}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Payment Status:</div>
                       <div class="detail-value">
-                        <span class="status-badge status-${order.payment.status.toLowerCase()}">
-                          ${order.payment.status}
+                        <span class="status-badge status-${order.payment_status.toLowerCase()}">
+                          ${order.payment_status}
                         </span>
                       </div>
                     </div>
@@ -438,19 +447,33 @@ export const pdfService = {
                 <div class="size-breakdown-container">
                   <div class="summary-item">
                     <div class="summary-label">Total Quantity:</div>
-                    <div class="summary-value">${order.quantity.total} pieces</div>
+                    <div class="summary-value">${order.total_quantity} pieces</div>
                   </div>
                   
                   <div class="size-breakdown">
                     <div class="size-row">
-                      ${Object.keys(order.quantity.sizeBreakdown).map(size => 
-                        `<div class="size-header">${size}</div>`
-                      ).join('')}
+                      ${(() => {
+                        try {
+                          const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+                          return Object.keys(sizeBreakdown).map((size) =>
+                            `<div class="size-header">${size}</div>`
+                          ).join('');
+                        } catch {
+                          return '<div class="size-header">No size breakdown available</div>';
+                        }
+                      })()}
                     </div>
                     <div class="size-row">
-                      ${Object.values(order.quantity.sizeBreakdown).map(qty => 
-                        `<div class="size-cell">${qty}</div>`
-                      ).join('')}
+                      ${(() => {
+                        try {
+                          const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+                          return Object.values(sizeBreakdown).map((qty) =>
+                            `<div class="size-cell">${qty}</div>`
+                          ).join('');
+                        } catch {
+                          return '<div class="size-cell">N/A</div>';
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -461,24 +484,24 @@ export const pdfService = {
             <div class="summary-section">
               <div class="summary-title">ORDER SUMMARY</div>
               <div class="summary-item">
-                <div class="summary-label">Order ID:</div>
-                <div class="summary-value">${order.id}</div>
+                <div class="summary-label">Order Number:</div>
+                <div class="summary-value">${order.order_number}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Customer:</div>
-                <div class="summary-value">${order.customer.name}</div>
+                <div class="summary-value">${order.customer_name}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Product:</div>
-                <div class="summary-value">${order.product.type} - ${order.product.color}</div>
+                <div class="summary-value">${order.product_type} - ${order.product_color}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Total Pieces:</div>
-                <div class="summary-value">${order.quantity.total}</div>
+                <div class="summary-value">${order.total_quantity}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Total Amount:</div>
-                <div class="summary-value">$${order.payment.amount.toFixed(2)}</div>
+                <div class="summary-value">$${(order.total_amount || 0).toFixed(2)}</div>
               </div>
             </div>
           </div>
@@ -497,10 +520,10 @@ export const pdfService = {
     return htmlContent;
   },
 
-  generateOrderPDF: async (order: Order): Promise<void> => {
+  generateOrderPDF: async (order: DatabaseOrder): Promise<void> => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
-      
+
       // Create a temporary div to hold the HTML content
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlContent;
@@ -512,17 +535,17 @@ export const pdfService = {
       // Configure html2pdf options for A4 portrait
       const opt = {
         margin: [15, 15, 15, 15], // top, right, bottom, left in mm
-        filename: `Order_${order.id}_${order.customer.name.replace(/\s+/g, '_')}.pdf`,
+        filename: `Order_${order.order_number}_${order.customer_name.replace(/\s+/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { 
+        html2canvas: {
           scale: 2,
           useCORS: true,
           letterRendering: true,
           allowTaint: false
         },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
           orientation: 'portrait',
           compress: true
         },
@@ -531,20 +554,20 @@ export const pdfService = {
 
       // Generate and download PDF
       await html2pdf().set(opt).from(tempDiv).save();
-      
+
       // Clean up
       document.body.removeChild(tempDiv);
-      
+
     } catch (error) {
       console.error('Error generating PDF:', error);
       throw new Error('Failed to generate PDF. Please try again.');
     }
   },
 
-  viewOrderHTML: (order: Order): void => {
+  viewOrderHTML: (order: DatabaseOrder): void => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
-      
+
       // Open in new window for viewing
       const viewWindow = window.open('', '_blank');
       if (viewWindow) {
@@ -560,16 +583,16 @@ export const pdfService = {
     }
   },
 
-  printOrderPDF: async (order: Order): Promise<void> => {
+  printOrderPDF: async (order: DatabaseOrder): Promise<void> => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
-      
+
       // Open in new window for printing
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        
+
         // Wait for content to load then print
         printWindow.onload = () => {
           setTimeout(() => {
