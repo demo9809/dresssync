@@ -329,15 +329,9 @@ const NewOrder: React.FC = () => {
         product,
         quantity,
         delivery,
-        payment: {
-          ...payment,
-          pricePerUnit: pricing.pricePerUnit,
-          subtotal: pricing.subtotal,
-          discountPercentage: pricing.discountPercentage,
-          discountAmount: pricing.discountAmount
-        },
+        payment,
         orderType,
-        agentId: user!.id
+        agentId: user!.ID?.toString() || user!.id || ''
       };
 
       const newOrder = await orderService.createOrder(orderData);
@@ -391,7 +385,7 @@ const NewOrder: React.FC = () => {
         delivery,
         payment,
         orderType,
-        agentId: user!.id,
+        agentId: user!.ID?.toString() || user!.id || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -921,19 +915,19 @@ const NewOrder: React.FC = () => {
                 </div>
                 
                 {/* Size Breakdown */}
-                {Object.keys(quantity.sizeBreakdown).length > 0 && (
-                  <div className="mt-4 p-4 bg-white rounded-lg border">
+                {Object.keys(quantity.sizeBreakdown).length > 0 &&
+                <div className="mt-4 p-4 bg-white rounded-lg border">
                     <h4 className="font-semibold text-gray-900 mb-3">Size Breakdown</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                      {Object.entries(quantity.sizeBreakdown).map(([size, qty]) => (
-                        <div key={size} className="text-center p-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border">
+                      {Object.entries(quantity.sizeBreakdown).map(([size, qty]) =>
+                    <div key={size} className="text-center p-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border">
                           <p className="text-xl font-bold text-gray-900">{qty}</p>
                           <p className="text-sm font-medium text-gray-600">{size}</p>
                         </div>
-                      ))}
+                    )}
                     </div>
                   </div>
-                )}
+                }
                 
                 {/* Delivery Information */}
                 <div className="mt-4 p-4 bg-white rounded-lg border">
@@ -951,12 +945,12 @@ const NewOrder: React.FC = () => {
                 </div>
                 
                 {/* Special Instructions */}
-                {product.specialInstructions && (
-                  <div className="mt-4 p-4 bg-white rounded-lg border">
+                {product.specialInstructions &&
+                <div className="mt-4 p-4 bg-white rounded-lg border">
                     <h4 className="font-semibold text-gray-900 mb-3">Special Instructions</h4>
                     <p className="text-sm text-gray-700">{product.specialInstructions}</p>
                   </div>
-                )}
+                }
               </div>
             </TabsContent>
           </Tabs>

@@ -42,15 +42,16 @@ const AgentDashboard: React.FC = () => {
       setIsLoading(true);
 
       // Load agent-specific analytics
-      const analytics = await orderService.getSalesAnalytics(user?.id);
+      const agentId = user?.ID?.toString() || user?.id || '';
+      const analytics = await orderService.getSalesAnalytics(agentId);
       setStats(analytics);
 
       // Load upcoming deliveries for this agent
-      const upcoming = await orderService.getUpcomingDeliveries(7, user?.id);
+      const upcoming = await orderService.getUpcomingDeliveries(7, agentId);
       setUpcomingDeliveries(upcoming.slice(0, 5));
 
       // Load recent orders
-      const orders = await orderService.getOrders(user?.id);
+      const orders = await orderService.getOrders(agentId);
       setRecentOrders(orders.slice(0, 5));
 
     } catch (error) {
