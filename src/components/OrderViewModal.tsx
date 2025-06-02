@@ -14,7 +14,6 @@ import {
   Download,
   Printer,
   Calendar,
-  DollarSign,
   Package,
   User,
   Phone,
@@ -81,21 +80,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
     }
   };
 
-  const getPaymentStatusBadgeVariant = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'complete':return 'default';
-      case 'partial':return 'secondary';
-      case 'pending':return 'destructive';
-      default:return 'secondary';
-    }
-  };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount || 0);
-  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Not set';
@@ -272,13 +257,6 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   {order.order_status}
                 </Badge>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Payment Status:</span>
-                <Badge variant={getPaymentStatusBadgeVariant(order.payment_status)}>
-                  {order.payment_status}
-                </Badge>
-              </div>
 
               <Separator />
 
@@ -302,36 +280,30 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </CardContent>
           </Card>
 
-          {/* Payment Information */}
+          {/* Additional Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                Payment Information
+                <FileText className="w-5 h-5 text-purple-600" />
+                Order Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(order.total_amount)}
-                  </p>
-                  <p className="text-sm text-gray-600">Total Amount</p>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-600">Order Number:</span>
+                  <span className="font-bold text-gray-900">#{order.order_number}</span>
                 </div>
                 
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(order.paid_amount)}
-                  </p>
-                  <p className="text-sm text-gray-600">Paid Amount</p>
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-600">Total Quantity:</span>
+                  <span className="font-bold text-blue-600">{order.total_quantity} pieces</span>
                 </div>
-              </div>
-
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">
-                  {formatCurrency((order.total_amount || 0) - (order.paid_amount || 0))}
-                </p>
-                <p className="text-sm text-gray-600">Pending Amount</p>
+                
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-600">Order Created:</span>
+                  <span className="font-bold text-purple-600">{formatDate(order.created_at || order.createdAt)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>

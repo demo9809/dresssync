@@ -524,28 +524,26 @@ const NewOrder: React.FC = () => {
         </CardHeader>
         
         <CardContent>
-          {/* Pricing Summary - Always Visible */}
-          {quantity.total > 0 && pricing.totalAmount > 0 &&
+          {/* Order Progress Summary - Always Visible */}
+          {quantity.total > 0 &&
           <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="text-sm">
-                    <span className="text-gray-600">Qty:</span>
-                    <span className="font-semibold ml-1">{quantity.total}</span>
+                    <span className="text-gray-600">Product:</span>
+                    <span className="font-semibold ml-1">{product.type} - {product.color}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-600">Price/Unit:</span>
-                    <span className="font-semibold ml-1">${pricing.pricePerUnit.toFixed(2)}</span>
+                    <span className="text-gray-600">Qty:</span>
+                    <span className="font-semibold ml-1">{quantity.total} units</span>
                   </div>
-                  {pricing.discountPercentage > 0 &&
-                <div className="text-sm">
-                      <span className="text-gray-600">Discount:</span>
-                      <span className="font-semibold ml-1 text-green-600">{pricing.discountPercentage}%</span>
-                    </div>
-                }
+                  <div className="text-sm">
+                    <span className="text-gray-600">Type:</span>
+                    <span className="font-semibold ml-1">{orderType}</span>
+                  </div>
                 </div>
                 <div className="text-lg font-bold text-blue-600">
-                  Total: ${pricing.totalAmount.toFixed(2)}
+                  {customer.name && `Customer: ${customer.name}`}
                 </div>
               </div>
             </div>
@@ -594,8 +592,8 @@ const NewOrder: React.FC = () => {
                     value={customer.phone}
                     onChange={(e) => {
                       const phoneValue = e.target.value;
-                      setCustomer((prev) => ({ 
-                        ...prev, 
+                      setCustomer((prev) => ({
+                        ...prev,
                         phone: phoneValue,
                         // Auto-fill WhatsApp with phone number if WhatsApp is empty
                         whatsapp: prev.whatsapp === '' ? phoneValue : prev.whatsapp
@@ -872,73 +870,91 @@ const NewOrder: React.FC = () => {
                   Order Summary
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Customer:</span>
-                      <span className="font-medium">{customer.name || 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Phone:</span>
-                      <span className="font-medium">{customer.phone || 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">WhatsApp:</span>
-                      <span className="font-medium">{customer.whatsapp || 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Address:</span>
-                      <span className="font-medium text-right">
-                        {customer.address.street ? 
-                          `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.zipCode}` : 
-                          'Not set'
-                        }
-                      </span>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white rounded-lg border">
+                      <h4 className="font-semibold text-gray-900 mb-3">Customer Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Name:</span>
+                          <span className="font-medium">{customer.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Phone:</span>
+                          <span className="font-medium">{customer.phone}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">WhatsApp:</span>
+                          <span className="font-medium">{customer.whatsapp}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Address:</span>
+                          <span className="font-medium text-right">
+                            {customer.address.street}, {customer.address.city}, {customer.address.state} {customer.address.zipCode}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Product:</span>
-                      <span className="font-medium">{product.type || 'Not set'} - {product.color || 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Order Type:</span>
-                      <span className="font-medium">{orderType}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Quantity:</span>
-                      <span className="font-medium">{quantity.total} units</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Event Date:</span>
-                      <span className="font-medium">{delivery.eventDate ? new Date(delivery.eventDate).toLocaleDateString() : 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Delivery Date:</span>
-                      <span className="font-medium">{delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : 'Not set'}</span>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white rounded-lg border">
+                      <h4 className="font-semibold text-gray-900 mb-3">Product Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Product Type:</span>
+                          <span className="font-medium">{product.type}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Color:</span>
+                          <span className="font-medium">{product.color}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Order Type:</span>
+                          <span className="font-medium">{orderType}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Quantity:</span>
+                          <span className="font-medium">{quantity.total} units</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Size Breakdown Summary */}
+                {/* Size Breakdown */}
                 {Object.keys(quantity.sizeBreakdown).length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Size Breakdown:</h4>
-                    <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                  <div className="mt-4 p-4 bg-white rounded-lg border">
+                    <h4 className="font-semibold text-gray-900 mb-3">Size Breakdown</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                       {Object.entries(quantity.sizeBreakdown).map(([size, qty]) => (
-                        <div key={size} className="flex flex-col items-center p-2 bg-white rounded border">
-                          <span className="text-xs font-medium text-gray-600">{size}</span>
-                          <span className="text-lg font-bold text-blue-600">{qty}</span>
+                        <div key={size} className="text-center p-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border">
+                          <p className="text-xl font-bold text-gray-900">{qty}</p>
+                          <p className="text-sm font-medium text-gray-600">{size}</p>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
                 
+                {/* Delivery Information */}
+                <div className="mt-4 p-4 bg-white rounded-lg border">
+                  <h4 className="font-semibold text-gray-900 mb-3">Delivery Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Event Date:</span>
+                      <span className="font-medium">{delivery.eventDate ? new Date(delivery.eventDate).toLocaleDateString() : 'Not set'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Delivery Date:</span>
+                      <span className="font-medium">{delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : 'Not set'}</span>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Special Instructions */}
                 {product.specialInstructions && (
-                  <div className="mt-4 pt-4 border-t">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Special Instructions:</h4>
-                    <p className="text-sm text-gray-600 bg-white p-3 rounded border">{product.specialInstructions}</p>
+                  <div className="mt-4 p-4 bg-white rounded-lg border">
+                    <h4 className="font-semibold text-gray-900 mb-3">Special Instructions</h4>
+                    <p className="text-sm text-gray-700">{product.specialInstructions}</p>
                   </div>
                 )}
               </div>
@@ -948,30 +964,30 @@ const NewOrder: React.FC = () => {
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t space-y-4 sm:space-y-0">
             <div className="flex space-x-2">
-              {currentTab !== 'customer' && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevTab}>
+              {currentTab !== 'customer' &&
+              <Button
+                type="button"
+                variant="outline"
+                onClick={prevTab}>
                   Previous
                 </Button>
-              )}
+              }
               
-              {currentTab !== 'delivery' && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={nextTab}
-                  disabled={isCheckingStock}>
+              {currentTab !== 'delivery' &&
+              <Button
+                type="button"
+                variant="outline"
+                onClick={nextTab}
+                disabled={isCheckingStock}>
                   {isCheckingStock && currentTab === 'product' ?
-                  <>
+                <>
                       <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
                       Checking Stock...
                     </> :
-                    'Next'
-                  }
+                'Next'
+                }
                 </Button>
-              )}
+              }
             </div>
             
             <div className="flex space-x-2">
@@ -984,23 +1000,23 @@ const NewOrder: React.FC = () => {
                 <span>Preview PDF</span>
               </Button>
               
-              {currentTab === 'delivery' && (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
+              {currentTab === 'delivery' &&
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
                   {isLoading ?
-                  <>
+                <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>Creating...</span>
                     </> :
-                  <>
+                <>
                       <Save className="w-4 h-4" />
                       <span>Create Order</span>
                     </>
-                  }
+                }
                 </Button>
-              )}
+              }
             </div>
           </div>
         </CardContent>
