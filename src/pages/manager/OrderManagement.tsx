@@ -406,8 +406,8 @@ const OrderManagement: React.FC = () => {
       <OrderViewModal
         order={selectedOrder}
         isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-      />
+        onClose={() => setIsViewModalOpen(false)} />
+
 
       {/* Edit Order Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

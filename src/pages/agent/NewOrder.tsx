@@ -48,7 +48,6 @@ const NewOrder: React.FC = () => {
   const [product, setProduct] = useState({
     type: '',
     color: '',
-    neckType: '',
     specialInstructions: '',
     fileUpload: ''
   });
@@ -92,13 +91,13 @@ const NewOrder: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('customer');
 
   useEffect(() => {
-    if (product.type && product.color && product.neckType) {
+    if (product.type && product.color) {
       loadAvailableStock();
     } else {
       setStockCheckCompleted(false);
       setStockAvailable(false);
     }
-  }, [product.type, product.color, product.neckType]);
+  }, [product.type, product.color]);
 
   useEffect(() => {
     if (customer.name && product.type && delivery.eventDate) {
@@ -215,7 +214,7 @@ const NewOrder: React.FC = () => {
 
   const loadAvailableStock = async () => {
     try {
-      const stock = await stockService.getStock(product.type, product.color, product.neckType);
+      const stock = await stockService.getStock(product.type, product.color);
       const stockMap: Record<string, number> = {};
       let hasStock = false;
 
@@ -264,7 +263,6 @@ const NewOrder: React.FC = () => {
     // Product validation
     if (!product.type) newErrors.productType = 'Product type is required';
     if (!product.color) newErrors.productColor = 'Product color is required';
-    if (!product.neckType) newErrors.productNeck = 'Neck type is required';
 
     // Quantity validation
     if (quantity.total <= 0) newErrors.quantity = 'Total quantity must be greater than 0';
@@ -316,7 +314,6 @@ const NewOrder: React.FC = () => {
         const availability = await stockService.checkAvailability(
           product.type,
           product.color,
-          product.neckType,
           quantity.sizeBreakdown
         );
 
@@ -355,7 +352,6 @@ const NewOrder: React.FC = () => {
         await stockService.updateStock(
           product.type,
           product.color,
-          product.neckType,
           quantity.sizeBreakdown,
           'reduce'
         );
@@ -421,10 +417,10 @@ const NewOrder: React.FC = () => {
   };
 
   const checkStockBeforeQuantity = async () => {
-    if (!product.type || !product.color || !product.neckType) {
+    if (!product.type || !product.color) {
       toast({
         title: "Product Details Required",
-        description: "Please select product type, color, and neck type before proceeding to quantity.",
+        description: "Please select product type and color before proceeding to quantity.",
         variant: "destructive"
       });
       return false;
@@ -691,7 +687,7 @@ const NewOrder: React.FC = () => {
 
             {/* Product Information Tab */}
             <TabsContent value="product" className="space-y-4 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Product Type *</Label>
                   <Select
@@ -727,24 +723,6 @@ const NewOrder: React.FC = () => {
                   </Select>
                   {errors.productColor && <p className="text-sm text-red-600">{errors.productColor}</p>}
                 </div>
-                
-                <div className="space-y-2">
-                  <Label>Neck Type *</Label>
-                  <Select
-                    value={product.neckType}
-                    onValueChange={(value) => setProduct((prev) => ({ ...prev, neckType: value }))}>
-
-                    <SelectTrigger className={errors.productNeck ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Select neck type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {productConfig.neckTypes.map((neck) =>
-                      <SelectItem key={neck} value={neck}>{neck}</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {errors.productNeck && <p className="text-sm text-red-600">{errors.productNeck}</p>}
-                </div>
               </div>
               
               <div className="space-y-2">
@@ -765,7 +743,7 @@ const NewOrder: React.FC = () => {
               </div>
 
               {/* Stock Status Indicator */}
-              {(orderType === 'From Stock' || orderType === 'Mixed Order') && product.type && product.color && product.neckType &&
+              {(orderType === 'From Stock' || orderType === 'Mixed Order') && product.type && product.color &&
               <div className="space-y-2">
                   <Label>Stock Status</Label>
                   <div className="p-4 border rounded-lg">
@@ -789,7 +767,6 @@ const NewOrder: React.FC = () => {
                       )}
                         </div>
                       </div> :
-
                   <div className="flex items-center space-x-2">
                         <AlertTriangle className="w-4 h-4 text-red-600" />
                         <span className="text-sm font-medium text-red-600">No Stock Available</span>

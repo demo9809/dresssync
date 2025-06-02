@@ -15,15 +15,9 @@ interface StockItem {
   id: number;
   product_type: string;
   color: string;
-  neck_type: string;
   size: string;
   quantity: number;
   min_threshold: number;
-  cost_per_unit: number;
-  selling_price: number;
-  batch_number: string;
-  supplier: string;
-  purchase_date: string;
 }
 
 const StockManagement: React.FC = () => {
@@ -37,20 +31,13 @@ const StockManagement: React.FC = () => {
   const [formData, setFormData] = useState({
     product_type: '',
     color: '',
-    neck_type: '',
     size: '',
     quantity: 0,
-    min_threshold: 10,
-    cost_per_unit: 0,
-    selling_price: 0,
-    batch_number: '',
-    supplier: '',
-    purchase_date: new Date().toISOString().split('T')[0]
+    min_threshold: 10
   });
 
   const productTypes = ['T-Shirt', 'Jersey', 'Polo Shirt', 'Tank Top', 'Hoodie', 'Sweatshirt'];
   const colors = ['White', 'Black', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Gray', 'Navy', 'Maroon'];
-  const neckTypes = ['Round Neck', 'V-Neck', 'Collar', 'Polo Collar', 'Henley', 'Scoop Neck'];
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 
   useEffect(() => {
@@ -142,15 +129,9 @@ const StockManagement: React.FC = () => {
     setFormData({
       product_type: '',
       color: '',
-      neck_type: '',
       size: '',
       quantity: 0,
-      min_threshold: 10,
-      cost_per_unit: 0,
-      selling_price: 0,
-      batch_number: '',
-      supplier: '',
-      purchase_date: new Date().toISOString().split('T')[0]
+      min_threshold: 10
     });
     setEditingItem(null);
     setIsAddDialogOpen(false);
@@ -161,15 +142,9 @@ const StockManagement: React.FC = () => {
     setFormData({
       product_type: item.product_type,
       color: item.color,
-      neck_type: item.neck_type,
       size: item.size,
       quantity: item.quantity,
-      min_threshold: item.min_threshold,
-      cost_per_unit: item.cost_per_unit,
-      selling_price: item.selling_price,
-      batch_number: item.batch_number,
-      supplier: item.supplier,
-      purchase_date: item.purchase_date.split('T')[0]
+      min_threshold: item.min_threshold
     });
     setIsAddDialogOpen(true);
   };
@@ -178,8 +153,7 @@ const StockManagement: React.FC = () => {
     const matchesSearch =
     item.product_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.batch_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+    item.size.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesFilter = filterType === 'all' ||
     filterType === 'low_stock' && item.quantity <= item.min_threshold ||
@@ -190,7 +164,7 @@ const StockManagement: React.FC = () => {
 
   const lowStockCount = stockItems.filter((item) => item.quantity <= item.min_threshold).length;
   const outOfStockCount = stockItems.filter((item) => item.quantity === 0).length;
-  const totalValue = stockItems.reduce((sum, item) => sum + item.quantity * item.cost_per_unit, 0);
+  const totalStock = stockItems.reduce((sum, item) => sum + item.quantity, 0);
 
   if (loading) {
     return (
@@ -221,7 +195,7 @@ const StockManagement: React.FC = () => {
                 {editingItem ? 'Update the stock item details below.' : 'Add a new item to your inventory.'}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+            <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="product_type">Product Type</Label>
@@ -250,33 +224,18 @@ const StockManagement: React.FC = () => {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="neck_type">Neck Type</Label>
-                  <Select value={formData.neck_type} onValueChange={(value) => setFormData((prev) => ({ ...prev, neck_type: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select neck type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {neckTypes.map((type) =>
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="size">Size</Label>
-                  <Select value={formData.size} onValueChange={(value) => setFormData((prev) => ({ ...prev, size: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sizes.map((size) =>
-                      <SelectItem key={size} value={size}>{size}</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label htmlFor="size">Size</Label>
+                <Select value={formData.size} onValueChange={(value) => setFormData((prev) => ({ ...prev, size: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sizes.map((size) =>
+                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -286,7 +245,6 @@ const StockManagement: React.FC = () => {
                     type="number"
                     value={formData.quantity}
                     onChange={(e) => setFormData((prev) => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))} />
-
                 </div>
                 <div>
                   <Label htmlFor="min_threshold">Min Threshold</Label>
@@ -295,55 +253,7 @@ const StockManagement: React.FC = () => {
                     type="number"
                     value={formData.min_threshold}
                     onChange={(e) => setFormData((prev) => ({ ...prev, min_threshold: parseInt(e.target.value) || 0 }))} />
-
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="cost_per_unit">Cost per Unit</Label>
-                  <Input
-                    id="cost_per_unit"
-                    type="number"
-                    step="0.01"
-                    value={formData.cost_per_unit}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, cost_per_unit: parseFloat(e.target.value) || 0 }))} />
-
-                </div>
-                <div>
-                  <Label htmlFor="selling_price">Selling Price</Label>
-                  <Input
-                    id="selling_price"
-                    type="number"
-                    step="0.01"
-                    value={formData.selling_price}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, selling_price: parseFloat(e.target.value) || 0 }))} />
-
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="batch_number">Batch Number</Label>
-                <Input
-                  id="batch_number"
-                  value={formData.batch_number}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, batch_number: e.target.value }))} />
-
-              </div>
-              <div>
-                <Label htmlFor="supplier">Supplier</Label>
-                <Input
-                  id="supplier"
-                  value={formData.supplier}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))} />
-
-              </div>
-              <div>
-                <Label htmlFor="purchase_date">Purchase Date</Label>
-                <Input
-                  id="purchase_date"
-                  type="date"
-                  value={formData.purchase_date}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, purchase_date: e.target.value }))} />
-
               </div>
             </div>
             <DialogFooter>
@@ -399,8 +309,8 @@ const StockManagement: React.FC = () => {
             <div className="flex items-center">
               <Package className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Value</p>
-                <p className="text-2xl font-bold text-green-600">₹{totalValue.toFixed(2)}</p>
+                <p className="text-sm font-medium text-gray-600">Total Stock</p>
+                <p className="text-2xl font-bold text-green-600">{totalStock}</p>
               </div>
             </div>
           </CardContent>
@@ -415,7 +325,7 @@ const StockManagement: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Search by product type, color, batch number, or supplier..."
+                  placeholder="Search by product type, color, or size..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10" />
@@ -454,9 +364,7 @@ const StockManagement: React.FC = () => {
                   <TableHead>Size</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Cost</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Supplier</TableHead>
+                  <TableHead>Min Threshold</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -464,10 +372,7 @@ const StockManagement: React.FC = () => {
                 {filteredItems.map((item) =>
                 <TableRow key={item.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{item.product_type}</div>
-                        <div className="text-sm text-gray-500">{item.neck_type}</div>
-                      </div>
+                      <div className="font-medium">{item.product_type}</div>
                     </TableCell>
                     <TableCell>{item.color}</TableCell>
                     <TableCell>{item.size}</TableCell>
@@ -481,13 +386,10 @@ const StockManagement: React.FC = () => {
                     <Badge variant="destructive">Out of Stock</Badge> :
                     item.quantity <= item.min_threshold ?
                     <Badge variant="outline">Low Stock</Badge> :
-
                     <Badge variant="secondary">In Stock</Badge>
                     }
                     </TableCell>
-                    <TableCell>₹{item.cost_per_unit}</TableCell>
-                    <TableCell>₹{item.selling_price}</TableCell>
-                    <TableCell>{item.supplier}</TableCell>
+                    <TableCell>{item.min_threshold}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" onClick={() => startEdit(item)}>

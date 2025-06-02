@@ -453,27 +453,27 @@ export const pdfService = {
                   <div class="size-breakdown">
                     <div class="size-row">
                       ${(() => {
-                        try {
-                          const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-                          return Object.keys(sizeBreakdown).map((size) =>
-                            `<div class="size-header">${size}</div>`
-                          ).join('');
-                        } catch {
-                          return '<div class="size-header">No size breakdown available</div>';
-                        }
-                      })()}
+      try {
+        const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+        return Object.keys(sizeBreakdown).map((size) =>
+        `<div class="size-header">${size}</div>`
+        ).join('');
+      } catch {
+        return '<div class="size-header">No size breakdown available</div>';
+      }
+    })()}
                     </div>
                     <div class="size-row">
                       ${(() => {
-                        try {
-                          const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-                          return Object.values(sizeBreakdown).map((qty) =>
-                            `<div class="size-cell">${qty}</div>`
-                          ).join('');
-                        } catch {
-                          return '<div class="size-cell">N/A</div>';
-                        }
-                      })()}
+      try {
+        const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+        return Object.values(sizeBreakdown).map((qty) =>
+        `<div class="size-cell">${qty}</div>`
+        ).join('');
+      } catch {
+        return '<div class="size-cell">N/A</div>';
+      }
+    })()}
                     </div>
                   </div>
                 </div>

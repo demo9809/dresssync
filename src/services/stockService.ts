@@ -2,14 +2,9 @@ export interface StockItem {
   id: string;
   productType: string;
   color: string;
-  neckType: string;
   size: string;
   quantity: number;
   minThreshold: number;
-  costPerUnit: number;
-  batchNumber?: string;
-  purchaseDate?: string;
-  supplier?: string;
 }
 
 export interface StockMovement {
@@ -28,66 +23,41 @@ const mockStock: StockItem[] = [
   id: '1',
   productType: 'T-shirt',
   color: 'Navy Blue',
-  neckType: 'Round Neck',
   size: 'S',
   quantity: 25,
-  minThreshold: 10,
-  costPerUnit: 15.50,
-  batchNumber: 'B001',
-  purchaseDate: '2024-01-15',
-  supplier: 'TextileCorp'
+  minThreshold: 10
 },
 {
   id: '2',
   productType: 'T-shirt',
   color: 'Navy Blue',
-  neckType: 'Round Neck',
   size: 'M',
   quantity: 30,
-  minThreshold: 15,
-  costPerUnit: 15.50,
-  batchNumber: 'B001',
-  purchaseDate: '2024-01-15',
-  supplier: 'TextileCorp'
+  minThreshold: 15
 },
 {
   id: '3',
   productType: 'T-shirt',
   color: 'Navy Blue',
-  neckType: 'Round Neck',
   size: 'L',
   quantity: 15,
-  minThreshold: 10,
-  costPerUnit: 15.50,
-  batchNumber: 'B001',
-  purchaseDate: '2024-01-15',
-  supplier: 'TextileCorp'
+  minThreshold: 10
 },
 {
   id: '4',
   productType: 'T-shirt',
   color: 'Navy Blue',
-  neckType: 'Round Neck',
   size: 'XL',
   quantity: 10,
-  minThreshold: 8,
-  costPerUnit: 15.50,
-  batchNumber: 'B001',
-  purchaseDate: '2024-01-15',
-  supplier: 'TextileCorp'
+  minThreshold: 8
 },
 {
   id: '5',
   productType: 'Jersey',
   color: 'Red',
-  neckType: 'V-Neck',
   size: 'M',
   quantity: 20,
-  minThreshold: 12,
-  costPerUnit: 22.00,
-  batchNumber: 'B002',
-  purchaseDate: '2024-01-20',
-  supplier: 'SportWear Inc'
+  minThreshold: 12
 }];
 
 
@@ -101,12 +71,11 @@ export const stockService = {
   },
 
   // Get stock for specific product combination
-  getStock: async (productType: string, color: string, neckType: string): Promise<StockItem[]> => {
+  getStock: async (productType: string, color: string): Promise<StockItem[]> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return mockStock.filter((item) =>
     item.productType === productType &&
-    item.color === color &&
-    item.neckType === neckType
+    item.color === color
     );
   },
 
@@ -114,15 +83,13 @@ export const stockService = {
   checkAvailability: async (
   productType: string,
   color: string,
-  neckType: string,
   sizeBreakdown: Record<string, number>)
   : Promise<{available: boolean;shortfall: Record<string, number>;}> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const stock = mockStock.filter((item) =>
     item.productType === productType &&
-    item.color === color &&
-    item.neckType === neckType
+    item.color === color
     );
 
     const shortfall: Record<string, number> = {};
@@ -146,7 +113,6 @@ export const stockService = {
   orderId: string,
   productType: string,
   color: string,
-  neckType: string,
   sizeBreakdown: Record<string, number>)
   : Promise<boolean> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -160,7 +126,6 @@ export const stockService = {
   updateStock: async (
   productType: string,
   color: string,
-  neckType: string,
   sizeBreakdown: Record<string, number>,
   operation: 'reduce' | 'increase' = 'reduce')
   : Promise<void> => {
@@ -170,7 +135,6 @@ export const stockService = {
       const stockIndex = mockStock.findIndex((item) =>
       item.productType === productType &&
       item.color === color &&
-      item.neckType === neckType &&
       item.size === size
       );
 

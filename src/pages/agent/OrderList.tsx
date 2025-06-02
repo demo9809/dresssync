@@ -53,7 +53,7 @@ const OrderList: React.FC = () => {
           "value": parseInt(user.id)
         }] : []
       });
-      
+
       if (error) throw error;
       setOrders(data?.List || []);
     } catch (error) {
@@ -301,17 +301,17 @@ const OrderList: React.FC = () => {
                     {/* Size Breakdown */}
                     <div className="flex flex-wrap gap-2 mb-4">
                       {(() => {
-                        try {
-                          const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-                          return Object.entries(sizeBreakdown).map(([size, qty]) =>
-                            <Badge key={size} variant="outline" className="text-xs">
+                    try {
+                      const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+                      return Object.entries(sizeBreakdown).map(([size, qty]) =>
+                      <Badge key={size} variant="outline" className="text-xs">
                               {size}: {qty as number}
                             </Badge>
-                          );
-                        } catch {
-                          return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
-                        }
-                      })()}
+                      );
+                    } catch {
+                      return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
+                    }
+                  })()}
                     </div>
                   </div>
                   
@@ -347,10 +347,10 @@ const OrderList: React.FC = () => {
       <OrderViewModal
         order={selectedOrder}
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
-    </div>
-  );
+        onClose={handleCloseModal} />
+
+    </div>);
+
 
 };
 
