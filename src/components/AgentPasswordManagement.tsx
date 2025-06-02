@@ -247,54 +247,54 @@ const AgentPasswordManagement: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64" data-id="ac34qehti" data-path="src/components/AgentPasswordManagement.tsx">
-        <div className="text-lg" data-id="mcl5w4nme" data-path="src/components/AgentPasswordManagement.tsx">Loading agents...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading agents...</div>
       </div>);
 
   }
 
   return (
-    <div className="space-y-6" data-id="vuaztuvao" data-path="src/components/AgentPasswordManagement.tsx">
-      <div className="flex items-center justify-between" data-id="71n3teoab" data-path="src/components/AgentPasswordManagement.tsx">
-        <div data-id="4veyednfm" data-path="src/components/AgentPasswordManagement.tsx">
-          <h2 className="text-2xl font-bold text-gray-900" data-id="o1p7yromc" data-path="src/components/AgentPasswordManagement.tsx">Agent Password Management</h2>
-          <p className="text-gray-600" data-id="zsa7ewtw4" data-path="src/components/AgentPasswordManagement.tsx">Manage agent login credentials and passwords</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Agent Password Management</h2>
+          <p className="text-gray-600">Manage agent login credentials and passwords</p>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-id="ehngcohun" data-path="src/components/AgentPasswordManagement.tsx">
-        <Card data-id="6ygn8m2bz" data-path="src/components/AgentPasswordManagement.tsx">
-          <CardContent className="p-6" data-id="t0pm047f7" data-path="src/components/AgentPasswordManagement.tsx">
-            <div className="flex items-center" data-id="swrryqll7" data-path="src/components/AgentPasswordManagement.tsx">
-              <Shield className="h-8 w-8 text-blue-600" data-id="g595ive05" data-path="src/components/AgentPasswordManagement.tsx" />
-              <div className="ml-4" data-id="01ufg2q9n" data-path="src/components/AgentPasswordManagement.tsx">
-                <p className="text-sm font-medium text-gray-600" data-id="mwannqzed" data-path="src/components/AgentPasswordManagement.tsx">Total Agents</p>
-                <p className="text-2xl font-bold text-gray-900" data-id="ehfoy8p5d" data-path="src/components/AgentPasswordManagement.tsx">{agents.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Shield className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Agents</p>
+                <p className="text-2xl font-bold text-gray-900">{agents.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card data-id="55oy7hutz" data-path="src/components/AgentPasswordManagement.tsx">
-          <CardContent className="p-6" data-id="mosob8f88" data-path="src/components/AgentPasswordManagement.tsx">
-            <div className="flex items-center" data-id="r4j5vn6wv" data-path="src/components/AgentPasswordManagement.tsx">
-              <Key className="h-8 w-8 text-green-600" data-id="f281e3eot" data-path="src/components/AgentPasswordManagement.tsx" />
-              <div className="ml-4" data-id="6yihi4fs8" data-path="src/components/AgentPasswordManagement.tsx">
-                <p className="text-sm font-medium text-gray-600" data-id="7d13adu41" data-path="src/components/AgentPasswordManagement.tsx">With Passwords</p>
-                <p className="text-2xl font-bold text-green-600" data-id="10ovu17n5" data-path="src/components/AgentPasswordManagement.tsx">{agentPasswords.length}</p>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Key className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">With Passwords</p>
+                <p className="text-2xl font-bold text-green-600">{agentPasswords.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card data-id="clon1oxhm" data-path="src/components/AgentPasswordManagement.tsx">
-          <CardContent className="p-6" data-id="rigx4ck72" data-path="src/components/AgentPasswordManagement.tsx">
-            <div className="flex items-center" data-id="rq5mphd5p" data-path="src/components/AgentPasswordManagement.tsx">
-              <RefreshCw className="h-8 w-8 text-yellow-600" data-id="itzbbrd47" data-path="src/components/AgentPasswordManagement.tsx" />
-              <div className="ml-4" data-id="2rwi3ghvg" data-path="src/components/AgentPasswordManagement.tsx">
-                <p className="text-sm font-medium text-gray-600" data-id="fj7xmebzn" data-path="src/components/AgentPasswordManagement.tsx">Need Password Reset</p>
-                <p className="text-2xl font-bold text-yellow-600" data-id="c5c2hzcie" data-path="src/components/AgentPasswordManagement.tsx">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <RefreshCw className="h-8 w-8 text-yellow-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Need Password Reset</p>
+                <p className="text-2xl font-bold text-yellow-600">
                   {agentPasswords.filter((p) => !p.password_changed).length}
                 </p>
               </div>
@@ -304,128 +304,128 @@ const AgentPasswordManagement: React.FC = () => {
       </div>
 
       {/* Search */}
-      <Card data-id="nwzlugrly" data-path="src/components/AgentPasswordManagement.tsx">
-        <CardContent className="p-6" data-id="a16yighgq" data-path="src/components/AgentPasswordManagement.tsx">
-          <div className="flex items-center space-x-2" data-id="kdausad8p" data-path="src/components/AgentPasswordManagement.tsx">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-2">
             <Input
               placeholder="Search agents by name, email, or agent code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1" data-id="krsxxtpbg" data-path="src/components/AgentPasswordManagement.tsx" />
+              className="flex-1" />
 
           </div>
         </CardContent>
       </Card>
 
       {/* Agent Passwords Table */}
-      <Card data-id="izsz8nvru" data-path="src/components/AgentPasswordManagement.tsx">
-        <CardHeader data-id="txfi27ekx" data-path="src/components/AgentPasswordManagement.tsx">
-          <CardTitle data-id="fwamyu7vx" data-path="src/components/AgentPasswordManagement.tsx">Agent Credentials</CardTitle>
-          <CardDescription data-id="ncekn9zl5" data-path="src/components/AgentPasswordManagement.tsx">
+      <Card>
+        <CardHeader>
+          <CardTitle>Agent Credentials</CardTitle>
+          <CardDescription>
             Manage login credentials for all agents
           </CardDescription>
         </CardHeader>
-        <CardContent data-id="ris5o54bo" data-path="src/components/AgentPasswordManagement.tsx">
-          <Table data-id="m1ykjroqo" data-path="src/components/AgentPasswordManagement.tsx">
-            <TableHeader data-id="zwrxm1rzj" data-path="src/components/AgentPasswordManagement.tsx">
-              <TableRow data-id="i959y2r62" data-path="src/components/AgentPasswordManagement.tsx">
-                <TableHead data-id="mll77wjsi" data-path="src/components/AgentPasswordManagement.tsx">Agent</TableHead>
-                <TableHead data-id="4nmtu3b3l" data-path="src/components/AgentPasswordManagement.tsx">Agent Code</TableHead>
-                <TableHead data-id="wyvxzokxa" data-path="src/components/AgentPasswordManagement.tsx">Email</TableHead>
-                <TableHead data-id="ydh3i2050" data-path="src/components/AgentPasswordManagement.tsx">Password Status</TableHead>
-                <TableHead data-id="0y6q6vvvz" data-path="src/components/AgentPasswordManagement.tsx">Last Changed</TableHead>
-                <TableHead data-id="ueruam5pg" data-path="src/components/AgentPasswordManagement.tsx">Actions</TableHead>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Agent</TableHead>
+                <TableHead>Agent Code</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Password Status</TableHead>
+                <TableHead>Last Changed</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody data-id="4xina4d4m" data-path="src/components/AgentPasswordManagement.tsx">
+            <TableBody>
               {filteredAgents.map((agent) => {
                 const agentPassword = getAgentPassword(agent.ID);
                 return (
-                  <TableRow key={agent.ID} data-id="qk9qnwdiq" data-path="src/components/AgentPasswordManagement.tsx">
-                    <TableCell data-id="cwdxczm8d" data-path="src/components/AgentPasswordManagement.tsx">
-                      <div data-id="nosptjbpq" data-path="src/components/AgentPasswordManagement.tsx">
-                        <div className="font-medium" data-id="hgf93hyg7" data-path="src/components/AgentPasswordManagement.tsx">{agent.first_name} {agent.last_name}</div>
-                        <div className="text-sm text-gray-500" data-id="ckybls9l0" data-path="src/components/AgentPasswordManagement.tsx">{agent.territory}</div>
+                  <TableRow key={agent.ID}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{agent.first_name} {agent.last_name}</div>
+                        <div className="text-sm text-gray-500">{agent.territory}</div>
                       </div>
                     </TableCell>
-                    <TableCell data-id="f3wzbh2vm" data-path="src/components/AgentPasswordManagement.tsx">
-                      <Badge variant="outline" data-id="25chphtqy" data-path="src/components/AgentPasswordManagement.tsx">{agent.agent_code}</Badge>
+                    <TableCell>
+                      <Badge variant="outline">{agent.agent_code}</Badge>
                     </TableCell>
-                    <TableCell data-id="rijgfjydo" data-path="src/components/AgentPasswordManagement.tsx">{agent.email}</TableCell>
-                    <TableCell data-id="dzd41ed45" data-path="src/components/AgentPasswordManagement.tsx">
+                    <TableCell>{agent.email}</TableCell>
+                    <TableCell>
                       {agentPassword ?
-                      <Badge variant={agentPassword.password_changed ? "default" : "secondary"} data-id="mylum6t5u" data-path="src/components/AgentPasswordManagement.tsx">
+                      <Badge variant={agentPassword.password_changed ? "default" : "secondary"}>
                           {agentPassword.password_changed ? "Changed" : "Temporary"}
                         </Badge> :
 
-                      <Badge variant="destructive" data-id="tkoo3f6qw" data-path="src/components/AgentPasswordManagement.tsx">No Password</Badge>
+                      <Badge variant="destructive">No Password</Badge>
                       }
                     </TableCell>
-                    <TableCell data-id="krs68cwja" data-path="src/components/AgentPasswordManagement.tsx">
+                    <TableCell>
                       {agentPassword?.last_password_change ?
                       new Date(agentPassword.last_password_change).toLocaleDateString() :
                       'Never'
                       }
                     </TableCell>
-                    <TableCell data-id="ld0jnpitw" data-path="src/components/AgentPasswordManagement.tsx">
-                      <div className="flex items-center space-x-2" data-id="elm1zaxmi" data-path="src/components/AgentPasswordManagement.tsx">
-                        <Dialog data-id="a9jcb2iht" data-path="src/components/AgentPasswordManagement.tsx">
-                          <DialogTrigger asChild data-id="ow5019pya" data-path="src/components/AgentPasswordManagement.tsx">
-                            <Button variant="outline" size="sm" data-id="22444m6ot" data-path="src/components/AgentPasswordManagement.tsx">
-                              <Key className="w-4 h-4 mr-1" data-id="yb20kqktv" data-path="src/components/AgentPasswordManagement.tsx" />
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Key className="w-4 h-4 mr-1" />
                               Password
                             </Button>
                           </DialogTrigger>
-                          <DialogContent data-id="ghxigzng9" data-path="src/components/AgentPasswordManagement.tsx">
-                            <DialogHeader data-id="w2imguc8b" data-path="src/components/AgentPasswordManagement.tsx">
-                              <DialogTitle data-id="b7zdoqbxb" data-path="src/components/AgentPasswordManagement.tsx">Manage Password - {agent.first_name} {agent.last_name}</DialogTitle>
-                              <DialogDescription data-id="224ohjcid" data-path="src/components/AgentPasswordManagement.tsx">
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Manage Password - {agent.first_name} {agent.last_name}</DialogTitle>
+                              <DialogDescription>
                                 Generate, view, or reset password for this agent
                               </DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-4" data-id="dqmi16x2q" data-path="src/components/AgentPasswordManagement.tsx">
+                            <div className="space-y-4">
                               {agentPassword?.temp_password &&
-                              <div data-id="syreczjm3" data-path="src/components/AgentPasswordManagement.tsx">
-                                  <Label data-id="3j13mj51v" data-path="src/components/AgentPasswordManagement.tsx">Current Password</Label>
-                                  <div className="flex items-center space-x-2" data-id="e29e5jttz" data-path="src/components/AgentPasswordManagement.tsx">
+                              <div>
+                                  <Label>Current Password</Label>
+                                  <div className="flex items-center space-x-2">
                                     <Input
                                     type={showPassword ? "text" : "password"}
                                     value={agentPassword.temp_password}
-                                    readOnly data-id="h0w5hiesl" data-path="src/components/AgentPasswordManagement.tsx" />
+                                    readOnly />
 
                                     <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setShowPassword(!showPassword)} data-id="9l5xlulf0" data-path="src/components/AgentPasswordManagement.tsx">
+                                    onClick={() => setShowPassword(!showPassword)}>
 
-                                      {showPassword ? <EyeOff className="w-4 h-4" data-id="dywb68mrd" data-path="src/components/AgentPasswordManagement.tsx" /> : <Eye className="w-4 h-4" data-id="u61da51zx" data-path="src/components/AgentPasswordManagement.tsx" />}
+                                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </Button>
                                     <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => copyToClipboard(agentPassword.temp_password || '')} data-id="townj5r36" data-path="src/components/AgentPasswordManagement.tsx">
+                                    onClick={() => copyToClipboard(agentPassword.temp_password || '')}>
 
-                                      <Copy className="w-4 h-4" data-id="7zvf1fjh8" data-path="src/components/AgentPasswordManagement.tsx" />
+                                      <Copy className="w-4 h-4" />
                                     </Button>
                                   </div>
                                 </div>
                               }
                               
-                              <div className="flex flex-col space-y-2" data-id="e7egubphe" data-path="src/components/AgentPasswordManagement.tsx">
+                              <div className="flex flex-col space-y-2">
                                 <Button
                                   onClick={() => generatePasswordForAgent(agent)}
-                                  disabled={isGenerating} data-id="dt1hzmvx3" data-path="src/components/AgentPasswordManagement.tsx">
+                                  disabled={isGenerating}>
 
-                                  <RefreshCw className="w-4 h-4 mr-2" data-id="y9c5zv76w" data-path="src/components/AgentPasswordManagement.tsx" />
+                                  <RefreshCw className="w-4 h-4 mr-2" />
                                   Generate New Password
                                 </Button>
                                 
                                 <Button
                                   variant="outline"
                                   onClick={() => sendPasswordEmail(agent)}
-                                  disabled={!agentPassword?.temp_password} data-id="z5qtuyhjk" data-path="src/components/AgentPasswordManagement.tsx">
+                                  disabled={!agentPassword?.temp_password}>
 
-                                  <Mail className="w-4 h-4 mr-2" data-id="glxkwxtjf" data-path="src/components/AgentPasswordManagement.tsx" />
+                                  <Mail className="w-4 h-4 mr-2" />
                                   Send Email
                                 </Button>
                               </div>
@@ -444,54 +444,54 @@ const AgentPasswordManagement: React.FC = () => {
 
       {/* Password Generation Dialog */}
       {selectedAgent && newPassword &&
-      <Dialog open={!!selectedAgent} onOpenChange={() => setSelectedAgent(null)} data-id="k2ut0r5b9" data-path="src/components/AgentPasswordManagement.tsx">
-          <DialogContent data-id="l3aar6w1i" data-path="src/components/AgentPasswordManagement.tsx">
-            <DialogHeader data-id="xz8002l8o" data-path="src/components/AgentPasswordManagement.tsx">
-              <DialogTitle data-id="v4yw3htma" data-path="src/components/AgentPasswordManagement.tsx">Password Generated Successfully</DialogTitle>
-              <DialogDescription data-id="vsfp0l2si" data-path="src/components/AgentPasswordManagement.tsx">
+      <Dialog open={!!selectedAgent} onOpenChange={() => setSelectedAgent(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Password Generated Successfully</DialogTitle>
+              <DialogDescription>
                 New password for {selectedAgent.first_name} {selectedAgent.last_name}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4" data-id="bhemz39vw" data-path="src/components/AgentPasswordManagement.tsx">
-              <Alert data-id="tybjw4nls" data-path="src/components/AgentPasswordManagement.tsx">
-                <Shield className="h-4 w-4" data-id="nnqunm4rr" data-path="src/components/AgentPasswordManagement.tsx" />
-                <AlertDescription data-id="dqkbqox4c" data-path="src/components/AgentPasswordManagement.tsx">
+            <div className="space-y-4">
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
                   Please save this password securely. It will not be shown again in plain text.
                 </AlertDescription>
               </Alert>
               
-              <div data-id="vpsctbvu2" data-path="src/components/AgentPasswordManagement.tsx">
-                <Label data-id="mds726ehx" data-path="src/components/AgentPasswordManagement.tsx">Generated Password</Label>
-                <div className="flex items-center space-x-2" data-id="xs5ut6xkb" data-path="src/components/AgentPasswordManagement.tsx">
+              <div>
+                <Label>Generated Password</Label>
+                <div className="flex items-center space-x-2">
                   <Input
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   readOnly
-                  className="font-mono" data-id="b3a6vbalo" data-path="src/components/AgentPasswordManagement.tsx" />
+                  className="font-mono" />
 
                   <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowPassword(!showPassword)} data-id="ntbsece2z" data-path="src/components/AgentPasswordManagement.tsx">
+                  onClick={() => setShowPassword(!showPassword)}>
 
-                    {showPassword ? <EyeOff className="w-4 h-4" data-id="xhxxrnpks" data-path="src/components/AgentPasswordManagement.tsx" /> : <Eye className="w-4 h-4" data-id="ivergpf41" data-path="src/components/AgentPasswordManagement.tsx" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                   <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(newPassword)} data-id="14ozyj4ms" data-path="src/components/AgentPasswordManagement.tsx">
+                  onClick={() => copyToClipboard(newPassword)}>
 
-                    <Copy className="w-4 h-4" data-id="io3l1a5eq" data-path="src/components/AgentPasswordManagement.tsx" />
+                    <Copy className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
-            <DialogFooter data-id="tdzvz5365" data-path="src/components/AgentPasswordManagement.tsx">
-              <Button variant="outline" onClick={() => setSelectedAgent(null)} data-id="3qr2tyy53" data-path="src/components/AgentPasswordManagement.tsx">
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedAgent(null)}>
                 Close
               </Button>
-              <Button onClick={() => sendPasswordEmail(selectedAgent)} data-id="67gy8er01" data-path="src/components/AgentPasswordManagement.tsx">
-                <Mail className="w-4 h-4 mr-2" data-id="lac5axhts" data-path="src/components/AgentPasswordManagement.tsx" />
+              <Button onClick={() => sendPasswordEmail(selectedAgent)}>
+                <Mail className="w-4 h-4 mr-2" />
                 Send via Email
               </Button>
             </DialogFooter>

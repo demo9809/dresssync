@@ -19,7 +19,7 @@ const LoginPage: React.FC = () => {
 
   // Redirect if already logged in
   if (user && !isLoading) {
-    return <Navigate to={user.role === 'manager' ? '/manager/dashboard' : '/agent/dashboard'} replace data-id="xu2g7wcw3" data-path="src/pages/LoginPage.tsx" />;
+    return <Navigate to={user.role === 'manager' ? '/manager/dashboard' : '/agent/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,38 +59,38 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4" data-id="8ctyk9dsg" data-path="src/pages/LoginPage.tsx">
-      <div className="w-full max-w-md" data-id="2c0lzbwrp" data-path="src/pages/LoginPage.tsx">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8" data-id="ih9wzexp8" data-path="src/pages/LoginPage.tsx">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-4" data-id="nz6adduty" data-path="src/pages/LoginPage.tsx">
-            <ShirtIcon className="w-8 h-8 text-white" data-id="i0j944ezl" data-path="src/pages/LoginPage.tsx" />
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-4">
+            <ShirtIcon className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2" data-id="ua9bnseby" data-path="src/pages/LoginPage.tsx">DressSync</h1>
-          <p className="text-gray-600" data-id="8x6vz4sfw" data-path="src/pages/LoginPage.tsx">Professional Apparel Management</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">DressSync</h1>
+          <p className="text-gray-600">Professional Apparel Management</p>
         </div>
 
         {/* Login Form */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm" data-id="k1ae0abi5" data-path="src/pages/LoginPage.tsx">
-          <CardHeader className="space-y-1 text-center" data-id="h4eyzmcpi" data-path="src/pages/LoginPage.tsx">
-            <CardTitle className="text-2xl font-bold" data-id="j941n3ecc" data-path="src/pages/LoginPage.tsx">Sign In</CardTitle>
-            <CardDescription data-id="fofqrzzn8" data-path="src/pages/LoginPage.tsx">
+        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+            <CardDescription>
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           
-          <CardContent data-id="gr2782y13" data-path="src/pages/LoginPage.tsx">
-            <form onSubmit={handleSubmit} className="space-y-4" data-id="eqbf9n750" data-path="src/pages/LoginPage.tsx">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error &&
-              <Alert variant="destructive" data-id="vclxvddy2" data-path="src/pages/LoginPage.tsx">
-                  <AlertDescription data-id="sp46mpjoe" data-path="src/pages/LoginPage.tsx">{error}</AlertDescription>
+              <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
                 </Alert>
               }
 
-              <div className="space-y-2" data-id="qnor510r3" data-path="src/pages/LoginPage.tsx">
-                <Label htmlFor="email" data-id="jgtf78xtq" data-path="src/pages/LoginPage.tsx">Email</Label>
-                <div className="relative" data-id="bdjhpvpnw" data-path="src/pages/LoginPage.tsx">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" data-id="1vx2g3hme" data-path="src/pages/LoginPage.tsx" />
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
@@ -98,15 +98,15 @@ const LoginPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
-                    disabled={isLoading} data-id="vrei3an20" data-path="src/pages/LoginPage.tsx" />
+                    disabled={isLoading} />
 
                 </div>
               </div>
 
-              <div className="space-y-2" data-id="h2598ccxp" data-path="src/pages/LoginPage.tsx">
-                <Label htmlFor="password" data-id="3t4sjyady" data-path="src/pages/LoginPage.tsx">Password</Label>
-                <div className="relative" data-id="2ko6cj8vt" data-path="src/pages/LoginPage.tsx">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" data-id="fo9nvxkjw" data-path="src/pages/LoginPage.tsx" />
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     type="password"
@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
-                    disabled={isLoading} data-id="b018f029v" data-path="src/pages/LoginPage.tsx" />
+                    disabled={isLoading} />
 
                 </div>
               </div>
@@ -122,11 +122,11 @@ const LoginPage: React.FC = () => {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                disabled={isLoading} data-id="ugy09bzo9" data-path="src/pages/LoginPage.tsx">
+                disabled={isLoading}>
 
                 {isLoading ?
                 <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" data-id="r0e1mypri" data-path="src/pages/LoginPage.tsx" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...
                   </> :
 
@@ -136,19 +136,19 @@ const LoginPage: React.FC = () => {
             </form>
 
             {/* Demo Credentials */}
-            <div className="mt-6 pt-6 border-t border-gray-200" data-id="57mbhwymr" data-path="src/pages/LoginPage.tsx">
-              <p className="text-sm text-gray-600 text-center mb-4" data-id="0jk1ytr9k" data-path="src/pages/LoginPage.tsx">Demo Accounts:</p>
-              <div className="grid grid-cols-2 gap-3" data-id="fgkz8c0lg" data-path="src/pages/LoginPage.tsx">
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 text-center mb-4">Demo Accounts:</p>
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => fillDemoCredentials('manager')}
                   disabled={isLoading}
-                  className="flex flex-col items-center p-3 h-auto" data-id="xid6voy9i" data-path="src/pages/LoginPage.tsx">
+                  className="flex flex-col items-center p-3 h-auto">
 
-                  <Badge variant="default" className="mb-1" data-id="ivrln03a8" data-path="src/pages/LoginPage.tsx">Manager</Badge>
-                  <span className="text-xs text-gray-600" data-id="xnzophejw" data-path="src/pages/LoginPage.tsx">Full Access</span>
+                  <Badge variant="default" className="mb-1">Manager</Badge>
+                  <span className="text-xs text-gray-600">Full Access</span>
                 </Button>
                 
                 <Button
@@ -157,10 +157,10 @@ const LoginPage: React.FC = () => {
                   size="sm"
                   onClick={() => fillDemoCredentials('agent')}
                   disabled={isLoading}
-                  className="flex flex-col items-center p-3 h-auto" data-id="w3btopw3t" data-path="src/pages/LoginPage.tsx">
+                  className="flex flex-col items-center p-3 h-auto">
 
-                  <Badge variant="secondary" className="mb-1" data-id="pycpidyh2" data-path="src/pages/LoginPage.tsx">Sales Agent</Badge>
-                  <span className="text-xs text-gray-600" data-id="8udzoa4hn" data-path="src/pages/LoginPage.tsx">Order Management</span>
+                  <Badge variant="secondary" className="mb-1">Sales Agent</Badge>
+                  <span className="text-xs text-gray-600">Order Management</span>
                 </Button>
               </div>
             </div>
@@ -168,8 +168,8 @@ const LoginPage: React.FC = () => {
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-500" data-id="wef8o3a6z" data-path="src/pages/LoginPage.tsx">
-          <p data-id="gyh1gytau" data-path="src/pages/LoginPage.tsx">&copy; 2024 DressSync. All rights reserved.</p>
+        <div className="text-center mt-8 text-sm text-gray-500">
+          <p>&copy; 2024 DressSync. All rights reserved.</p>
         </div>
       </div>
     </div>);

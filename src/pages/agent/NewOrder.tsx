@@ -77,12 +77,18 @@ const NewOrder: React.FC = () => {
   const [availableStock, setAvailableStock] = useState<Record<string, number>>({});
   const [duplicateOrders, setDuplicateOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingStock, setIsCheckingStock] = useState(false);
+  const [stockCheckCompleted, setStockCheckCompleted] = useState(false);
+  const [stockAvailable, setStockAvailable] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTab, setCurrentTab] = useState('customer');
 
   useEffect(() => {
     if (product.type && product.color && product.neckType) {
       loadAvailableStock();
+    } else {
+      setStockCheckCompleted(false);
+      setStockAvailable(false);
     }
   }, [product.type, product.color, product.neckType]);
 
@@ -105,12 +111,22 @@ const NewOrder: React.FC = () => {
     try {
       const stock = await stockService.getStock(product.type, product.color, product.neckType);
       const stockMap: Record<string, number> = {};
+      let hasStock = false;
+      
       stock.forEach((item) => {
         stockMap[item.size] = item.quantity;
+        if (item.quantity > 0) {
+          hasStock = true;
+        }
       });
+      
       setAvailableStock(stockMap);
+      setStockAvailable(hasStock);
+      setStockCheckCompleted(true);
     } catch (error) {
       console.error('Error loading stock:', error);
+      setStockCheckCompleted(true);
+      setStockAvailable(false);
     }
   };
 
@@ -273,9 +289,70 @@ const NewOrder: React.FC = () => {
     await pdfService.printOrderPDF(previewOrder);
   };
 
-  const nextTab = () => {
+  const checkStockBeforeQuantity = async () => {
+    if (!product.type || !product.color || !product.neckType) {
+      toast({
+        title: "Product Details Required",
+        description: "Please select product type, color, and neck type before proceeding to quantity.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (orderType === 'Custom Order') {
+      // Custom orders don't need stock check
+      return true;
+    }
+
+    setIsCheckingStock(true);
+    
+    try {
+      await loadAvailableStock();
+      
+      if (!stockAvailable) {
+        toast({
+          title: "No Stock Available",
+          description: "There is no available stock for the selected product configuration. Please choose a different product or proceed with a Custom Order.",
+          variant: "destructive"
+        });
+        setIsCheckingStock(false);
+        return false;
+      }
+      
+      const totalStock = Object.values(availableStock).reduce((sum, qty) => sum + qty, 0);
+      
+      toast({
+        title: "Stock Check Complete",
+        description: `Total available stock: ${totalStock} units across all sizes.`,
+        variant: "default"
+      });
+      
+      setIsCheckingStock(false);
+      return true;
+    } catch (error) {
+      console.error('Error checking stock:', error);
+      toast({
+        title: "Stock Check Failed",
+        description: "Unable to verify stock availability. Please try again.",
+        variant: "destructive"
+      });
+      setIsCheckingStock(false);
+      return false;
+    }
+  };
+
+  const nextTab = async () => {
     const tabs = ['customer', 'product', 'quantity', 'delivery', 'payment'];
     const currentIndex = tabs.indexOf(currentTab);
+    
+    // If moving from product to quantity, check stock first
+    if (currentTab === 'product' && tabs[currentIndex + 1] === 'quantity') {
+      const canProceed = await checkStockBeforeQuantity();
+      if (!canProceed) {
+        return;
+      }
+    }
+    
     if (currentIndex < tabs.length - 1) {
       setCurrentTab(tabs[currentIndex + 1]);
     }
@@ -290,24 +367,24 @@ const NewOrder: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6" data-id="2jf6kcy8w" data-path="src/pages/agent/NewOrder.tsx">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between" data-id="hano105mq" data-path="src/pages/agent/NewOrder.tsx">
-        <div data-id="j8ys3pwf6" data-path="src/pages/agent/NewOrder.tsx">
-          <h1 className="text-3xl font-bold text-gray-900" data-id="kc4j1no0s" data-path="src/pages/agent/NewOrder.tsx">Create New Order</h1>
-          <p className="text-gray-600 mt-1" data-id="5pkkq7g3m" data-path="src/pages/agent/NewOrder.tsx">Enter customer and product details</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Create New Order</h1>
+          <p className="text-gray-600 mt-1">Enter customer and product details</p>
         </div>
-        <Badge variant="secondary" className="mt-4 md:mt-0" data-id="pd1fmj6vt" data-path="src/pages/agent/NewOrder.tsx">
+        <Badge variant="secondary" className="mt-4 md:mt-0">
           Agent: {user?.name}
         </Badge>
       </div>
 
       {/* Duplicate Orders Warning */}
       {duplicateOrders.length > 0 &&
-      <Alert variant="destructive" data-id="u8s1rb5ml" data-path="src/pages/agent/NewOrder.tsx">
-          <AlertTriangle className="h-4 w-4" data-id="exxkinodn" data-path="src/pages/agent/NewOrder.tsx" />
-          <AlertDescription data-id="9kbhamyfr" data-path="src/pages/agent/NewOrder.tsx">
-            <strong data-id="qggsymwz4" data-path="src/pages/agent/NewOrder.tsx">Potential Duplicate Orders Found!</strong> 
+      <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Potential Duplicate Orders Found!</strong> 
             There are {duplicateOrders.length} existing order(s) for "{customer.name}" 
             with similar details. Please verify before proceeding.
           </AlertDescription>
@@ -315,85 +392,85 @@ const NewOrder: React.FC = () => {
       }
 
       {/* Order Form */}
-      <Card data-id="7vz21jcu9" data-path="src/pages/agent/NewOrder.tsx">
-        <CardHeader data-id="njvdzhuuv" data-path="src/pages/agent/NewOrder.tsx">
-          <CardTitle className="flex items-center space-x-2" data-id="yua8wl87o" data-path="src/pages/agent/NewOrder.tsx">
-            <Package className="w-5 h-5" data-id="e2cuzxdgv" data-path="src/pages/agent/NewOrder.tsx" />
-            <span data-id="mpzwxgv9c" data-path="src/pages/agent/NewOrder.tsx">Order Details</span>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Package className="w-5 h-5" />
+            <span>Order Details</span>
           </CardTitle>
-          <CardDescription data-id="198vaqoay" data-path="src/pages/agent/NewOrder.tsx">Complete all sections to create the order</CardDescription>
+          <CardDescription>Complete all sections to create the order</CardDescription>
         </CardHeader>
         
-        <CardContent data-id="uc2rthjyd" data-path="src/pages/agent/NewOrder.tsx">
-          <Tabs value={currentTab} onValueChange={setCurrentTab} data-id="qlgrtya3b" data-path="src/pages/agent/NewOrder.tsx">
-            <TabsList className="grid w-full grid-cols-5" data-id="zh53jvgml" data-path="src/pages/agent/NewOrder.tsx">
-              <TabsTrigger value="customer" className="flex items-center space-x-2" data-id="lsrihdqmm" data-path="src/pages/agent/NewOrder.tsx">
-                <User className="w-4 h-4" data-id="26ka4bp9g" data-path="src/pages/agent/NewOrder.tsx" />
-                <span className="hidden sm:inline" data-id="nf59hmuog" data-path="src/pages/agent/NewOrder.tsx">Customer</span>
+        <CardContent>
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="customer" className="flex items-center space-x-2">
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Customer</span>
               </TabsTrigger>
-              <TabsTrigger value="product" className="flex items-center space-x-2" data-id="s73f2huwb" data-path="src/pages/agent/NewOrder.tsx">
-                <Package className="w-4 h-4" data-id="ouft78mwh" data-path="src/pages/agent/NewOrder.tsx" />
-                <span className="hidden sm:inline" data-id="lrql6ul2r" data-path="src/pages/agent/NewOrder.tsx">Product</span>
+              <TabsTrigger value="product" className="flex items-center space-x-2">
+                <Package className="w-4 h-4" />
+                <span className="hidden sm:inline">Product</span>
               </TabsTrigger>
-              <TabsTrigger value="quantity" className="flex items-center space-x-2" data-id="xp8odsy4v" data-path="src/pages/agent/NewOrder.tsx">
-                <CheckCircle className="w-4 h-4" data-id="7xvrqqnx0" data-path="src/pages/agent/NewOrder.tsx" />
-                <span className="hidden sm:inline" data-id="dbdk84sur" data-path="src/pages/agent/NewOrder.tsx">Quantity</span>
+              <TabsTrigger value="quantity" className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Quantity</span>
               </TabsTrigger>
-              <TabsTrigger value="delivery" className="flex items-center space-x-2" data-id="j9xsqjsgz" data-path="src/pages/agent/NewOrder.tsx">
-                <Calendar className="w-4 h-4" data-id="kvaouf5qo" data-path="src/pages/agent/NewOrder.tsx" />
-                <span className="hidden sm:inline" data-id="gbxi2s0hb" data-path="src/pages/agent/NewOrder.tsx">Delivery</span>
+              <TabsTrigger value="delivery" className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4" />
+                <span className="hidden sm:inline">Delivery</span>
               </TabsTrigger>
-              <TabsTrigger value="payment" className="flex items-center space-x-2" data-id="g368iaj2a" data-path="src/pages/agent/NewOrder.tsx">
-                <DollarSign className="w-4 h-4" data-id="f8irgzldm" data-path="src/pages/agent/NewOrder.tsx" />
-                <span className="hidden sm:inline" data-id="ay4d5waa4" data-path="src/pages/agent/NewOrder.tsx">Payment</span>
+              <TabsTrigger value="payment" className="flex items-center space-x-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="hidden sm:inline">Payment</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Customer Information Tab */}
-            <TabsContent value="customer" className="space-y-4 mt-6" data-id="exhsbv04y" data-path="src/pages/agent/NewOrder.tsx">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-id="ps1x9wibg" data-path="src/pages/agent/NewOrder.tsx">
-                <div className="space-y-2" data-id="iovd83pst" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="customerName" data-id="c4zf8c0z7" data-path="src/pages/agent/NewOrder.tsx">Customer Name *</Label>
+            <TabsContent value="customer" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">Customer Name *</Label>
                   <Input
                     id="customerName"
                     value={customer.name}
                     onChange={(e) => setCustomer((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="Enter customer name"
-                    className={errors.customerName ? 'border-red-500' : ''} data-id="86yd4imxq" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerName ? 'border-red-500' : ''} />
 
-                  {errors.customerName && <p className="text-sm text-red-600" data-id="t0pqteajq" data-path="src/pages/agent/NewOrder.tsx">{errors.customerName}</p>}
+                  {errors.customerName && <p className="text-sm text-red-600">{errors.customerName}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="2pnjbnz8r" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="customerPhone" data-id="pebus7if1" data-path="src/pages/agent/NewOrder.tsx">Phone Number *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="customerPhone">Phone Number *</Label>
                   <Input
                     id="customerPhone"
                     value={customer.phone}
                     onChange={(e) => setCustomer((prev) => ({ ...prev, phone: e.target.value }))}
                     placeholder="+1234567890"
-                    className={errors.customerPhone ? 'border-red-500' : ''} data-id="fup0rp6vz" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerPhone ? 'border-red-500' : ''} />
 
-                  {errors.customerPhone && <p className="text-sm text-red-600" data-id="3sltnl976" data-path="src/pages/agent/NewOrder.tsx">{errors.customerPhone}</p>}
+                  {errors.customerPhone && <p className="text-sm text-red-600">{errors.customerPhone}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="qmp34eq67" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="customerWhatsapp" data-id="7iw5vxajz" data-path="src/pages/agent/NewOrder.tsx">WhatsApp Number *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="customerWhatsapp">WhatsApp Number *</Label>
                   <Input
                     id="customerWhatsapp"
                     value={customer.whatsapp}
                     onChange={(e) => setCustomer((prev) => ({ ...prev, whatsapp: e.target.value }))}
                     placeholder="+1234567890"
-                    className={errors.customerWhatsapp ? 'border-red-500' : ''} data-id="uz2y0gn1o" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerWhatsapp ? 'border-red-500' : ''} />
 
-                  {errors.customerWhatsapp && <p className="text-sm text-red-600" data-id="v6wyu6qsh" data-path="src/pages/agent/NewOrder.tsx">{errors.customerWhatsapp}</p>}
+                  {errors.customerWhatsapp && <p className="text-sm text-red-600">{errors.customerWhatsapp}</p>}
                 </div>
               </div>
               
-              <Separator data-id="az9x8x6tm" data-path="src/pages/agent/NewOrder.tsx" />
+              <Separator />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-id="tji202bxp" data-path="src/pages/agent/NewOrder.tsx">
-                <div className="space-y-2" data-id="s41lltagr" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="street" data-id="i0gz7fm4f" data-path="src/pages/agent/NewOrder.tsx">Street Address *</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street Address *</Label>
                   <Input
                     id="street"
                     value={customer.address.street}
@@ -402,13 +479,13 @@ const NewOrder: React.FC = () => {
                       address: { ...prev.address, street: e.target.value }
                     }))}
                     placeholder="123 Main Street"
-                    className={errors.customerStreet ? 'border-red-500' : ''} data-id="ceyw6c6yq" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerStreet ? 'border-red-500' : ''} />
 
-                  {errors.customerStreet && <p className="text-sm text-red-600" data-id="0um38nt9j" data-path="src/pages/agent/NewOrder.tsx">{errors.customerStreet}</p>}
+                  {errors.customerStreet && <p className="text-sm text-red-600">{errors.customerStreet}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="wri1nimnx" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="city" data-id="y82ad5nbx" data-path="src/pages/agent/NewOrder.tsx">City *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
                     value={customer.address.city}
@@ -417,13 +494,13 @@ const NewOrder: React.FC = () => {
                       address: { ...prev.address, city: e.target.value }
                     }))}
                     placeholder="New York"
-                    className={errors.customerCity ? 'border-red-500' : ''} data-id="te1qxsb0y" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerCity ? 'border-red-500' : ''} />
 
-                  {errors.customerCity && <p className="text-sm text-red-600" data-id="gc8i3yiaf" data-path="src/pages/agent/NewOrder.tsx">{errors.customerCity}</p>}
+                  {errors.customerCity && <p className="text-sm text-red-600">{errors.customerCity}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="gf6viu1s4" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="state" data-id="0rxj8dd2h" data-path="src/pages/agent/NewOrder.tsx">State *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State *</Label>
                   <Input
                     id="state"
                     value={customer.address.state}
@@ -432,13 +509,13 @@ const NewOrder: React.FC = () => {
                       address: { ...prev.address, state: e.target.value }
                     }))}
                     placeholder="NY"
-                    className={errors.customerState ? 'border-red-500' : ''} data-id="gm818uaz2" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerState ? 'border-red-500' : ''} />
 
-                  {errors.customerState && <p className="text-sm text-red-600" data-id="89lya5hxq" data-path="src/pages/agent/NewOrder.tsx">{errors.customerState}</p>}
+                  {errors.customerState && <p className="text-sm text-red-600">{errors.customerState}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="h55rynakf" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="zipCode" data-id="y2pa8skwv" data-path="src/pages/agent/NewOrder.tsx">Zip Code *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">Zip Code *</Label>
                   <Input
                     id="zipCode"
                     value={customer.address.zipCode}
@@ -447,105 +524,140 @@ const NewOrder: React.FC = () => {
                       address: { ...prev.address, zipCode: e.target.value }
                     }))}
                     placeholder="10001"
-                    className={errors.customerZip ? 'border-red-500' : ''} data-id="hf766knp7" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.customerZip ? 'border-red-500' : ''} />
 
-                  {errors.customerZip && <p className="text-sm text-red-600" data-id="bwv927m26" data-path="src/pages/agent/NewOrder.tsx">{errors.customerZip}</p>}
+                  {errors.customerZip && <p className="text-sm text-red-600">{errors.customerZip}</p>}
                 </div>
               </div>
             </TabsContent>
 
             {/* Product Information Tab */}
-            <TabsContent value="product" className="space-y-4 mt-6" data-id="51f5sqhfc" data-path="src/pages/agent/NewOrder.tsx">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-id="endr43esk" data-path="src/pages/agent/NewOrder.tsx">
-                <div className="space-y-2" data-id="zjsu2bo5y" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label data-id="6so9kq3f4" data-path="src/pages/agent/NewOrder.tsx">Product Type *</Label>
+            <TabsContent value="product" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Product Type *</Label>
                   <Select
                     value={product.type}
-                    onValueChange={(value) => setProduct((prev) => ({ ...prev, type: value }))} data-id="2tkln1prl" data-path="src/pages/agent/NewOrder.tsx">
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, type: value }))}>
 
-                    <SelectTrigger className={errors.productType ? 'border-red-500' : ''} data-id="td98ev4qt" data-path="src/pages/agent/NewOrder.tsx">
-                      <SelectValue placeholder="Select product type" data-id="m0rnoihrq" data-path="src/pages/agent/NewOrder.tsx" />
+                    <SelectTrigger className={errors.productType ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select product type" />
                     </SelectTrigger>
-                    <SelectContent data-id="0fjfdk9cv" data-path="src/pages/agent/NewOrder.tsx">
+                    <SelectContent>
                       {productConfig.productTypes.map((type) =>
-                      <SelectItem key={type} value={type} data-id="gkp7sp0gu" data-path="src/pages/agent/NewOrder.tsx">{type}</SelectItem>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.productType && <p className="text-sm text-red-600" data-id="icpzl4jch" data-path="src/pages/agent/NewOrder.tsx">{errors.productType}</p>}
+                  {errors.productType && <p className="text-sm text-red-600">{errors.productType}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="qotmbizb9" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label data-id="bkim4bk45" data-path="src/pages/agent/NewOrder.tsx">Color *</Label>
+                <div className="space-y-2">
+                  <Label>Color *</Label>
                   <Select
                     value={product.color}
-                    onValueChange={(value) => setProduct((prev) => ({ ...prev, color: value }))} data-id="bdyqlupiy" data-path="src/pages/agent/NewOrder.tsx">
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, color: value }))}>
 
-                    <SelectTrigger className={errors.productColor ? 'border-red-500' : ''} data-id="slth2mk8h" data-path="src/pages/agent/NewOrder.tsx">
-                      <SelectValue placeholder="Select color" data-id="hj7ug7062" data-path="src/pages/agent/NewOrder.tsx" />
+                    <SelectTrigger className={errors.productColor ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select color" />
                     </SelectTrigger>
-                    <SelectContent data-id="h74ecke5m" data-path="src/pages/agent/NewOrder.tsx">
+                    <SelectContent>
                       {productConfig.colors.map((color) =>
-                      <SelectItem key={color} value={color} data-id="ibfktcgvz" data-path="src/pages/agent/NewOrder.tsx">{color}</SelectItem>
+                      <SelectItem key={color} value={color}>{color}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.productColor && <p className="text-sm text-red-600" data-id="fv7zh7l54" data-path="src/pages/agent/NewOrder.tsx">{errors.productColor}</p>}
+                  {errors.productColor && <p className="text-sm text-red-600">{errors.productColor}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="nc1lduuev" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label data-id="h64ovikuu" data-path="src/pages/agent/NewOrder.tsx">Neck Type *</Label>
+                <div className="space-y-2">
+                  <Label>Neck Type *</Label>
                   <Select
                     value={product.neckType}
-                    onValueChange={(value) => setProduct((prev) => ({ ...prev, neckType: value }))} data-id="gp5fg93fm" data-path="src/pages/agent/NewOrder.tsx">
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, neckType: value }))}>
 
-                    <SelectTrigger className={errors.productNeck ? 'border-red-500' : ''} data-id="195algk1f" data-path="src/pages/agent/NewOrder.tsx">
-                      <SelectValue placeholder="Select neck type" data-id="ebnbrbeht" data-path="src/pages/agent/NewOrder.tsx" />
+                    <SelectTrigger className={errors.productNeck ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select neck type" />
                     </SelectTrigger>
-                    <SelectContent data-id="7u8l0yzt3" data-path="src/pages/agent/NewOrder.tsx">
+                    <SelectContent>
                       {productConfig.neckTypes.map((neck) =>
-                      <SelectItem key={neck} value={neck} data-id="oaus76pb8" data-path="src/pages/agent/NewOrder.tsx">{neck}</SelectItem>
+                      <SelectItem key={neck} value={neck}>{neck}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.productNeck && <p className="text-sm text-red-600" data-id="436486i7u" data-path="src/pages/agent/NewOrder.tsx">{errors.productNeck}</p>}
+                  {errors.productNeck && <p className="text-sm text-red-600">{errors.productNeck}</p>}
                 </div>
               </div>
               
-              <div className="space-y-2" data-id="99inp8a7o" data-path="src/pages/agent/NewOrder.tsx">
-                <Label data-id="q4snyu2f1" data-path="src/pages/agent/NewOrder.tsx">Order Type</Label>
+              <div className="space-y-2">
+                <Label>Order Type</Label>
                 <Select
                   value={orderType}
-                  onValueChange={(value) => setOrderType(value as typeof orderType)} data-id="65tr0k2z5" data-path="src/pages/agent/NewOrder.tsx">
+                  onValueChange={(value) => setOrderType(value as typeof orderType)}>
 
-                  <SelectTrigger data-id="hunqktvzp" data-path="src/pages/agent/NewOrder.tsx">
-                    <SelectValue data-id="euf4tp15s" data-path="src/pages/agent/NewOrder.tsx" />
+                  <SelectTrigger>
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent data-id="0ladqdvfo" data-path="src/pages/agent/NewOrder.tsx">
-                    <SelectItem value="From Stock" data-id="r1n7jfven" data-path="src/pages/agent/NewOrder.tsx">From Stock</SelectItem>
-                    <SelectItem value="Custom Order" data-id="wc438sfky" data-path="src/pages/agent/NewOrder.tsx">Custom Order</SelectItem>
-                    <SelectItem value="Mixed Order" data-id="0md7iqwb7" data-path="src/pages/agent/NewOrder.tsx">Mixed Order</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="From Stock">From Stock</SelectItem>
+                    <SelectItem value="Custom Order">Custom Order</SelectItem>
+                    <SelectItem value="Mixed Order">Mixed Order</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Stock Status Indicator */}
+              {(orderType === 'From Stock' || orderType === 'Mixed Order') && product.type && product.color && product.neckType && (
+                <div className="space-y-2">
+                  <Label>Stock Status</Label>
+                  <div className="p-4 border rounded-lg">
+                    {!stockCheckCompleted ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-600">Checking stock availability...</span>
+                      </div>
+                    ) : stockAvailable ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-600">Stock Available</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                          {Object.entries(availableStock).map(([size, qty]) => (
+                            <div key={size} className={`flex justify-between p-2 rounded ${qty > 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                              <span className="font-medium">{size}:</span>
+                              <span className={qty > 0 ? 'text-green-600' : 'text-red-600'}>{qty}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-medium text-red-600">No Stock Available</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
-              <div className="space-y-2" data-id="o3b0mh2or" data-path="src/pages/agent/NewOrder.tsx">
-                <Label htmlFor="specialInstructions" data-id="bhflbq95e" data-path="src/pages/agent/NewOrder.tsx">Special Instructions</Label>
+              <div className="space-y-2">
+                <Label htmlFor="specialInstructions">Special Instructions</Label>
                 <Textarea
                   id="specialInstructions"
                   value={product.specialInstructions}
                   onChange={(e) => setProduct((prev) => ({ ...prev, specialInstructions: e.target.value }))}
                   placeholder="Any special requirements, logo placement, etc."
-                  rows={3} data-id="mqfgsjxuu" data-path="src/pages/agent/NewOrder.tsx" />
+                  rows={3} />
 
               </div>
               
-              <div className="space-y-2" data-id="eg6jhcugi" data-path="src/pages/agent/NewOrder.tsx">
-                <Label data-id="n9g4744f4" data-path="src/pages/agent/NewOrder.tsx">File Upload</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center" data-id="qu9epjqbu" data-path="src/pages/agent/NewOrder.tsx">
-                  <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" data-id="cc2jkit1a" data-path="src/pages/agent/NewOrder.tsx" />
-                  <p className="text-sm text-gray-600" data-id="mejd8cgz8" data-path="src/pages/agent/NewOrder.tsx">Upload logo or design files</p>
-                  <Button variant="outline" size="sm" className="mt-2" data-id="k5qqht4zv" data-path="src/pages/agent/NewOrder.tsx">
+              <div className="space-y-2">
+                <Label>File Upload</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-600">Upload logo or design files</p>
+                  <Button variant="outline" size="sm" className="mt-2">
                     Choose Files
                   </Button>
                 </div>
@@ -553,9 +665,9 @@ const NewOrder: React.FC = () => {
             </TabsContent>
 
             {/* Quantity & Size Breakdown Tab */}
-            <TabsContent value="quantity" className="space-y-4 mt-6" data-id="cv4htkx8w" data-path="src/pages/agent/NewOrder.tsx">
-              <div className="space-y-2" data-id="0cldry8ul" data-path="src/pages/agent/NewOrder.tsx">
-                <Label htmlFor="totalQuantity" data-id="jtqa8vte3" data-path="src/pages/agent/NewOrder.tsx">Total Quantity *</Label>
+            <TabsContent value="quantity" className="space-y-4 mt-6">
+              <div className="space-y-2">
+                <Label htmlFor="totalQuantity">Total Quantity *</Label>
                 <Input
                   id="totalQuantity"
                   type="number"
@@ -563,61 +675,61 @@ const NewOrder: React.FC = () => {
                   onChange={(e) => setQuantity((prev) => ({ ...prev, total: parseInt(e.target.value) || 0 }))}
                   placeholder="Enter total quantity"
                   min="1"
-                  className={errors.quantity ? 'border-red-500' : ''} data-id="apcuu7z9k" data-path="src/pages/agent/NewOrder.tsx" />
+                  className={errors.quantity ? 'border-red-500' : ''} />
 
-                {errors.quantity && <p className="text-sm text-red-600" data-id="b3bkt6nu8" data-path="src/pages/agent/NewOrder.tsx">{errors.quantity}</p>}
+                {errors.quantity && <p className="text-sm text-red-600">{errors.quantity}</p>}
               </div>
               
               <SizeBreakdown
                 totalQuantity={quantity.total}
                 sizeBreakdown={quantity.sizeBreakdown}
                 onSizeBreakdownChange={(breakdown) => setQuantity((prev) => ({ ...prev, sizeBreakdown: breakdown }))}
-                availableStock={orderType === 'From Stock' || orderType === 'Mixed Order' ? availableStock : undefined} data-id="5knqc6n0d" data-path="src/pages/agent/NewOrder.tsx" />
+                availableStock={orderType === 'From Stock' || orderType === 'Mixed Order' ? availableStock : undefined} />
 
               
               {errors.sizeBreakdown &&
-              <Alert variant="destructive" data-id="0cv31w3ud" data-path="src/pages/agent/NewOrder.tsx">
-                  <AlertTriangle className="h-4 w-4" data-id="5l7h3mday" data-path="src/pages/agent/NewOrder.tsx" />
-                  <AlertDescription data-id="7pxfve7cj" data-path="src/pages/agent/NewOrder.tsx">{errors.sizeBreakdown}</AlertDescription>
+              <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{errors.sizeBreakdown}</AlertDescription>
                 </Alert>
               }
             </TabsContent>
 
             {/* Delivery Information Tab */}
-            <TabsContent value="delivery" className="space-y-4 mt-6" data-id="rxrawx07z" data-path="src/pages/agent/NewOrder.tsx">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-id="ctmg3ocp3" data-path="src/pages/agent/NewOrder.tsx">
-                <div className="space-y-2" data-id="dngsl5v43" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="eventDate" data-id="yxtiqqz65" data-path="src/pages/agent/NewOrder.tsx">Event Date *</Label>
+            <TabsContent value="delivery" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="eventDate">Event Date *</Label>
                   <Input
                     id="eventDate"
                     type="date"
                     value={delivery.eventDate}
                     onChange={(e) => setDelivery((prev) => ({ ...prev, eventDate: e.target.value }))}
-                    className={errors.eventDate ? 'border-red-500' : ''} data-id="efxytdnku" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.eventDate ? 'border-red-500' : ''} />
 
-                  {errors.eventDate && <p className="text-sm text-red-600" data-id="ye1frehkr" data-path="src/pages/agent/NewOrder.tsx">{errors.eventDate}</p>}
+                  {errors.eventDate && <p className="text-sm text-red-600">{errors.eventDate}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="wlzmy2nwu" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="deliveryDate" data-id="gp7ivtao4" data-path="src/pages/agent/NewOrder.tsx">Delivery Date *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryDate">Delivery Date *</Label>
                   <Input
                     id="deliveryDate"
                     type="date"
                     value={delivery.deliveryDate}
                     onChange={(e) => setDelivery((prev) => ({ ...prev, deliveryDate: e.target.value }))}
-                    className={errors.deliveryDate ? 'border-red-500' : ''} data-id="ty783a4ed" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.deliveryDate ? 'border-red-500' : ''} />
 
-                  {errors.deliveryDate && <p className="text-sm text-red-600" data-id="7e1pen5ns" data-path="src/pages/agent/NewOrder.tsx">{errors.deliveryDate}</p>}
-                  <p className="text-xs text-gray-500" data-id="99e79b0jl" data-path="src/pages/agent/NewOrder.tsx">Must be before event date</p>
+                  {errors.deliveryDate && <p className="text-sm text-red-600">{errors.deliveryDate}</p>}
+                  <p className="text-xs text-gray-500">Must be before event date</p>
                 </div>
               </div>
             </TabsContent>
 
             {/* Payment Information Tab */}
-            <TabsContent value="payment" className="space-y-4 mt-6" data-id="1rmnpcfv4" data-path="src/pages/agent/NewOrder.tsx">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-id="rx7c8skmi" data-path="src/pages/agent/NewOrder.tsx">
-                <div className="space-y-2" data-id="8qkf7arf8" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="paymentAmount" data-id="w6828bdwu" data-path="src/pages/agent/NewOrder.tsx">Total Amount ($) *</Label>
+            <TabsContent value="payment" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paymentAmount">Total Amount ($) *</Label>
                   <Input
                     id="paymentAmount"
                     type="number"
@@ -625,13 +737,13 @@ const NewOrder: React.FC = () => {
                     value={payment.amount}
                     onChange={(e) => setPayment((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentAmount ? 'border-red-500' : ''} data-id="j8dychi7g" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.paymentAmount ? 'border-red-500' : ''} />
 
-                  {errors.paymentAmount && <p className="text-sm text-red-600" data-id="3hlzweytr" data-path="src/pages/agent/NewOrder.tsx">{errors.paymentAmount}</p>}
+                  {errors.paymentAmount && <p className="text-sm text-red-600">{errors.paymentAmount}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="e0o62zehd" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label htmlFor="paymentPaid" data-id="bemiutrqh" data-path="src/pages/agent/NewOrder.tsx">Amount Paid ($)</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentPaid">Amount Paid ($)</Label>
                   <Input
                     id="paymentPaid"
                     type="number"
@@ -639,16 +751,16 @@ const NewOrder: React.FC = () => {
                     value={payment.paid}
                     onChange={(e) => setPayment((prev) => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className={errors.paymentPaid ? 'border-red-500' : ''} data-id="hwkr98utp" data-path="src/pages/agent/NewOrder.tsx" />
+                    className={errors.paymentPaid ? 'border-red-500' : ''} />
 
-                  {errors.paymentPaid && <p className="text-sm text-red-600" data-id="9cpsh0xrs" data-path="src/pages/agent/NewOrder.tsx">{errors.paymentPaid}</p>}
+                  {errors.paymentPaid && <p className="text-sm text-red-600">{errors.paymentPaid}</p>}
                 </div>
                 
-                <div className="space-y-2" data-id="5qxj3dwiu" data-path="src/pages/agent/NewOrder.tsx">
-                  <Label data-id="82e3c6og2" data-path="src/pages/agent/NewOrder.tsx">Payment Status</Label>
-                  <div className="p-3 bg-gray-50 rounded-lg" data-id="isxkluy82" data-path="src/pages/agent/NewOrder.tsx">
-                    <p className="text-sm" data-id="zhvjcw3dz" data-path="src/pages/agent/NewOrder.tsx">
-                      <span className="font-medium" data-id="xu7rlvx7g" data-path="src/pages/agent/NewOrder.tsx">Pending: </span>
+                <div className="space-y-2">
+                  <Label>Payment Status</Label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm">
+                      <span className="font-medium">Pending: </span>
                       ${payment.pending.toFixed(2)}
                     </p>
                     <Badge
@@ -657,7 +769,7 @@ const NewOrder: React.FC = () => {
                       payment.status === 'Partial' ? 'secondary' :
                       'destructive'
                       }
-                      className="mt-1" data-id="soqgc05k6" data-path="src/pages/agent/NewOrder.tsx">
+                      className="mt-1">
 
                       {payment.status}
                     </Badge>
@@ -668,13 +780,13 @@ const NewOrder: React.FC = () => {
           </Tabs>
 
           {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t space-y-4 sm:space-y-0" data-id="0c5cehl84" data-path="src/pages/agent/NewOrder.tsx">
-            <div className="flex space-x-2" data-id="xg2b8r8k2" data-path="src/pages/agent/NewOrder.tsx">
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t space-y-4 sm:space-y-0">
+            <div className="flex space-x-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={prevTab}
-                disabled={currentTab === 'customer'} data-id="4xfpq28gl" data-path="src/pages/agent/NewOrder.tsx">
+                disabled={currentTab === 'customer'}>
 
                 Previous
               </Button>
@@ -682,37 +794,44 @@ const NewOrder: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={nextTab}
-                disabled={currentTab === 'payment'} data-id="x0ut0fzac" data-path="src/pages/agent/NewOrder.tsx">
+                disabled={currentTab === 'payment' || isCheckingStock}>
 
-                Next
+                {isCheckingStock && currentTab === 'product' ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
+                    Checking Stock...
+                  </>
+                ) : (
+                  'Next'
+                )}
               </Button>
             </div>
             
-            <div className="flex space-x-2" data-id="z9xdq88nn" data-path="src/pages/agent/NewOrder.tsx">
+            <div className="flex space-x-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleGeneratePreview}
-                className="flex items-center space-x-2" data-id="vrk2rcmxo" data-path="src/pages/agent/NewOrder.tsx">
+                className="flex items-center space-x-2">
 
-                <FileText className="w-4 h-4" data-id="nj9umpxeu" data-path="src/pages/agent/NewOrder.tsx" />
-                <span data-id="tnu9t4s14" data-path="src/pages/agent/NewOrder.tsx">Preview PDF</span>
+                <FileText className="w-4 h-4" />
+                <span>Preview PDF</span>
               </Button>
               
               <Button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600" data-id="rkavm5573" data-path="src/pages/agent/NewOrder.tsx">
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
 
                 {isLoading ?
                 <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" data-id="qrk5leno3" data-path="src/pages/agent/NewOrder.tsx" />
-                    <span data-id="vhrjdw1ok" data-path="src/pages/agent/NewOrder.tsx">Creating...</span>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Creating...</span>
                   </> :
 
                 <>
-                    <Save className="w-4 h-4" data-id="g6e03xdew" data-path="src/pages/agent/NewOrder.tsx" />
-                    <span data-id="rzxn0dtka" data-path="src/pages/agent/NewOrder.tsx">Create Order</span>
+                    <Save className="w-4 h-4" />
+                    <span>Create Order</span>
                   </>
                 }
               </Button>
