@@ -282,12 +282,7 @@ const NewOrder: React.FC = () => {
       newErrors.deliveryDate = 'Delivery date must be before event date';
     }
 
-    // Payment validation
-    if (payment.amount <= 0) newErrors.paymentAmount = 'Payment amount must be greater than 0';
-    if (payment.paid < 0) newErrors.paymentPaid = 'Paid amount cannot be negative';
-    if (payment.paid > payment.amount) newErrors.paymentPaid = 'Paid amount cannot exceed total amount';
-
-    // Pricing validation
+    // Basic pricing validation (removed payment validation)
     if (pricing.pricePerUnit <= 0) newErrors.pricePerUnit = 'Price per unit must be greater than 0';
     if (pricing.discountPercentage < 0 || pricing.discountPercentage > 100) {
       newErrors.discountPercentage = 'Discount must be between 0 and 100%';
@@ -469,7 +464,7 @@ const NewOrder: React.FC = () => {
   };
 
   const nextTab = async () => {
-    const tabs = ['customer', 'product', 'quantity', 'delivery', 'payment'];
+    const tabs = ['customer', 'product', 'quantity', 'delivery'];
     const currentIndex = tabs.indexOf(currentTab);
 
     // If moving from product to quantity, check stock first
@@ -486,7 +481,7 @@ const NewOrder: React.FC = () => {
   };
 
   const prevTab = () => {
-    const tabs = ['customer', 'product', 'quantity', 'delivery', 'payment'];
+    const tabs = ['customer', 'product', 'quantity', 'delivery'];
     const currentIndex = tabs.indexOf(currentTab);
     if (currentIndex > 0) {
       setCurrentTab(tabs[currentIndex - 1]);
@@ -557,7 +552,7 @@ const NewOrder: React.FC = () => {
           }
           
           <Tabs value={currentTab} onValueChange={setCurrentTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="customer" className="flex items-center space-x-2">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">Customer</span>
@@ -568,16 +563,13 @@ const NewOrder: React.FC = () => {
               </TabsTrigger>
               <TabsTrigger value="quantity" className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Quantity</span>
+                <span className="hidden sm:inline">Quantity & Delivery</span>
               </TabsTrigger>
               <TabsTrigger value="delivery" className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Delivery</span>
+                <span className="hidden sm:inline">Summary</span>
               </TabsTrigger>
-              <TabsTrigger value="payment" className="flex items-center space-x-2">
-                <DollarSign className="w-4 h-4" />
-                <span className="hidden sm:inline">Payment</span>
-              </TabsTrigger>
+
             </TabsList>
 
             {/* Customer Information Tab */}
@@ -600,7 +592,15 @@ const NewOrder: React.FC = () => {
                   <Input
                     id="customerPhone"
                     value={customer.phone}
-                    onChange={(e) => setCustomer((prev) => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => {
+                      const phoneValue = e.target.value;
+                      setCustomer((prev) => ({ 
+                        ...prev, 
+                        phone: phoneValue,
+                        // Auto-fill WhatsApp with phone number if WhatsApp is empty
+                        whatsapp: prev.whatsapp === '' ? phoneValue : prev.whatsapp
+                      }));
+                    }}
                     placeholder="+1234567890"
                     className={errors.customerPhone ? 'border-red-500' : ''} />
 
@@ -799,7 +799,9 @@ const NewOrder: React.FC = () => {
               </div>
             </TabsContent>
 
-            {/* Quantity & Size Breakdown Tab */}
+
+
+            {/* Delivery Information Tab - now moved to quantity tab */}
             <TabsContent value="quantity" className="space-y-4 mt-6">
               <div className="space-y-2">
                 <Label htmlFor="totalQuantity">Total Quantity *</Label>
@@ -828,180 +830,117 @@ const NewOrder: React.FC = () => {
                   <AlertDescription>{errors.sizeBreakdown}</AlertDescription>
                 </Alert>
               }
-            </TabsContent>
 
-            {/* Delivery Information Tab */}
-            <TabsContent value="delivery" className="space-y-4 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="eventDate">Event Date *</Label>
-                  <Input
-                    id="eventDate"
-                    type="date"
-                    value={delivery.eventDate}
-                    onChange={(e) => setDelivery((prev) => ({ ...prev, eventDate: e.target.value }))}
-                    className={errors.eventDate ? 'border-red-500' : ''} />
+              {/* Delivery Information in Quantity Tab */}
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Delivery Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="eventDate">Event Date *</Label>
+                    <Input
+                      id="eventDate"
+                      type="date"
+                      value={delivery.eventDate}
+                      onChange={(e) => setDelivery((prev) => ({ ...prev, eventDate: e.target.value }))}
+                      className={errors.eventDate ? 'border-red-500' : ''} />
 
-                  {errors.eventDate && <p className="text-sm text-red-600">{errors.eventDate}</p>}
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="deliveryDate">Delivery Date *</Label>
-                  <Input
-                    id="deliveryDate"
-                    type="date"
-                    value={delivery.deliveryDate}
-                    onChange={(e) => setDelivery((prev) => ({ ...prev, deliveryDate: e.target.value }))}
-                    className={errors.deliveryDate ? 'border-red-500' : ''} />
+                    {errors.eventDate && <p className="text-sm text-red-600">{errors.eventDate}</p>}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="deliveryDate">Delivery Date *</Label>
+                    <Input
+                      id="deliveryDate"
+                      type="date"
+                      value={delivery.deliveryDate}
+                      onChange={(e) => setDelivery((prev) => ({ ...prev, deliveryDate: e.target.value }))}
+                      className={errors.deliveryDate ? 'border-red-500' : ''} />
 
-                  {errors.deliveryDate && <p className="text-sm text-red-600">{errors.deliveryDate}</p>}
-                  <p className="text-xs text-gray-500">Must be before event date</p>
+                    {errors.deliveryDate && <p className="text-sm text-red-600">{errors.deliveryDate}</p>}
+                    <p className="text-xs text-gray-500">Must be before event date</p>
+                  </div>
                 </div>
               </div>
             </TabsContent>
 
-            {/* Payment Information Tab */}
-            <TabsContent value="payment" className="space-y-6 mt-6">
-              {/* Pricing Breakdown */}
+            {/* Order Summary Tab */}
+            <TabsContent value="delivery" className="space-y-6 mt-6">
+              {/* Order Summary */}
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <DollarSign className="w-5 h-5 mr-2" />
-                  Pricing Breakdown
+                  <Package className="w-5 h-5 mr-2" />
+                  Order Summary
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Price per unit:</span>
-                      <span className="font-medium">${pricing.pricePerUnit.toFixed(2)}</span>
+                      <span className="text-sm text-gray-600">Customer:</span>
+                      <span className="font-medium">{customer.name || 'Not set'}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Quantity:</span>
+                      <span className="text-sm text-gray-600">Phone:</span>
+                      <span className="font-medium">{customer.phone || 'Not set'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">WhatsApp:</span>
+                      <span className="font-medium">{customer.whatsapp || 'Not set'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Address:</span>
+                      <span className="font-medium text-right">
+                        {customer.address.street ? 
+                          `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.zipCode}` : 
+                          'Not set'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Product:</span>
+                      <span className="font-medium">{product.type || 'Not set'} - {product.color || 'Not set'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Order Type:</span>
+                      <span className="font-medium">{orderType}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Quantity:</span>
                       <span className="font-medium">{quantity.total} units</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Subtotal:</span>
-                      <span className="font-medium">${pricing.subtotal.toFixed(2)}</span>
+                      <span className="text-sm text-gray-600">Event Date:</span>
+                      <span className="font-medium">{delivery.eventDate ? new Date(delivery.eventDate).toLocaleDateString() : 'Not set'}</span>
                     </div>
-                  </div>
-                  <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Discount ({pricing.discountPercentage}%):</span>
-                      <span className="font-medium text-green-600">-${pricing.discountAmount.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold text-gray-900">Total Amount:</span>
-                        <span className="text-xl font-bold text-blue-600">${pricing.totalAmount.toFixed(2)}</span>
-                      </div>
+                      <span className="text-sm text-gray-600">Delivery Date:</span>
+                      <span className="font-medium">{delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : 'Not set'}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Discount and Payment Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="discountPercentage">Discount (%)</Label>
-                  <Input
-                    id="discountPercentage"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={pricing.discountPercentage}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, discountPercentage: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.0" />
-
-                  <p className="text-xs text-gray-500">Enter discount percentage (0-100%)</p>
-                </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="pricePerUnit">Price per Unit ($)</Label>
-                  <Input
-                    id="pricePerUnit"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={pricing.pricePerUnit}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, pricePerUnit: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00" />
-
-                  <p className="text-xs text-gray-500">Adjust price per unit if needed</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="paymentAmount">Final Total ($) *</Label>
-                  <Input
-                    id="paymentAmount"
-                    type="number"
-                    step="0.01"
-                    value={payment.amount}
-                    onChange={(e) => setPayment((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00"
-                    className={`${errors.paymentAmount ? 'border-red-500' : ''} bg-gray-50`}
-                    readOnly />
-
-                  {errors.paymentAmount && <p className="text-sm text-red-600">{errors.paymentAmount}</p>}
-                  <p className="text-xs text-gray-500">Auto-calculated total amount</p>
-                </div>
-              </div>
-
-              {/* Payment Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="paymentPaid">Amount Paid ($)</Label>
-                  <Input
-                    id="paymentPaid"
-                    type="number"
-                    step="0.01"
-                    value={payment.paid}
-                    onChange={(e) => setPayment((prev) => ({ ...prev, paid: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00"
-                    className={errors.paymentPaid ? 'border-red-500' : ''} />
-
-                  {errors.paymentPaid && <p className="text-sm text-red-600">{errors.paymentPaid}</p>}
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Payment Status</Label>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Total Amount:</span>
-                        <span className="font-medium">${payment.amount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Amount Paid:</span>
-                        <span className="font-medium">${payment.paid.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t pt-2">
-                        <span className="text-sm font-medium text-gray-900">Pending:</span>
-                        <span className="font-bold text-red-600">${payment.pending.toFixed(2)}</span>
-                      </div>
-                      <Badge
-                        variant={
-                        payment.status === 'Complete' ? 'default' :
-                        payment.status === 'Partial' ? 'secondary' :
-                        'destructive'
-                        }
-                        className="mt-2">
-                        {payment.status}
-                      </Badge>
+                {/* Size Breakdown Summary */}
+                {Object.keys(quantity.sizeBreakdown).length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Size Breakdown:</h4>
+                    <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                      {Object.entries(quantity.sizeBreakdown).map(([size, qty]) => (
+                        <div key={size} className="flex flex-col items-center p-2 bg-white rounded border">
+                          <span className="text-xs font-medium text-gray-600">{size}</span>
+                          <span className="text-lg font-bold text-blue-600">{qty}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              {/* Pricing Notes */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">Pricing Information:</h4>
-                <ul className="text-xs text-blue-800 space-y-1">
-                  <li>• Stock items: Lower base pricing</li>
-                  <li>• Custom orders: Premium pricing for personalization</li>
-                  <li>• Mixed orders: Balanced pricing</li>
-                  <li>• Bulk discounts: 5% off for 50+ items, 10% off for 100+ items</li>
-                  <li>• Additional discounts can be applied manually</li>
-                </ul>
+                )}
+                
+                {/* Special Instructions */}
+                {product.specialInstructions && (
+                  <div className="mt-4 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Special Instructions:</h4>
+                    <p className="text-sm text-gray-600 bg-white p-3 rounded border">{product.specialInstructions}</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
@@ -1009,29 +948,30 @@ const NewOrder: React.FC = () => {
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t space-y-4 sm:space-y-0">
             <div className="flex space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={prevTab}
-                disabled={currentTab === 'customer'}>
-
-                Previous
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={nextTab}
-                disabled={currentTab === 'payment' || isCheckingStock}>
-
-                {isCheckingStock && currentTab === 'product' ?
-                <>
-                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
-                    Checking Stock...
-                  </> :
-
-                'Next'
-                }
-              </Button>
+              {currentTab !== 'customer' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={prevTab}>
+                  Previous
+                </Button>
+              )}
+              
+              {currentTab !== 'delivery' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={nextTab}
+                  disabled={isCheckingStock}>
+                  {isCheckingStock && currentTab === 'product' ?
+                  <>
+                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
+                      Checking Stock...
+                    </> :
+                    'Next'
+                  }
+                </Button>
+              )}
             </div>
             
             <div className="flex space-x-2">
@@ -1040,28 +980,27 @@ const NewOrder: React.FC = () => {
                 variant="outline"
                 onClick={handleGeneratePreview}
                 className="flex items-center space-x-2">
-
                 <FileText className="w-4 h-4" />
                 <span>Preview PDF</span>
               </Button>
               
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
-
-                {isLoading ?
-                <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Creating...</span>
-                  </> :
-
-                <>
-                    <Save className="w-4 h-4" />
-                    <span>Create Order</span>
-                  </>
-                }
-              </Button>
+              {currentTab === 'delivery' && (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600">
+                  {isLoading ?
+                  <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Creating...</span>
+                    </> :
+                  <>
+                      <Save className="w-4 h-4" />
+                      <span>Create Order</span>
+                    </>
+                  }
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

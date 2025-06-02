@@ -23,10 +23,10 @@ import ProductConfigurationManager from '@/components/ProductConfigurationManage
 
 interface DashboardStats {
   totalOrders: number;
-  totalRevenue: number;
+  totalRevenue: number; // Kept for compatibility but not used
   pendingOrders: number;
   completedOrders: number;
-  averageOrderValue: number;
+  averageOrderValue: number; // Kept for compatibility but not used
   totalAgents: number;
   activeAgents: number;
   lowStockItems: number;
@@ -170,22 +170,20 @@ const ManagerDashboard: React.FC = () => {
 
   const calculateStats = () => {
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
     const pendingOrders = orders.filter((order) =>
     order.order_status === 'Pending' || order.order_status === 'In Production'
     ).length;
     const completedOrders = orders.filter((order) => order.order_status === 'Delivered').length;
-    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const totalAgents = agents.length;
     const activeAgents = agents.filter((agent) => agent.status === 'Active').length;
     const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold).length;
 
     setStats({
       totalOrders,
-      totalRevenue,
+      totalRevenue: 0, // Removed revenue calculation
       pendingOrders,
       completedOrders,
-      averageOrderValue,
+      averageOrderValue: 0, // Removed revenue calculation
       totalAgents,
       activeAgents,
       lowStockItems
@@ -288,11 +286,11 @@ const ManagerDashboard: React.FC = () => {
     description: 'All time orders'
   },
   {
-    title: 'Total Revenue',
-    value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
-    icon: DollarSign,
-    color: 'bg-green-500',
-    description: 'Total earnings'
+    title: 'Pending Orders',
+    value: stats?.pendingOrders || 0,
+    icon: Clock,
+    color: 'bg-orange-500',
+    description: 'Orders in progress'
   },
   {
     title: 'Active Agents',
@@ -418,7 +416,7 @@ const ManagerDashboard: React.FC = () => {
                         <Badge variant={getStatusBadgeVariant(order.order_status)}>
                           {order.order_status}
                         </Badge>
-                        <p className="text-sm text-gray-600 mt-1">${order.total_amount}</p>
+                        <p className="text-sm text-gray-600 mt-1">Order #{order.ID}</p>
                       </div>
                     </div>
                   )}
@@ -510,7 +508,6 @@ const ManagerDashboard: React.FC = () => {
                         <TableHead>Customer</TableHead>
                         <TableHead>Product</TableHead>
                         <TableHead>Quantity</TableHead>
-                        <TableHead>Amount</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Delivery Date</TableHead>
                         <TableHead>Actions</TableHead>
@@ -532,7 +529,6 @@ const ManagerDashboard: React.FC = () => {
                             {order.product_type} - {order.product_color}
                           </TableCell>
                           <TableCell>{order.total_quantity || 0}</TableCell>
-                          <TableCell>${(order.total_amount || 0).toFixed(2)}</TableCell>
                           <TableCell>
                             <Badge variant={getStatusBadgeVariant(order.order_status)}>
                               {order.order_status}
