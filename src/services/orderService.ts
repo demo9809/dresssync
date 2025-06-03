@@ -155,7 +155,7 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       // Convert database format to Order interface
       const orders = (data?.List || []).map(convertDbToOrder);
       return orders;
@@ -171,7 +171,7 @@ export const orderService = {
       // Try to parse as number first, if it fails, search by order_number
       const numericId = parseInt(orderId);
       let filters;
-      
+
       if (!isNaN(numericId)) {
         filters = [{
           "name": "id",
@@ -195,10 +195,10 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       const orders = data?.List || [];
       if (orders.length === 0) return null;
-      
+
       return convertDbToOrder(orders[0]);
     } catch (error) {
       console.error('Error fetching order:', error);
@@ -212,7 +212,7 @@ export const orderService = {
       // Generate order number
       const orderCount = await getOrderCount();
       const orderNumber = `ORD-${String(orderCount + 1).padStart(4, '0')}`;
-      
+
       const dbData = {
         order_number: orderNumber,
         agent_id: parseInt(orderData.agentId),
@@ -222,6 +222,7 @@ export const orderService = {
         customer_address: `${orderData.customer.address.street}, ${orderData.customer.address.city}, ${orderData.customer.address.state} ${orderData.customer.address.zipCode}`,
         product_type: orderData.product.type,
         product_color: orderData.product.color,
+        neck_type: orderData.product.neckType || '',
         total_quantity: orderData.quantity.total,
         size_breakdown: JSON.stringify(orderData.quantity.sizeBreakdown),
         special_instructions: orderData.product.specialInstructions || '',
@@ -266,9 +267,9 @@ export const orderService = {
       if (!existingOrder) return null;
 
       // Get the numeric ID - if orderId is not a number, find it from the existing order
-      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) : 
-                        await getOrderIdByOrderNumber(orderId);
-      
+      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) :
+      await getOrderIdByOrderNumber(orderId);
+
       if (!numericId) {
         console.error('Could not find numeric ID for order:', orderId);
         return null;
@@ -287,30 +288,31 @@ export const orderService = {
           dbUpdates.customer_address = `${updates.customer.address.street}, ${updates.customer.address.city}, ${updates.customer.address.state} ${updates.customer.address.zipCode}`;
         }
       }
-      
+
       if (updates.product) {
         if (updates.product.type !== undefined) dbUpdates.product_type = updates.product.type;
         if (updates.product.color !== undefined) dbUpdates.product_color = updates.product.color;
+        if (updates.product.neckType !== undefined) dbUpdates.neck_type = updates.product.neckType;
         if (updates.product.specialInstructions !== undefined) dbUpdates.special_instructions = updates.product.specialInstructions;
       }
-      
+
       if (updates.quantity) {
         if (updates.quantity.total !== undefined) dbUpdates.total_quantity = updates.quantity.total;
         if (updates.quantity.sizeBreakdown !== undefined) dbUpdates.size_breakdown = JSON.stringify(updates.quantity.sizeBreakdown);
       }
-      
+
       if (updates.delivery) {
         if (updates.delivery.eventDate !== undefined) dbUpdates.event_date = updates.delivery.eventDate;
         if (updates.delivery.deliveryDate !== undefined) dbUpdates.delivery_date = updates.delivery.deliveryDate;
         if (updates.delivery.status !== undefined) dbUpdates.order_status = updates.delivery.status;
       }
-      
+
       if (updates.payment) {
         if (updates.payment.amount !== undefined) dbUpdates.total_amount = updates.payment.amount;
         if (updates.payment.paid !== undefined) dbUpdates.paid_amount = updates.payment.paid;
         if (updates.payment.status !== undefined) dbUpdates.payment_status = updates.payment.status;
       }
-      
+
       if (updates.orderType !== undefined) dbUpdates.order_type = updates.orderType;
 
       const { error } = await window.ezsite.apis.tableUpdate(11425, dbUpdates);
@@ -328,9 +330,9 @@ export const orderService = {
   deleteOrder: async (orderId: string): Promise<boolean> => {
     try {
       // Get the numeric ID - if orderId is not a number, find it from the database
-      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) : 
-                        await getOrderIdByOrderNumber(orderId);
-      
+      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) :
+      await getOrderIdByOrderNumber(orderId);
+
       if (!numericId) {
         console.error('Could not find numeric ID for order:', orderId);
         return false;
@@ -349,9 +351,9 @@ export const orderService = {
   updateOrderStatus: async (orderId: string, status: Order['delivery']['status']): Promise<boolean> => {
     try {
       // Get the numeric ID - if orderId is not a number, find it from the database
-      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) : 
-                        await getOrderIdByOrderNumber(orderId);
-      
+      const numericId = !isNaN(parseInt(orderId)) ? parseInt(orderId) :
+      await getOrderIdByOrderNumber(orderId);
+
       if (!numericId) {
         console.error('Could not find numeric ID for order:', orderId);
         return false;
@@ -373,7 +375,7 @@ export const orderService = {
   searchOrders: async (query: string, agentId?: string): Promise<Order[]> => {
     try {
       const filters: any[] = [];
-      
+
       if (agentId) {
         filters.push({
           "name": "agent_id",
@@ -393,20 +395,20 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       let orders = (data?.List || []).map(convertDbToOrder);
-      
+
       if (query.trim()) {
         const lowerQuery = query.toLowerCase();
         orders = orders.filter((order) =>
-          order.id.toLowerCase().includes(lowerQuery) ||
-          order.customer.name.toLowerCase().includes(lowerQuery) ||
-          order.product.type.toLowerCase().includes(lowerQuery) ||
-          order.product.color.toLowerCase().includes(lowerQuery) ||
-          order.delivery.status.toLowerCase().includes(lowerQuery)
+        order.id.toLowerCase().includes(lowerQuery) ||
+        order.customer.name.toLowerCase().includes(lowerQuery) ||
+        order.product.type.toLowerCase().includes(lowerQuery) ||
+        order.product.color.toLowerCase().includes(lowerQuery) ||
+        order.delivery.status.toLowerCase().includes(lowerQuery)
         );
       }
-      
+
       return orders;
     } catch (error) {
       console.error('Error searching orders:', error);
@@ -418,13 +420,13 @@ export const orderService = {
   getOrdersByStatus: async (status: Order['delivery']['status'], agentId?: string): Promise<Order[]> => {
     try {
       const filters: any[] = [
-        {
-          "name": "order_status",
-          "op": "Equal" as const,
-          "value": status
-        }
-      ];
-      
+      {
+        "name": "order_status",
+        "op": "Equal" as const,
+        "value": status
+      }];
+
+
       if (agentId) {
         filters.push({
           "name": "agent_id",
@@ -442,7 +444,7 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       return (data?.List || []).map(convertDbToOrder);
     } catch (error) {
       console.error('Error fetching orders by status:', error);
@@ -455,9 +457,9 @@ export const orderService = {
     try {
       const today = new Date();
       const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
-      
+
       const filters: any[] = [];
-      
+
       if (agentId) {
         filters.push({
           "name": "agent_id",
@@ -475,13 +477,13 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       const orders = (data?.List || []).map(convertDbToOrder);
-      
+
       return orders.filter((order) => {
         const deliveryDate = new Date(order.delivery.deliveryDate);
         return deliveryDate >= today && deliveryDate <= futureDate &&
-               order.delivery.status !== 'Delivered' && order.delivery.status !== 'Cancelled';
+        order.delivery.status !== 'Delivered' && order.delivery.status !== 'Cancelled';
       });
     } catch (error) {
       console.error('Error fetching upcoming deliveries:', error);
@@ -499,11 +501,11 @@ export const orderService = {
   }> => {
     try {
       const orders = await orderService.getOrders(agentId);
-      
+
       const totalOrders = orders.length;
       const totalRevenue = orders.reduce((sum, order) => sum + order.payment.amount, 0);
       const pendingOrders = orders.filter((order) =>
-        order.delivery.status === 'Pending' || order.delivery.status === 'In Production'
+      order.delivery.status === 'Pending' || order.delivery.status === 'In Production'
       ).length;
       const completedOrders = orders.filter((order) => order.delivery.status === 'Delivered').length;
       const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -531,22 +533,22 @@ export const orderService = {
   checkForDuplicates: async (customerName: string, productType: string, eventDate: string): Promise<Order[]> => {
     try {
       const filters = [
-        {
-          "name": "customer_name",
-          "op": "Equal" as const,
-          "value": customerName
-        },
-        {
-          "name": "product_type",
-          "op": "Equal" as const,
-          "value": productType
-        },
-        {
-          "name": "event_date",
-          "op": "Equal" as const,
-          "value": eventDate
-        }
-      ];
+      {
+        "name": "customer_name",
+        "op": "Equal" as const,
+        "value": customerName
+      },
+      {
+        "name": "product_type",
+        "op": "Equal" as const,
+        "value": productType
+      },
+      {
+        "name": "event_date",
+        "op": "Equal" as const,
+        "value": eventDate
+      }];
+
 
       const { data, error } = await window.ezsite.apis.tablePage(11425, {
         "PageNo": 1,
@@ -557,9 +559,9 @@ export const orderService = {
       });
 
       if (error) throw error;
-      
+
       const orders = (data?.List || []).map(convertDbToOrder);
-      return orders.filter(order => order.delivery.status !== 'Cancelled');
+      return orders.filter((order) => order.delivery.status !== 'Cancelled');
     } catch (error) {
       console.error('Error checking for duplicates:', error);
       return [];
@@ -656,7 +658,7 @@ async function getOrderIdByOrderNumber(orderNumber: string): Promise<number | nu
     });
 
     if (error) throw error;
-    
+
     const orders = data?.List || [];
     return orders.length > 0 ? orders[0].id : null;
   } catch (error) {

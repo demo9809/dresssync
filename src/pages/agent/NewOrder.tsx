@@ -48,6 +48,7 @@ const NewOrder: React.FC = () => {
   const [product, setProduct] = useState({
     type: '',
     color: '',
+    neckType: '',
     specialInstructions: '',
     fileUpload: ''
   });
@@ -83,12 +84,29 @@ const NewOrder: React.FC = () => {
   // State management
   const [availableStock, setAvailableStock] = useState<Record<string, number>>({});
   const [duplicateOrders, setDuplicateOrders] = useState<Order[]>([]);
+  const [neckTypes, setNeckTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
   const [stockCheckCompleted, setStockCheckCompleted] = useState(false);
   const [stockAvailable, setStockAvailable] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTab, setCurrentTab] = useState('customer');
+
+  useEffect(() => {
+    // Load neck types on component mount
+    const loadNeckTypes = async () => {
+      try {
+        const types = await productConfig.getNeckTypes();
+        setNeckTypes(types);
+      } catch (error) {
+        console.error('Error loading neck types:', error);
+        // Use fallback values
+        setNeckTypes(productConfig.neckTypes);
+      }
+    };
+    
+    loadNeckTypes();
+  }, []);
 
   useEffect(() => {
     if (product.type && product.color) {
@@ -263,6 +281,7 @@ const NewOrder: React.FC = () => {
     // Product validation
     if (!product.type) newErrors.productType = 'Product type is required';
     if (!product.color) newErrors.productColor = 'Product color is required';
+    if (!product.neckType) newErrors.neckType = 'Neck type is required';
 
     // Quantity validation
     if (quantity.total <= 0) newErrors.quantity = 'Total quantity must be greater than 0';
@@ -525,7 +544,7 @@ const NewOrder: React.FC = () => {
                 <div className="flex items-center space-x-4">
                   <div className="text-sm">
                     <span className="text-gray-600">Product:</span>
-                    <span className="font-semibold ml-1">{product.type} - {product.color}</span>
+                    <span className="font-semibold ml-1">{product.type} - {product.color}{product.neckType ? ` (${product.neckType})` : ''}</span>
                   </div>
                   <div className="text-sm">
                     <span className="text-gray-600">Qty:</span>
@@ -715,6 +734,24 @@ const NewOrder: React.FC = () => {
                   </Select>
                   {errors.productColor && <p className="text-sm text-red-600">{errors.productColor}</p>}
                 </div>
+                
+                <div className="space-y-2">
+                  <Label>Neck Type *</Label>
+                  <Select
+                    value={product.neckType}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, neckType: value }))}>
+
+                    <SelectTrigger className={errors.neckType ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select neck type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {neckTypes.map((neckType) =>
+                      <SelectItem key={neckType} value={neckType}>{neckType}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {errors.neckType && <p className="text-sm text-red-600">{errors.neckType}</p>}
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -900,6 +937,10 @@ const NewOrder: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Color:</span>
                           <span className="font-medium">{product.color}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Neck Type:</span>
+                          <span className="font-medium">{product.neckType}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Order Type:</span>

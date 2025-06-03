@@ -47,7 +47,7 @@ const OrderList: React.FC = () => {
         "PageSize": 100,
         "OrderByField": "id",
         "IsAsc": false,
-        "Filters": (user?.ID || user?.id) ? [{
+        "Filters": user?.ID || user?.id ? [{
           "name": "agent_id",
           "op": "Equal",
           "value": parseInt(user.ID?.toString() || user.id || '0')
