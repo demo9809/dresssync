@@ -269,8 +269,8 @@ const ManagerDashboard: React.FC = () => {
       <div className="space-y-6">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) =>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[...Array(3)].map((_, i) =>
             <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
             )}
           </div>
@@ -286,13 +286,6 @@ const ManagerDashboard: React.FC = () => {
     icon: ShoppingCart,
     color: 'bg-blue-500',
     description: 'All time orders'
-  },
-  {
-    title: 'Total Revenue',
-    value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
-    icon: DollarSign,
-    color: 'bg-green-500',
-    description: 'Total earnings'
   },
   {
     title: 'Active Agents',
@@ -361,7 +354,7 @@ const ManagerDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (

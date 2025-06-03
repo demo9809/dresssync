@@ -104,7 +104,7 @@ const NewOrder: React.FC = () => {
         setNeckTypes(productConfig.neckTypes);
       }
     };
-    
+
     loadNeckTypes();
   }, []);
 
