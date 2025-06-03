@@ -15,7 +15,9 @@ import {
   Plus,
   History,
   Settings,
-  User } from
+  User,
+  Key,
+  Sliders } from
 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -45,7 +47,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   { path: '/manager/orders', label: 'Orders', icon: ShoppingCart },
   { path: '/manager/stock', label: 'Stock Management', icon: Package },
   { path: '/manager/agents', label: 'Agent Management', icon: Users },
-  { path: '/manager/reports', label: 'Reports', icon: BarChart3 }];
+  { path: '/manager/reports', label: 'Reports', icon: BarChart3 },
+  { path: '/manager/password', label: 'Password Management', icon: Key },
+  { path: '/manager/config', label: 'Configuration', icon: Sliders }];
 
 
   const agentNavItems = [
@@ -121,30 +125,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     </div>;
 
 
-  const MobileBottomNav = () => (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 lg:hidden">
+  const MobileBottomNav = () =>
+  <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 lg:hidden">
       <div className="flex justify-around items-center py-2">
         {navItems.slice(0, 4).map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-                isActive
-                  ? 'text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
+        const Icon = item.icon;
+        const isActive = location.pathname === item.path;
+
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+            isActive ?
+            'text-blue-600' :
+            'text-gray-500 hover:text-gray-700'}`
+            }>
+
               <Icon size={20} />
               <span className="text-xs font-medium truncate max-w-[60px]">
                 {item.label.split(' ')[0]}
               </span>
-            </Link>
-          );
-        })}
+            </Link>);
+
+      })}
         
         {/* Profile/Menu Button */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -159,8 +163,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </SheetContent>
         </Sheet>
       </div>
-    </div>
-  );
+    </div>;
+
 
   return (
     <div className="min-h-screen bg-gray-50">

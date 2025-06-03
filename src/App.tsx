@@ -11,6 +11,8 @@ import StockManagement from "./pages/manager/StockManagement";
 import AgentManagement from "./pages/manager/AgentManagement";
 import OrderManagement from "./pages/manager/OrderManagement";
 import ReportsPage from "./pages/manager/ReportsPage";
+import PasswordManagement from "./pages/manager/PasswordManagement";
+import ConfigurationManager from "./pages/manager/ConfigurationManager";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import NewOrder from "./pages/agent/NewOrder";
 import OrderList from "./pages/agent/OrderList";
@@ -38,6 +40,8 @@ const App = () =>
                     <Route path="stock" element={<StockManagement />} />
                     <Route path="agents" element={<AgentManagement />} />
                     <Route path="reports" element={<ReportsPage />} />
+                    <Route path="password" element={<PasswordManagement />} />
+                    <Route path="config" element={<ConfigurationManager />} />
                     <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
                   </Routes>
                 </Layout>

@@ -226,9 +226,9 @@ const AgentManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agent Management</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Agent Management</h1>
           <p className="text-gray-600">Manage your sales agents and their territories</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
