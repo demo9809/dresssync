@@ -33,8 +33,8 @@ const ConfigurationManager: React.FC = () => {
           <ProductConfigurationManager />
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ConfigurationManager;

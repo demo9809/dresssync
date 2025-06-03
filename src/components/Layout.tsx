@@ -9,15 +9,10 @@ import {
   Home,
   ShoppingCart,
   Package,
-  Users,
-  BarChart3,
   LogOut,
   Plus,
   History,
-  Settings,
-  User,
-  Key,
-  Sliders } from
+  User } from
 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -44,12 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const managerNavItems = [
   { path: '/manager/dashboard', label: 'Dashboard', icon: Home },
-  { path: '/manager/orders', label: 'Orders', icon: ShoppingCart },
-  { path: '/manager/stock', label: 'Stock Management', icon: Package },
-  { path: '/manager/agents', label: 'Agent Management', icon: Users },
-  { path: '/manager/reports', label: 'Reports', icon: BarChart3 },
-  { path: '/manager/password', label: 'Password Management', icon: Key },
-  { path: '/manager/config', label: 'Configuration', icon: Sliders }];
+  { path: '/manager/stock', label: 'Stock Management', icon: Package }];
 
 
   const agentNavItems = [

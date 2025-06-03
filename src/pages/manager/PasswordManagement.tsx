@@ -33,8 +33,8 @@ const PasswordManagement: React.FC = () => {
           <AgentPasswordManagement />
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PasswordManagement;

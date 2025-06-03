@@ -8,11 +8,7 @@ import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import StockManagement from "./pages/manager/StockManagement";
-import AgentManagement from "./pages/manager/AgentManagement";
-import OrderManagement from "./pages/manager/OrderManagement";
-import ReportsPage from "./pages/manager/ReportsPage";
-import PasswordManagement from "./pages/manager/PasswordManagement";
-import ConfigurationManager from "./pages/manager/ConfigurationManager";
+
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import NewOrder from "./pages/agent/NewOrder";
 import OrderList from "./pages/agent/OrderList";
@@ -36,12 +32,7 @@ const App = () =>
                 <Layout>
                   <Routes>
                     <Route path="dashboard" element={<ManagerDashboard />} />
-                    <Route path="orders" element={<OrderManagement />} />
                     <Route path="stock" element={<StockManagement />} />
-                    <Route path="agents" element={<AgentManagement />} />
-                    <Route path="reports" element={<ReportsPage />} />
-                    <Route path="password" element={<PasswordManagement />} />
-                    <Route path="config" element={<ConfigurationManager />} />
                     <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
                   </Routes>
                 </Layout>
@@ -68,8 +59,6 @@ const App = () =>
             
             {/* Direct routes for testing */}
             <Route path="/stock" element={<Navigate to="/manager/stock" replace />} />
-            <Route path="/agents" element={<Navigate to="/manager/agents" replace />} />
-            <Route path="/reports" element={<Navigate to="/manager/reports" replace />} />
             
             {/* Legacy route redirects */}
             <Route path="/dashboard" element={<Navigate to="/login" replace />} />

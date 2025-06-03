@@ -26,8 +26,8 @@ const HomePage = () => {
           <p>&copy; {new Date().getFullYear()} DressSync. All rights reserved.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 };
 
 export default HomePage;

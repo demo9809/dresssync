@@ -11,15 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
-  ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, AlertTriangle,
-  CheckCircle, BarChart3, Calendar, Plus, Edit, Trash2, Search, Eye,
-  FileText, Filter, Download, RefreshCw } from
+  Package, AlertTriangle, CheckCircle, Edit, RefreshCw } from
 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import ReportsAndAnalytics from '@/components/ReportsAndAnalytics';
-import AgentPasswordManagement from '@/components/AgentPasswordManagement';
-import ProductConfigurationManager from '@/components/ProductConfigurationManager';
+
 
 interface DashboardStats {
   totalOrders: number;
@@ -32,49 +28,15 @@ interface DashboardStats {
   lowStockItems: number;
 }
 
-interface Agent {
-  ID: number;
-  user_id: number;
-  agent_code: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  email: string;
-  territory: string;
-  commission_rate: number;
-  hire_date: string;
-  status: string;
-  target_sales: number;
-}
 
-interface Order {
-  ID: number;
-  order_number: string;
-  agent_id: number;
-  customer_name: string;
-  customer_phone: string;
-  product_type: string;
-  product_color: string;
-  total_quantity: number;
-  order_status: string;
-  total_amount: number;
-  paid_amount: number;
-  payment_status: string;
-  delivery_date: string;
-  order_type: string;
-}
 
 interface StockItem {
   ID: number;
   product_type: string;
   color: string;
-  neck_type: string;
   size: string;
   quantity: number;
   min_threshold: number;
-  cost_per_unit: number;
-  selling_price: number;
-  supplier: string;
 }
 
 const ManagerDashboard: React.FC = () => {
@@ -82,31 +44,25 @@ const ManagerDashboard: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+
 
   useEffect(() => {
     loadDashboardData();
   }, []);
 
   useEffect(() => {
-    if (agents.length > 0 || orders.length > 0 || stockItems.length > 0) {
+    if (stockItems.length > 0) {
       calculateStats();
     }
-  }, [agents, orders, stockItems]);
+  }, [stockItems]);
 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      await Promise.all([
-      loadAgents(),
-      loadOrders(),
-      loadStockItems()]
-      );
+      await loadStockItems();
       calculateStats();
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -120,37 +76,7 @@ const ManagerDashboard: React.FC = () => {
     }
   };
 
-  const loadAgents = async () => {
-    try {
-      const { data, error } = await window.ezsite.apis.tablePage('11424', {
-        PageNo: 1,
-        PageSize: 100,
-        OrderByField: 'ID',
-        IsAsc: false,
-        Filters: []
-      });
-      if (error) throw error;
-      setAgents(data.List || []);
-    } catch (error) {
-      console.error('Error loading agents:', error);
-    }
-  };
 
-  const loadOrders = async () => {
-    try {
-      const { data, error } = await window.ezsite.apis.tablePage('11425', {
-        PageNo: 1,
-        PageSize: 100,
-        OrderByField: 'ID',
-        IsAsc: false,
-        Filters: []
-      });
-      if (error) throw error;
-      setOrders(data.List || []);
-    } catch (error) {
-      console.error('Error loading orders:', error);
-    }
-  };
 
   const loadStockItems = async () => {
     try {
@@ -169,76 +95,23 @@ const ManagerDashboard: React.FC = () => {
   };
 
   const calculateStats = () => {
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-    const pendingOrders = orders.filter((order) =>
-    order.order_status === 'Pending' || order.order_status === 'In Production'
-    ).length;
-    const completedOrders = orders.filter((order) => order.order_status === 'Delivered').length;
-    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const totalAgents = agents.length;
-    const activeAgents = agents.filter((agent) => agent.status === 'Active').length;
     const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold).length;
+    const totalStockItems = stockItems.length;
+    const inStockItems = stockItems.filter((item) => item.quantity > item.min_threshold).length;
 
     setStats({
-      totalOrders,
-      totalRevenue,
-      pendingOrders,
-      completedOrders,
-      averageOrderValue,
-      totalAgents,
-      activeAgents,
+      totalOrders: 0,
+      totalRevenue: 0,
+      pendingOrders: 0,
+      completedOrders: 0,
+      averageOrderValue: 0,
+      totalAgents: 0,
+      activeAgents: 0,
       lowStockItems
     });
   };
 
-  const updateOrderStatus = async (orderId: number, newStatus: string) => {
-    try {
-      const { error } = await window.ezsite.apis.tableUpdate('11425', {
-        ID: orderId,
-        order_status: newStatus
-      });
-      if (error) throw error;
 
-      await loadOrders();
-      calculateStats();
-      toast({
-        title: "Success",
-        description: "Order status updated successfully"
-      });
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update order status"
-      });
-    }
-  };
-
-  const updateAgentStatus = async (agentId: number, newStatus: string) => {
-    try {
-      const { error } = await window.ezsite.apis.tableUpdate('11424', {
-        ID: agentId,
-        status: newStatus
-      });
-      if (error) throw error;
-
-      await loadAgents();
-      calculateStats();
-      toast({
-        title: "Success",
-        description: "Agent status updated successfully"
-      });
-    } catch (error) {
-      console.error('Error updating agent:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update agent status"
-      });
-    }
-  };
 
   const updateStockQuantity = async (stockId: number, newQuantity: number) => {
     try {
@@ -281,18 +154,18 @@ const ManagerDashboard: React.FC = () => {
 
   const statCards = [
   {
-    title: 'Total Orders',
-    value: stats?.totalOrders || 0,
-    icon: ShoppingCart,
+    title: 'Total Stock Items',
+    value: stockItems.length || 0,
+    icon: Package,
     color: 'bg-blue-500',
-    description: 'All time orders'
+    description: 'All stock items'
   },
   {
-    title: 'Active Agents',
-    value: `${stats?.activeAgents || 0}/${stats?.totalAgents || 0}`,
-    icon: Users,
-    color: 'bg-purple-500',
-    description: 'Active agents'
+    title: 'In Stock Items',
+    value: stockItems.filter((item) => item.quantity > item.min_threshold).length || 0,
+    icon: CheckCircle,
+    color: 'bg-green-500',
+    description: 'Well stocked items'
   },
   {
     title: 'Low Stock Alerts',
@@ -303,34 +176,9 @@ const ManagerDashboard: React.FC = () => {
   }];
 
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':return 'default';
-      case 'in production':return 'secondary';
-      case 'shipped':return 'outline';
-      case 'delivered':return 'default';
-      case 'cancelled':return 'destructive';
-      case 'active':return 'default';
-      case 'inactive':return 'secondary';
-      default:return 'outline';
-    }
-  };
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = searchTerm === '' ||
-    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === '' || order.order_status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
 
-  const filteredAgents = agents.filter((agent) => {
-    const matchesSearch = searchTerm === '' ||
-    agent.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.agent_code.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+
 
   const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold);
 
@@ -378,52 +226,36 @@ const ManagerDashboard: React.FC = () => {
 
       {/* Main Content with Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-2 gap-1">
           <TabsTrigger value="overview" className="text-xs lg:text-sm px-2 lg:px-4">Overview</TabsTrigger>
-          <TabsTrigger value="orders" className="text-xs lg:text-sm px-2 lg:px-4">Orders</TabsTrigger>
           <TabsTrigger value="stock" className="text-xs lg:text-sm px-2 lg:px-4">Stock</TabsTrigger>
-          <TabsTrigger value="agents" className="text-xs lg:text-sm px-2 lg:px-4">Agents</TabsTrigger>
-          <TabsTrigger value="passwords" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Passwords</TabsTrigger>
-          <TabsTrigger value="config" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Config</TabsTrigger>
-          <TabsTrigger value="reports" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Reports</TabsTrigger>
         </TabsList>
-        
-        {/* Mobile Secondary Tabs */}
-        <div className="lg:hidden">
-          <TabsList className="grid w-full grid-cols-3 gap-1 mt-2">
-            <TabsTrigger value="passwords" className="text-xs px-2">Passwords</TabsTrigger>
-            <TabsTrigger value="config" className="text-xs px-2">Config</TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs px-2">Reports</TabsTrigger>
-          </TabsList>
-        </div>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-            {/* Recent Orders */}
+          <div className="grid grid-cols-1 gap-4 lg:gap-6">
+            {/* Stock Overview */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span>Recent Orders</span>
+                  <Package className="w-5 h-5" />
+                  <span>Stock Overview</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {orders.slice(0, 5).map((order) =>
-                  <div key={order.ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{order.order_number}</p>
-                        <p className="text-sm text-gray-600">{order.customer_name}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant={getStatusBadgeVariant(order.order_status)}>
-                          {order.order_status}
-                        </Badge>
-                        <p className="text-sm text-gray-600 mt-1">${order.total_amount}</p>
-                      </div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h3 className="font-semibold text-green-800">Well Stocked Items</h3>
+                    <p className="text-2xl font-bold text-green-600">
+                      {stockItems.filter((item) => item.quantity > item.min_threshold).length}
+                    </p>
+                    <p className="text-sm text-green-600">Items above minimum threshold</p>
+                  </div>
+                  <div className="p-4 bg-yellow-50 rounded-lg">
+                    <h3 className="font-semibold text-yellow-800">Low Stock Items</h3>
+                    <p className="text-2xl font-bold text-yellow-600">{lowStockItems.length}</p>
+                    <p className="text-sm text-yellow-600">Items need restocking</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -444,7 +276,7 @@ const ManagerDashboard: React.FC = () => {
                   </div> :
 
                 <div className="space-y-3">
-                    {lowStockItems.slice(0, 5).map((item) =>
+                    {lowStockItems.slice(0, 10).map((item) =>
                   <div key={item.ID} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                         <div>
                           <p className="font-medium">{item.product_type} - {item.color}</p>
@@ -463,111 +295,7 @@ const ManagerDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
-        {/* Orders Management Tab */}
-        <TabsContent value="orders" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-                <CardTitle>Orders Management</CardTitle>
-                <div className="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-2">
-                  <div className="flex items-center space-x-2">
-                    <Search className="w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Search orders..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full lg:w-48" />
-                  </div>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-full lg:w-40">
-                      <SelectValue placeholder="All Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All Status</SelectItem>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="In Production">In Production</SelectItem>
-                      <SelectItem value="Shipped">Shipped</SelectItem>
-                      <SelectItem value="Delivered">Delivered</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {filteredOrders.length === 0 ?
-              <div className="text-center py-8">
-                  <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm || filterStatus ? 'Try adjusting your search or filter.' : 'Orders will appear here when agents create them.'}
-                  </p>
-                </div> :
 
-              <div className="overflow-x-auto hide-scrollbar">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order #</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Delivery Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredOrders.map((order) =>
-                    <TableRow key={order.ID}>
-                          <TableCell className="font-medium">
-                            {order.order_number || `ORD-${order.ID}`}
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{order.customer_name || 'N/A'}</div>
-                              <div className="text-sm text-gray-500">{order.customer_phone || ''}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {order.product_type} - {order.product_color}
-                          </TableCell>
-                          <TableCell>{order.total_quantity || 0}</TableCell>
-                          <TableCell>${(order.total_amount || 0).toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Badge variant={getStatusBadgeVariant(order.order_status)}>
-                              {order.order_status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString() : 'Not set'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Select onValueChange={(value) => updateOrderStatus(order.ID, value)}>
-                                <SelectTrigger className="w-32">
-                                  <SelectValue placeholder="Update" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Pending">Pending</SelectItem>
-                                  <SelectItem value="In Production">In Production</SelectItem>
-                                  <SelectItem value="Shipped">Shipped</SelectItem>
-                                  <SelectItem value="Delivered">Delivered</SelectItem>
-                                  <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                    )}
-                    </TableBody>
-                  </Table>
-                </div>
-              }
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Stock Management Tab */}
         <TabsContent value="stock" className="space-y-6">
@@ -651,86 +379,7 @@ const ManagerDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Agent Management Tab */}
-        <TabsContent value="agents" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-                <CardTitle>Agent Management</CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Search className="w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Search agents..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full lg:w-48" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Agent Code</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Territory</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Commission Rate</TableHead>
-                    <TableHead>Target Sales</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAgents.map((agent) =>
-                  <TableRow key={agent.ID}>
-                      <TableCell className="font-medium">{agent.agent_code}</TableCell>
-                      <TableCell>{agent.first_name} {agent.last_name}</TableCell>
-                      <TableCell>{agent.territory}</TableCell>
-                      <TableCell>{agent.phone}</TableCell>
-                      <TableCell>{agent.commission_rate}%</TableCell>
-                      <TableCell>${agent.target_sales.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(agent.status)}>
-                          {agent.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Select onValueChange={(value) => updateAgentStatus(agent.ID, value)}>
-                            <SelectTrigger className="w-24">
-                              <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Active">Active</SelectItem>
-                              <SelectItem value="Inactive">Inactive</SelectItem>
-                              <SelectItem value="Suspended">Suspended</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* Password Management Tab */}
-        <TabsContent value="passwords" className="space-y-6">
-          <AgentPasswordManagement />
-        </TabsContent>
-
-        {/* Configuration Management Tab */}
-        <TabsContent value="config" className="space-y-6">
-          <ProductConfigurationManager />
-        </TabsContent>
-
-        {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-6">
-          <ReportsAndAnalytics />
-        </TabsContent>
       </Tabs>
     </div>);
 
