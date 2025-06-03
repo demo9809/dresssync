@@ -335,26 +335,26 @@ const ManagerDashboard: React.FC = () => {
   const lowStockItems = stockItems.filter((item) => item.quantity <= item.min_threshold);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manager Dashboard</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Manager Dashboard</h1>
           <p className="text-gray-600 mt-1">Welcome back, {user?.name}</p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 md:mt-0">
+        <div className="flex items-center justify-between lg:justify-end space-x-3">
           <Badge variant="default" className="bg-blue-100 text-blue-800">
             Manager Access
           </Badge>
-          <Button onClick={loadDashboardData} variant="outline" size="sm">
+          <Button onClick={loadDashboardData} variant="outline" size="sm" className="touch-target">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Stats Cards - Mobile First */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -378,19 +378,28 @@ const ManagerDashboard: React.FC = () => {
 
       {/* Main Content with Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="stock">Stock</TabsTrigger>
-          <TabsTrigger value="agents">Agents</TabsTrigger>
-          <TabsTrigger value="passwords">Passwords</TabsTrigger>
-          <TabsTrigger value="config">Configuration</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="overview" className="text-xs lg:text-sm px-2 lg:px-4">Overview</TabsTrigger>
+          <TabsTrigger value="orders" className="text-xs lg:text-sm px-2 lg:px-4">Orders</TabsTrigger>
+          <TabsTrigger value="stock" className="text-xs lg:text-sm px-2 lg:px-4">Stock</TabsTrigger>
+          <TabsTrigger value="agents" className="text-xs lg:text-sm px-2 lg:px-4">Agents</TabsTrigger>
+          <TabsTrigger value="passwords" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Passwords</TabsTrigger>
+          <TabsTrigger value="config" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Config</TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs lg:text-sm px-1 lg:px-4 lg:block hidden">Reports</TabsTrigger>
         </TabsList>
+        
+        {/* Mobile Secondary Tabs */}
+        <div className="lg:hidden">
+          <TabsList className="grid w-full grid-cols-3 gap-1 mt-2">
+            <TabsTrigger value="passwords" className="text-xs px-2">Passwords</TabsTrigger>
+            <TabsTrigger value="config" className="text-xs px-2">Config</TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs px-2">Reports</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {/* Recent Orders */}
             <Card>
               <CardHeader>
@@ -458,19 +467,19 @@ const ManagerDashboard: React.FC = () => {
         <TabsContent value="orders" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+              <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
                 <CardTitle>Orders Management</CardTitle>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-2">
                   <div className="flex items-center space-x-2">
                     <Search className="w-4 h-4 text-gray-400" />
                     <Input
                       placeholder="Search orders..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-48" />
+                      className="w-full lg:w-48" />
                   </div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-full lg:w-40">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -495,7 +504,7 @@ const ManagerDashboard: React.FC = () => {
                   </p>
                 </div> :
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto hide-scrollbar">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -646,7 +655,7 @@ const ManagerDashboard: React.FC = () => {
         <TabsContent value="agents" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+              <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
                 <CardTitle>Agent Management</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Search className="w-4 h-4 text-gray-400" />
@@ -654,8 +663,7 @@ const ManagerDashboard: React.FC = () => {
                     placeholder="Search agents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-48" />
-
+                    className="w-full lg:w-48" />
                 </div>
               </div>
             </CardHeader>

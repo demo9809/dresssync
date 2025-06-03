@@ -502,14 +502,14 @@ const NewOrder: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Order</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Create New Order</h1>
           <p className="text-gray-600 mt-1">Enter customer and product details</p>
         </div>
-        <Badge variant="secondary" className="mt-4 md:mt-0">
+        <Badge variant="secondary" className="w-fit">
           Agent: {user?.name}
         </Badge>
       </div>
@@ -563,24 +563,23 @@ const NewOrder: React.FC = () => {
           }
           
           <Tabs value={currentTab} onValueChange={setCurrentTab}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="customer" className="flex items-center space-x-2">
+            <TabsList className="grid w-full grid-cols-4 gap-1">
+              <TabsTrigger value="customer" className="flex flex-col items-center space-y-1 py-3 px-2 text-xs lg:text-sm">
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Customer</span>
+                <span>Customer</span>
               </TabsTrigger>
-              <TabsTrigger value="product" className="flex items-center space-x-2">
+              <TabsTrigger value="product" className="flex flex-col items-center space-y-1 py-3 px-2 text-xs lg:text-sm">
                 <Package className="w-4 h-4" />
-                <span className="hidden sm:inline">Product</span>
+                <span>Product</span>
               </TabsTrigger>
-              <TabsTrigger value="quantity" className="flex items-center space-x-2">
+              <TabsTrigger value="quantity" className="flex flex-col items-center space-y-1 py-3 px-1 text-xs lg:text-sm">
                 <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Quantity & Delivery</span>
+                <span className="text-center leading-tight">Qty & Delivery</span>
               </TabsTrigger>
-              <TabsTrigger value="delivery" className="flex items-center space-x-2">
+              <TabsTrigger value="delivery" className="flex flex-col items-center space-y-1 py-3 px-2 text-xs lg:text-sm">
                 <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Summary</span>
+                <span>Summary</span>
               </TabsTrigger>
-
             </TabsList>
 
             {/* Customer Information Tab */}

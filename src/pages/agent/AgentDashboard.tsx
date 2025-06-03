@@ -100,14 +100,14 @@ const AgentDashboard: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sales Dashboard</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Sales Dashboard</h1>
           <p className="text-gray-600 mt-1">Welcome back, {user?.name}</p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 md:mt-0">
+        <div className="flex items-center justify-between lg:justify-end space-x-3">
           <Badge variant="secondary" className="bg-green-100 text-green-800">
             Sales Agent
           </Badge>
@@ -117,8 +117,8 @@ const AgentDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Stats Cards - Mobile First */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -149,30 +149,32 @@ const AgentDashboard: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             <Link to="/agent/orders/new">
-              <Button className="w-full flex items-center justify-center space-x-2 h-12 bg-gradient-to-r from-blue-600 to-purple-600">
+              <Button className="w-full flex items-center justify-center space-x-2 h-12 bg-gradient-to-r from-blue-600 to-purple-600 touch-target">
                 <Plus className="w-4 h-4" />
-                <span>Create New Order</span>
+                <span className="hidden sm:inline">Create New Order</span>
+                <span className="sm:hidden">New Order</span>
               </Button>
             </Link>
             <Link to="/agent/orders">
-              <Button variant="outline" className="w-full flex items-center justify-center space-x-2 h-12">
+              <Button variant="outline" className="w-full flex items-center justify-center space-x-2 h-12 touch-target">
                 <ShoppingCart className="w-4 h-4" />
                 <span>My Orders</span>
               </Button>
             </Link>
             <Link to="/agent/history">
-              <Button variant="outline" className="w-full flex items-center justify-center space-x-2 h-12">
+              <Button variant="outline" className="w-full flex items-center justify-center space-x-2 h-12 touch-target">
                 <Calendar className="w-4 h-4" />
-                <span>Order History</span>
+                <span className="hidden sm:inline">Order History</span>
+                <span className="sm:hidden">History</span>
               </Button>
             </Link>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Upcoming Deliveries */}
         <Card>
           <CardHeader>
@@ -303,7 +305,7 @@ const AgentDashboard: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">Order Success Rate</span>

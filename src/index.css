@@ -114,3 +114,58 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile App Styles */
+@layer utilities {
+  .mobile-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .mobile-header-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .mobile-touch {
+    touch-action: manipulation;
+  }
+  
+  .mobile-no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Better button touch targets */
+  button, 
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth scrolling for mobile */
+  * {
+    scroll-behavior: smooth;
+  }
+  
+  /* Hide scrollbars on mobile for cleaner look */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

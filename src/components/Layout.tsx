@@ -14,9 +14,11 @@ import {
   LogOut,
   Plus,
   History,
-  Settings } from
+  Settings,
+  User } from
 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
@@ -118,6 +121,47 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     </div>;
 
 
+  const MobileBottomNav = () => (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 lg:hidden">
+      <div className="flex justify-around items-center py-2">
+        {navItems.slice(0, 4).map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Icon size={20} />
+              <span className="text-xs font-medium truncate max-w-[60px]">
+                {item.label.split(' ')[0]}
+              </span>
+            </Link>
+          );
+        })}
+        
+        {/* Profile/Menu Button */}
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <button className="flex flex-col items-center space-y-1 px-3 py-2 rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-200">
+              <User size={20} />
+              <span className="text-xs font-medium">Profile</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-0">
+            <NavContent />
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
@@ -128,42 +172,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Mobile Header */}
-      <div className="lg:hidden">
+      <div className="lg:hidden sticky top-0 z-40">
         <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
-          <div className="flex items-center space-x-3">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="lg:hidden">
-                  <Menu size={20} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
-                <NavContent />
-              </SheetContent>
-            </Sheet>
-            
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-xs">DS</span>
-              </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">DS</span>
+            </div>
+            <div>
               <h1 className="font-bold text-lg text-gray-900">DressSync</h1>
             </div>
           </div>
           
-          <Badge variant={user?.role === 'manager' ? 'default' : 'secondary'}>
-            {user?.role === 'manager' ? 'Manager' : 'Agent'}
-          </Badge>
+          <div className="flex items-center space-x-2">
+            <Badge variant={user?.role === 'manager' ? 'default' : 'secondary'} className="text-xs">
+              {user?.role === 'manager' ? 'Manager' : 'Agent'}
+            </Badge>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-72">
-        <main className="py-4 lg:py-8">
+      <div className={`${isMobile ? 'pb-20' : 'lg:pl-72'}`}>
+        <main className={`${isMobile ? 'py-4' : 'py-4 lg:py-8'}`}>
           <div className="px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && <MobileBottomNav />}
     </div>);
 
 };
