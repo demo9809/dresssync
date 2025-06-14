@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, Edit, Package, Search, Calendar, DollarSign, TrendingUp, AlertCircle, FileText, Download } from 'lucide-react';
+import { Eye, Edit, Package, Search, Calendar, DollarSign, TrendingUp, AlertCircle, FileText, Download, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import OrderViewModal from '@/components/OrderViewModal';
 import { pdfService } from '@/services/pdfService';
@@ -22,7 +22,6 @@ interface Order {
   customer_address: string;
   product_type: string;
   product_color: string;
-  neck_type: string;
   total_quantity: number;
   size_breakdown: string;
   special_instructions: string;
@@ -89,7 +88,7 @@ const OrderManagement: React.FC = () => {
 
     try {
       const { error } = await window.ezsite.apis.tableUpdate(11425, {
-        id: selectedOrder.id,
+        ID: selectedOrder.id,
         ...editData
       });
 
@@ -119,7 +118,46 @@ const OrderManagement: React.FC = () => {
 
   const handleDownloadPDF = async (order: Order) => {
     try {
-      await pdfService.generateOrderPDF(order);
+      // Load order items for PDF generation
+      const { data: itemsData, error: itemsError } = await window.ezsite.apis.tablePage(17047, {
+        "PageNo": 1,
+        "PageSize": 100,
+        "OrderByField": "ID",
+        "IsAsc": true,
+        "Filters": [
+          {
+            "name": "order_id",
+            "op": "Equal",
+            "value": order.id
+          }
+        ]
+      });
+
+      if (itemsError) throw itemsError;
+
+      const orderItems = itemsData?.List || [];
+      
+      const pdfContent = {
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerAddress: order.customer_address,
+        orderItems: orderItems.map((item: any) => ({
+          productType: item.product_type,
+          productColor: item.product_color,
+          sizeBreakdown: JSON.parse(item.size_breakdown || '{}'),
+          quantity: item.item_quantity,
+          unitPrice: item.unit_price,
+          total: item.item_total
+        })),
+        totalAmount: order.total_amount,
+        eventDate: new Date(order.event_date).toLocaleDateString(),
+        deliveryDate: new Date(order.delivery_date).toLocaleDateString(),
+        specialInstructions: order.special_instructions
+      };
+
+      await pdfService.generateOrderPDF(pdfContent);
+      
       toast({
         title: "PDF Generated",
         description: `Order ${order.order_number} PDF has been downloaded successfully.`
@@ -146,12 +184,16 @@ const OrderManagement: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
+  const isMultiProductOrder = (order: Order) => {
+    return order.product_type === 'Multiple Products' || order.product_color === 'Mixed';
+  };
+
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customer_phone.includes(searchTerm) ||
-    order.product_type.toLowerCase().includes(searchTerm.toLowerCase());
+      order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer_phone.includes(searchTerm) ||
+      order.product_type.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === 'all' || order.order_status === filterStatus;
     const matchesPayment = filterPayment === 'all' || order.payment_status === filterPayment;
@@ -161,23 +203,23 @@ const OrderManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending':return 'outline';
-      case 'Confirmed':return 'secondary';
-      case 'In Production':return 'default';
-      case 'Ready for Delivery':return 'default';
-      case 'Shipped':return 'default';
-      case 'Delivered':return 'default';
-      case 'Cancelled':return 'destructive';
-      default:return 'outline';
+      case 'Pending': return 'outline';
+      case 'Confirmed': return 'secondary';
+      case 'In Production': return 'default';
+      case 'Ready for Delivery': return 'default';
+      case 'Shipped': return 'default';
+      case 'Delivered': return 'default';
+      case 'Cancelled': return 'destructive';
+      default: return 'outline';
     }
   };
 
   const getPaymentColor = (status: string) => {
     switch (status) {
-      case 'Pending':return 'outline';
-      case 'Partial':return 'outline';
-      case 'Complete':return 'default';
-      default:return 'outline';
+      case 'Pending': return 'outline';
+      case 'Partial': return 'outline';
+      case 'Complete': return 'default';
+      default: return 'outline';
     }
   };
 
@@ -199,8 +241,8 @@ const OrderManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading orders...</div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -274,8 +316,8 @@ const OrderManagement: React.FC = () => {
                   placeholder="Search by order number, customer name, phone, or product..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10" />
-
+                  className="pl-10"
+                />
               </div>
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -285,7 +327,7 @@ const OrderManagement: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {orderStatuses.map((status) =>
-                <SelectItem key={status} value={status}>{status}</SelectItem>
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -296,7 +338,7 @@ const OrderManagement: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Payments</SelectItem>
                 {paymentStatuses.map((status) =>
-                <SelectItem key={status} value={status}>{status}</SelectItem>
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -330,10 +372,18 @@ const OrderManagement: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) =>
-                <TableRow key={order.id}>
+                  <TableRow key={order.id}>
                     <TableCell>
                       <div className="font-medium">{order.order_number}</div>
-                      <div className="text-sm text-gray-500">{order.order_type}</div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                        {order.order_type}
+                        {isMultiProductOrder(order) && (
+                          <Badge variant="outline" className="text-xs flex items-center gap-1">
+                            <ShoppingCart className="w-3 h-3" />
+                            Multi
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div>
@@ -343,8 +393,17 @@ const OrderManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{order.product_type}</div>
-                        <div className="text-sm text-gray-500">{order.product_color} - {order.neck_type}</div>
+                        {isMultiProductOrder(order) ? (
+                          <>
+                            <div className="font-medium">Multiple Products</div>
+                            <div className="text-sm text-gray-500">Mixed colors & types</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="font-medium">{order.product_type}</div>
+                            <div className="text-sm text-gray-500">{order.product_color}</div>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -391,7 +450,7 @@ const OrderManagement: React.FC = () => {
             </Table>
           </div>
           {filteredOrders.length === 0 &&
-          <div className="text-center py-8">
+            <div className="text-center py-8">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
               <p className="mt-1 text-sm text-gray-500">
@@ -406,8 +465,8 @@ const OrderManagement: React.FC = () => {
       <OrderViewModal
         order={selectedOrder}
         isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)} />
-
+        onClose={() => setIsViewModalOpen(false)}
+      />
 
       {/* Edit Order Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -427,7 +486,7 @@ const OrderManagement: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {orderStatuses.map((status) =>
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
                   )}
                 </SelectContent>
               </Select>
@@ -441,7 +500,7 @@ const OrderManagement: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {paymentStatuses.map((status) =>
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
                   )}
                 </SelectContent>
               </Select>
@@ -453,8 +512,8 @@ const OrderManagement: React.FC = () => {
                 type="number"
                 step="0.01"
                 value={editData.paid_amount}
-                onChange={(e) => setEditData((prev) => ({ ...prev, paid_amount: parseFloat(e.target.value) || 0 }))} />
-
+                onChange={(e) => setEditData((prev) => ({ ...prev, paid_amount: parseFloat(e.target.value) || 0 }))}
+              />
             </div>
 
             <div>
@@ -462,8 +521,8 @@ const OrderManagement: React.FC = () => {
               <Input
                 type="date"
                 value={editData.delivery_date}
-                onChange={(e) => setEditData((prev) => ({ ...prev, delivery_date: e.target.value }))} />
-
+                onChange={(e) => setEditData((prev) => ({ ...prev, delivery_date: e.target.value }))}
+              />
             </div>
 
             <div>
@@ -471,8 +530,8 @@ const OrderManagement: React.FC = () => {
               <Textarea
                 value={editData.special_instructions}
                 onChange={(e) => setEditData((prev) => ({ ...prev, special_instructions: e.target.value }))}
-                rows={3} />
-
+                rows={3}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -481,8 +540,8 @@ const OrderManagement: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 };
 
 export default OrderManagement;

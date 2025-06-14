@@ -13,8 +13,9 @@ import {
   Filter,
   Calendar,
   DollarSign,
-  Package } from
-'lucide-react';
+  Package,
+  ShoppingCart
+} from 'lucide-react';
 import { pdfService } from '@/services/pdfService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -75,10 +76,10 @@ const OrderList: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) =>
-      order.order_number.toLowerCase().includes(query) ||
-      order.customer_name.toLowerCase().includes(query) ||
-      order.product_type.toLowerCase().includes(query) ||
-      order.product_color.toLowerCase().includes(query)
+        order.order_number.toLowerCase().includes(query) ||
+        order.customer_name.toLowerCase().includes(query) ||
+        order.product_type.toLowerCase().includes(query) ||
+        order.product_color.toLowerCase().includes(query)
       );
     }
 
@@ -95,7 +96,46 @@ const OrderList: React.FC = () => {
 
   const handleDownloadPDF = async (order: any) => {
     try {
-      await pdfService.generateOrderPDF(order);
+      // Load order items for PDF generation
+      const { data: itemsData, error: itemsError } = await window.ezsite.apis.tablePage(17047, {
+        "PageNo": 1,
+        "PageSize": 100,
+        "OrderByField": "ID",
+        "IsAsc": true,
+        "Filters": [
+          {
+            "name": "order_id",
+            "op": "Equal",
+            "value": order.ID
+          }
+        ]
+      });
+
+      if (itemsError) throw itemsError;
+
+      const orderItems = itemsData?.List || [];
+      
+      const pdfContent = {
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerAddress: order.customer_address,
+        orderItems: orderItems.map((item: any) => ({
+          productType: item.product_type,
+          productColor: item.product_color,
+          sizeBreakdown: JSON.parse(item.size_breakdown || '{}'),
+          quantity: item.item_quantity,
+          unitPrice: item.unit_price,
+          total: item.item_total
+        })),
+        totalAmount: order.total_amount,
+        eventDate: new Date(order.event_date).toLocaleDateString(),
+        deliveryDate: new Date(order.delivery_date).toLocaleDateString(),
+        specialInstructions: order.special_instructions
+      };
+
+      await pdfService.generateOrderPDF(pdfContent);
+      
       toast({
         title: "PDF Generated",
         description: `Order ${order.order_number} PDF has been downloaded successfully.`
@@ -122,22 +162,26 @@ const OrderList: React.FC = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'delivered':return 'default';
-      case 'shipped':return 'secondary';
-      case 'in production':return 'outline';
-      case 'pending':return 'destructive';
-      case 'cancelled':return 'destructive';
-      default:return 'secondary';
+      case 'delivered': return 'default';
+      case 'shipped': return 'secondary';
+      case 'in production': return 'outline';
+      case 'pending': return 'destructive';
+      case 'cancelled': return 'destructive';
+      default: return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'complete':return 'default';
-      case 'partial':return 'secondary';
-      case 'pending':return 'destructive';
-      default:return 'secondary';
+      case 'complete': return 'default';
+      case 'partial': return 'secondary';
+      case 'pending': return 'destructive';
+      default: return 'secondary';
     }
+  };
+
+  const isMultiProductOrder = (order: any) => {
+    return order.product_type === 'Multiple Products' || order.product_color === 'Mixed';
   };
 
   if (isLoading) {
@@ -146,11 +190,11 @@ const OrderList: React.FC = () => {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           {[...Array(5)].map((_, i) =>
-          <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
+            <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
           )}
         </div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -180,8 +224,8 @@ const OrderList: React.FC = () => {
                   placeholder="Search orders by ID, customer name, or product..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10" />
-
+                  className="pl-10"
+                />
               </div>
             </div>
             
@@ -204,9 +248,9 @@ const OrderList: React.FC = () => {
           </div>
           
           {filteredOrders.length > 0 &&
-          <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
               <span>Showing {filteredOrders.length} of {orders.length} orders</span>
-              <span>Total value: ${filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0).toLocaleString()}</span>
+              <span>Total value: ₹{filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0).toLocaleString()}</span>
             </div>
           }
         </CardContent>
@@ -214,7 +258,7 @@ const OrderList: React.FC = () => {
 
       {/* Orders List */}
       {filteredOrders.length === 0 ?
-      <Card>
+        <Card>
           <CardContent className="text-center py-12">
             <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -222,24 +266,24 @@ const OrderList: React.FC = () => {
             </h3>
             <p className="text-gray-600 mb-6">
               {orders.length === 0 ?
-            'Start creating orders to track your sales' :
-            'Try adjusting your search or filter criteria'
-            }
+                'Start creating orders to track your sales' :
+                'Try adjusting your search or filter criteria'
+              }
             </p>
             {orders.length === 0 &&
-          <Link to="/agent/orders/new">
+              <Link to="/agent/orders/new">
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Order
                 </Button>
               </Link>
-          }
+            }
           </CardContent>
         </Card> :
 
-      <div className="space-y-4">
+        <div className="space-y-4">
           {filteredOrders.map((order) =>
-        <Card key={order.id} className="hover:shadow-md transition-shadow">
+            <Card key={order.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1">
@@ -261,6 +305,12 @@ const OrderList: React.FC = () => {
                         <Badge variant={getPaymentStatusBadgeVariant(order.payment_status)}>
                           Payment: {order.payment_status}
                         </Badge>
+                        {isMultiProductOrder(order) && (
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <ShoppingCart className="w-3 h-3" />
+                            Multi-Product
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     
@@ -268,10 +318,19 @@ const OrderList: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Package className="w-4 h-4 text-gray-400" />
                         <div>
-                          <p className="text-sm font-medium">{order.product_type}</p>
-                          <p className="text-xs text-gray-500">
-                            {order.product_color} • {order.neck_type}
-                          </p>
+                          {isMultiProductOrder(order) ? (
+                            <>
+                              <p className="text-sm font-medium">Multiple Products</p>
+                              <p className="text-xs text-gray-500">Mixed colors & types</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm font-medium">{order.product_type}</p>
+                              <p className="text-xs text-gray-500">
+                                {order.product_color}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
                       
@@ -290,7 +349,7 @@ const OrderList: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
                         <div>
-                          <p className="text-sm font-medium">${order.total_amount}</p>
+                          <p className="text-sm font-medium">₹{order.total_amount}</p>
                           <p className="text-xs text-gray-500">
                             {order.total_quantity} pieces
                           </p>
@@ -298,40 +357,51 @@ const OrderList: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Size Breakdown */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {(() => {
-                    try {
-                      const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-                      return Object.entries(sizeBreakdown).map(([size, qty]) =>
-                      <Badge key={size} variant="outline" className="text-xs">
-                              {size}: {qty as number}
-                            </Badge>
-                      );
-                    } catch {
-                      return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
-                    }
-                  })()}
-                    </div>
+                    {/* Size Breakdown - only for single product orders */}
+                    {!isMultiProductOrder(order) && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {(() => {
+                          try {
+                            const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+                            return Object.entries(sizeBreakdown).map(([size, qty]) =>
+                              <Badge key={size} variant="outline" className="text-xs">
+                                {size}: {qty as number}
+                              </Badge>
+                            );
+                          } catch {
+                            return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
+                          }
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Multi-product indicator */}
+                    {isMultiProductOrder(order) && (
+                      <div className="mb-4">
+                        <Badge variant="outline" className="text-xs">
+                          View details to see all products and sizes
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-2 mt-4 lg:mt-0 lg:ml-6">
                     <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                  onClick={() => handleViewOrder(order)}>
-
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center space-x-2"
+                      onClick={() => handleViewOrder(order)}
+                    >
                       <Eye className="w-4 h-4" />
                       <span>View</span>
                     </Button>
                     
                     <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                  onClick={() => handleDownloadPDF(order)}>
-
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center space-x-2"
+                      onClick={() => handleDownloadPDF(order)}
+                    >
                       <FileText className="w-4 h-4" />
                       <span>PDF</span>
                     </Button>
@@ -339,7 +409,7 @@ const OrderList: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-        )}
+          )}
         </div>
       }
       
@@ -347,11 +417,10 @@ const OrderList: React.FC = () => {
       <OrderViewModal
         order={selectedOrder}
         isOpen={isModalOpen}
-        onClose={handleCloseModal} />
-
-    </div>);
-
-
+        onClose={handleCloseModal}
+      />
+    </div>
+  );
 };
 
 export default OrderList;

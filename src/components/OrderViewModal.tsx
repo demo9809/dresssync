@@ -1,361 +1,348 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle } from
-'@/components/ui/dialog';
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import {
-  FileText,
-  Download,
-  Printer,
-  Calendar,
-  Package,
-  User,
-  Phone,
-  MapPin,
-  Clock,
-  Shirt,
-  Palette,
-  Layers } from
-'lucide-react';
+import { FileText, Download, Phone, MapPin, Calendar, Package, Palette, Ruler } from 'lucide-react';
 import { pdfService } from '@/services/pdfService';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+
+interface OrderItem {
+  ID: number;
+  order_id: number;
+  product_type: string;
+  product_color: string;
+  size_breakdown: string;
+  item_quantity: number;
+  unit_price: number;
+  item_total: number;
+}
 
 interface OrderViewModalProps {
-  order: any | null;
+  order: any;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose }) => {
-  if (!order) return null;
+  const { toast } = useToast();
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleDownloadPDF = async () => {
-    try {
-      await pdfService.generateOrderPDF(order);
-      toast({
-        title: "PDF Generated",
-        description: `Order ${order.order_number} PDF has been downloaded successfully.`
-      });
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to download PDF. Please try again.",
-        variant: "destructive"
-      });
+  useEffect(() => {
+    if (isOpen && order?.ID) {
+      loadOrderItems();
     }
-  };
+  }, [isOpen, order]);
 
-  const handlePrintOrder = async () => {
+  const loadOrderItems = async () => {
+    setLoading(true);
     try {
-      await pdfService.printOrderPDF(order);
-      toast({
-        title: "Printing Order",
-        description: `Order ${order.order_number} is being prepared for printing.`
+      const { data, error } = await window.ezsite.apis.tablePage(17047, {
+        "PageNo": 1,
+        "PageSize": 100,
+        "OrderByField": "ID",
+        "IsAsc": true,
+        "Filters": [
+          {
+            "name": "order_id",
+            "op": "Equal",
+            "value": order.ID
+          }
+        ]
       });
+
+      if (error) throw error;
+      setOrderItems(data?.List || []);
     } catch (error) {
-      console.error('Error printing order:', error);
+      console.error('Error loading order items:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to print order. Please try again.",
-        variant: "destructive"
+        description: "Failed to load order items",
+        variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'delivered':return 'default';
-      case 'shipped':return 'secondary';
-      case 'in production':return 'outline';
-      case 'pending':return 'destructive';
-      case 'cancelled':return 'destructive';
-      default:return 'secondary';
+      case 'pending': return 'secondary';
+      case 'in production': return 'default';
+      case 'shipped': return 'secondary';
+      case 'delivered': return 'default';
+      case 'cancelled': return 'destructive';
+      default: return 'secondary';
     }
   };
 
-
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const getPaymentStatusBadgeVariant = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending': return 'destructive';
+      case 'partial': return 'secondary';
+      case 'complete': return 'default';
+      default: return 'secondary';
+    }
   };
 
-  const parseSizeBreakdown = (sizeBreakdownString: string) => {
+  const parseSizeBreakdown = (sizeBreakdownStr: string) => {
     try {
-      return JSON.parse(sizeBreakdownString || '{}');
+      return JSON.parse(sizeBreakdownStr || '{}');
     } catch {
       return {};
     }
   };
 
-  const sizeBreakdown = parseSizeBreakdown(order.size_breakdown);
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'Not specified';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const generatePDF = async () => {
+    try {
+      const pdfContent = {
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerAddress: order.customer_address,
+        orderItems: orderItems.map(item => ({
+          productType: item.product_type,
+          productColor: item.product_color,
+          sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
+          quantity: item.item_quantity,
+          unitPrice: item.unit_price,
+          total: item.item_total
+        })),
+        totalAmount: order.total_amount,
+        eventDate: formatDate(order.event_date),
+        deliveryDate: formatDate(order.delivery_date),
+        specialInstructions: order.special_instructions
+      };
+
+      await pdfService.generateOrderPDF(pdfContent);
+      
+      toast({
+        title: "PDF Generated",
+        description: "Order PDF has been downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!order) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold text-gray-900">
-                Order Details
-              </DialogTitle>
-              <p className="text-gray-600 mt-1">Order #{order.order_number}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrintOrder}
-                className="flex items-center gap-2">
-
-                <Printer className="w-4 h-4" />
-                Print
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadPDF}
-                className="flex items-center gap-2">
-
-                <Download className="w-4 h-4" />
-                Download PDF
-              </Button>
-            </div>
-          </div>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Order Details - {order.order_number}</span>
+            <Button onClick={generatePDF} size="sm" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div className="space-y-6">
+          {/* Order Status */}
+          <div className="flex flex-wrap gap-4">
+            <Badge variant={getStatusBadgeVariant(order.order_status)} className="text-sm">
+              Status: {order.order_status}
+            </Badge>
+            <Badge variant={getPaymentStatusBadgeVariant(order.payment_status)} className="text-sm">
+              Payment: {order.payment_status}
+            </Badge>
+            <Badge variant="outline" className="text-sm">
+              Type: {order.order_type}
+            </Badge>
+          </div>
+
           {/* Customer Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-600" />
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Phone className="h-5 w-5" />
                 Customer Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{order.customer_name}</p>
-                  <p className="text-sm text-gray-500">Customer</p>
-                </div>
+            <CardContent className="space-y-3">
+              <div>
+                <span className="font-medium">Name: </span>
+                {order.customer_name}
               </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <Phone className="w-4 h-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{order.customer_phone}</p>
-                  <p className="text-sm text-gray-500">Phone</p>
-                </div>
+              <div>
+                <span className="font-medium">Phone: </span>
+                {order.customer_phone}
               </div>
-
-              {order.customer_whatsapp &&
-              <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Phone className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{order.customer_whatsapp}</p>
-                    <p className="text-sm text-gray-500">WhatsApp</p>
-                  </div>
-                </div>
-              }
-
-              {order.customer_address &&
-              <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mt-0.5">
-                    <MapPin className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{order.customer_address}</p>
-                    <p className="text-sm text-gray-500">Address</p>
-                  </div>
-                </div>
-              }
-            </CardContent>
-          </Card>
-
-          {/* Product Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-orange-600" />
-                Product Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Shirt className="w-4 h-4 text-orange-600" />
-                </div>
+              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone && (
                 <div>
-                  <p className="font-medium text-gray-900">{order.product_type}</p>
-                  <p className="text-sm text-gray-500">Product Type</p>
+                  <span className="font-medium">WhatsApp: </span>
+                  {order.customer_whatsapp}
                 </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
-                  <Palette className="w-4 h-4 text-pink-600" />
-                </div>
+              )}
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-1 text-gray-500" />
                 <div>
-                  <p className="font-medium text-gray-900">{order.product_color}</p>
-                  <p className="text-sm text-gray-500">Color</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <Layers className="w-4 h-4 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{order.neck_type}</p>
-                  <p className="text-sm text-gray-500">Neck Type</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{order.order_type}</p>
-                  <p className="text-sm text-gray-500">Order Type</p>
+                  <span className="font-medium">Address: </span>
+                  {order.customer_address}
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Order Status & Dates */}
+          {/* Order Items */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-600" />
-                Order Status & Timeline
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Order Items ({orderItems.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Order Status:</span>
-                <Badge variant={getStatusBadgeVariant(order.order_status)}>
-                  {order.order_status}
-                </Badge>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-4">Loading order items...</div>
+              ) : orderItems.length > 0 ? (
+                <div className="space-y-4">
+                  {orderItems.map((item, index) => {
+                    const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
+                    
+                    return (
+                      <div key={item.ID} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-lg">Item {index + 1}</h4>
+                          <Badge className="bg-green-100 text-green-800">
+                            ₹{item.item_total.toFixed(2)}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium">Product:</span>
+                            <span>{item.product_type}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Palette className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium">Color:</span>
+                            <span>{item.product_color}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Quantity:</span>
+                            <span>{item.item_quantity}</span>
+                          </div>
+                        </div>
+
+                        {Object.keys(sizeBreakdown).length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Ruler className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Size Breakdown:</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(sizeBreakdown).map(([size, quantity]) => (
+                                <Badge key={size} variant="outline" className="text-xs">
+                                  {size}: {quantity}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="mt-3 text-sm text-gray-600">
+                          <span>Unit Price: ₹{item.unit_price.toFixed(2)} × {item.item_quantity} = ₹{item.item_total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No order items found
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Order Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium">Event Date: </span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    {formatDate(order.event_date)}
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">Delivery Date: </span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    {formatDate(order.delivery_date)}
+                  </div>
+                </div>
               </div>
 
               <Separator />
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-blue-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">Event Date</p>
-                    <p className="text-sm text-gray-600">{formatDate(order.event_date)}</p>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Total Quantity:</span>
+                  <span className="font-medium">{order.total_quantity}</span>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-green-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">Delivery Date</p>
-                    <p className="text-sm text-gray-600">{formatDate(order.delivery_date)}</p>
-                  </div>
+                <div className="flex justify-between">
+                  <span>Total Amount:</span>
+                  <span className="font-medium">₹{parseFloat(order.total_amount).toFixed(2)}</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Additional Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                Order Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Order Number:</span>
-                  <span className="font-bold text-gray-900">#{order.order_number}</span>
+                <div className="flex justify-between">
+                  <span>Paid Amount:</span>
+                  <span className="font-medium">₹{parseFloat(order.paid_amount).toFixed(2)}</span>
                 </div>
-                
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Total Quantity:</span>
-                  <span className="font-bold text-blue-600">{order.total_quantity} pieces</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Order Created:</span>
-                  <span className="font-bold text-purple-600">{formatDate(order.created_at || order.createdAt)}</span>
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Balance:</span>
+                  <span className="text-red-600">
+                    ₹{(parseFloat(order.total_amount) - parseFloat(order.paid_amount)).toFixed(2)}
+                  </span>
                 </div>
               </div>
+
+              {order.special_instructions && (
+                <>
+                  <Separator />
+                  <div>
+                    <span className="font-medium">Special Instructions:</span>
+                    <p className="mt-1 text-gray-700 bg-gray-50 p-3 rounded">
+                      {order.special_instructions}
+                    </p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Quantity Breakdown */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-purple-600" />
-              Quantity & Size Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold text-gray-900">
-                Total Quantity: {order.total_quantity} pieces
-              </span>
-            </div>
-
-            {Object.keys(sizeBreakdown).length > 0 &&
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {Object.entries(sizeBreakdown).map(([size, quantity]) =>
-              <div key={size} className="text-center p-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border">
-                    <p className="text-xl font-bold text-gray-900">{quantity as number}</p>
-                    <p className="text-sm font-medium text-gray-600">{size}</p>
-                  </div>
-              )}
-              </div>
-            }
-          </CardContent>
-        </Card>
-
-        {/* Special Instructions */}
-        {order.special_instructions &&
-        <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" />
-                Special Instructions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-gray-900">{order.special_instructions}</p>
-              </div>
-            </CardContent>
-          </Card>
-        }
       </DialogContent>
-    </Dialog>);
-
+    </Dialog>
+  );
 };
 
 export default OrderViewModal;
