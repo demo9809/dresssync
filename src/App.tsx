@@ -17,6 +17,7 @@ import ConfigurationManager from "./pages/manager/ConfigurationManager";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import NewOrder from "./pages/agent/NewOrder";
 import OrderList from "./pages/agent/OrderList";
+import ProductItemDemo from "./pages/ProductItemDemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,9 @@ const App = () =>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
+            
+            {/* Demo Route - No authentication required for testing */}
+            <Route path="/demo" element={<ProductItemDemo />} />
             
             {/* Protected Manager Routes */}
             <Route path="/manager/*" element={

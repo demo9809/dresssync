@@ -45,8 +45,8 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
     return (
       <div className="text-center py-8 text-gray-500">
         <p>No items added yet. Click "Add Item" to get started.</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -67,7 +67,7 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
             {variants.map((variant, index) => {
               const availableStock = getAvailableStock(variant.color, variant.size);
               const hasStockWarning = variant.quantity > availableStock && availableStock > 0;
-              
+
               return (
                 <TableRow key={variant.id}>
                   <TableCell className="font-medium">
@@ -77,15 +77,15 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
                   <TableCell>
                     <Select
                       value={variant.size}
-                      onValueChange={(value) => onUpdateVariant(variant.id, { size: value })}
-                    >
+                      onValueChange={(value) => onUpdateVariant(variant.id, { size: value })}>
+
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
                       <SelectContent>
-                        {sizes.map((size) => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
+                        {sizes.map((size) =>
+                        <SelectItem key={size} value={size}>{size}</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -93,15 +93,15 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
                   <TableCell>
                     <Select
                       value={variant.color}
-                      onValueChange={(value) => onUpdateVariant(variant.id, { color: value })}
-                    >
+                      onValueChange={(value) => onUpdateVariant(variant.id, { color: value })}>
+
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select color" />
                       </SelectTrigger>
                       <SelectContent>
-                        {colors.map((color) => (
-                          <SelectItem key={color} value={color}>{color}</SelectItem>
-                        ))}
+                        {colors.map((color) =>
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -111,32 +111,32 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
                       type="number"
                       min="0"
                       value={variant.quantity || ''}
-                      onChange={(e) => onUpdateVariant(variant.id, { 
-                        quantity: parseInt(e.target.value) || 0 
+                      onChange={(e) => onUpdateVariant(variant.id, {
+                        quantity: parseInt(e.target.value) || 0
                       })}
                       className={`w-20 ${hasStockWarning ? 'border-yellow-500' : ''}`}
-                      placeholder="Qty"
-                    />
-                    {hasStockWarning && (
-                      <p className="text-xs text-yellow-600 mt-1">
+                      placeholder="Qty" />
+
+                    {hasStockWarning &&
+                    <p className="text-xs text-yellow-600 mt-1">
                         Exceeds stock ({availableStock})
                       </p>
-                    )}
+                    }
                   </TableCell>
                   
                   <TableCell>
-                    {variant.size && variant.color ? (
-                      <Badge 
-                        variant={availableStock > 0 ? "secondary" : "destructive"}
-                        className="text-xs"
-                      >
+                    {variant.size && variant.color ?
+                    <Badge
+                      variant={availableStock > 0 ? "secondary" : "destructive"}
+                      className="text-xs">
+
                         {availableStock}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs">
+                      </Badge> :
+
+                    <Badge variant="outline" className="text-xs">
                         -
                       </Badge>
-                    )}
+                    }
                   </TableCell>
                   
                   <TableCell>
@@ -144,13 +144,13 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onRemoveVariant(variant.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
+                      className="text-red-600 hover:text-red-700">
+
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </TableCell>
-                </TableRow>
-              );
+                </TableRow>);
+
             })}
           </TableBody>
         </Table>
@@ -165,8 +165,8 @@ const ProductVariantTable: React.FC<ProductVariantTableProps> = ({
           </Badge>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ProductVariantTable;

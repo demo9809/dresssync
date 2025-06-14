@@ -116,7 +116,7 @@ export const stockService = {
   productType: string,
   color: string,
   sizeBreakdown: Record<string, number>)
-  : Promise<{available: boolean;shortfall: Record<string, number>;}>=> {
+  : Promise<{available: boolean;shortfall: Record<string, number>;}> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const stock = mockStock.filter((item) =>
@@ -326,11 +326,11 @@ export const productConfig = {
   }> => {
     try {
       const [productTypes, colors, neckTypes, sizes] = await Promise.all([
-        productConfig.getProductTypes(),
-        productConfig.getColors(),
-        productConfig.getNeckTypes(),
-        productConfig.getSizes()
-      ]);
+      productConfig.getProductTypes(),
+      productConfig.getColors(),
+      productConfig.getNeckTypes(),
+      productConfig.getSizes()]
+      );
 
       return {
         productTypes,

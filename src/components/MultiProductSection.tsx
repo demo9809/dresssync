@@ -96,36 +96,36 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
 
   const removeProduct = (productId: string) => {
     if (products.length > 1) {
-      const updatedProducts = products.filter(p => p.id !== productId);
+      const updatedProducts = products.filter((p) => p.id !== productId);
       onUpdate(updatedProducts);
     }
   };
 
   const updateProduct = (productId: string, updates: Partial<ProductItem>) => {
-    const updatedProducts = products.map(product => {
+    const updatedProducts = products.map((product) => {
       if (product.id === productId) {
         const updatedProduct = { ...product, ...updates };
-        
+
         // Recalculate totals
         updatedProduct.totalQuantity = updatedProduct.variants.reduce((sum, variant) => sum + variant.quantity, 0);
         updatedProduct.itemTotal = updatedProduct.totalQuantity * updatedProduct.unitPrice;
-        
+
         return updatedProduct;
       }
       return product;
     });
-    
+
     onUpdate(updatedProducts);
   };
 
   const toggleProductExpansion = (productId: string) => {
-    updateProduct(productId, { 
-      isExpanded: !products.find(p => p.id === productId)?.isExpanded 
+    updateProduct(productId, {
+      isExpanded: !products.find((p) => p.id === productId)?.isExpanded
     });
   };
 
   const addVariantToProduct = (productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
     const newVariant: ProductVariant = {
@@ -140,21 +140,21 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
   };
 
   const updateVariant = (productId: string, variantId: string, updates: Partial<ProductVariant>) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
-    const updatedVariants = product.variants.map(variant =>
-      variant.id === variantId ? { ...variant, ...updates } : variant
+    const updatedVariants = product.variants.map((variant) =>
+    variant.id === variantId ? { ...variant, ...updates } : variant
     );
 
     updateProduct(productId, { variants: updatedVariants });
   };
 
   const removeVariant = (productId: string, variantId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
-    const updatedVariants = product.variants.filter(variant => variant.id !== variantId);
+    const updatedVariants = product.variants.filter((variant) => variant.id !== variantId);
     updateProduct(productId, { variants: updatedVariants });
   };
 
@@ -189,8 +189,8 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
         <Button
           type="button"
           onClick={addNewProduct}
-          className="flex items-center gap-2"
-        >
+          className="flex items-center gap-2">
+
           <Plus className="h-4 w-4" />
           Add Product
         </Button>
@@ -198,50 +198,50 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
 
       {/* Products List */}
       <div className="space-y-4">
-        {products.map((product, index) => (
-          <Card key={product.id} className="border-l-4 border-l-blue-500">
-            <Collapsible 
-              open={product.isExpanded} 
-              onOpenChange={() => toggleProductExpansion(product.id)}
-            >
+        {products.map((product, index) =>
+        <Card key={product.id} className="border-l-4 border-l-blue-500">
+            <Collapsible
+            open={product.isExpanded}
+            onOpenChange={() => toggleProductExpansion(product.id)}>
+
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="p-0 h-auto font-semibold text-left">
                       <div className="flex items-center gap-2">
-                        {product.isExpanded ? 
-                          <ChevronDown className="h-4 w-4" /> : 
-                          <ChevronRight className="h-4 w-4" />
-                        }
+                        {product.isExpanded ?
+                      <ChevronDown className="h-4 w-4" /> :
+                      <ChevronRight className="h-4 w-4" />
+                      }
                         <span>
                           {String.fromCharCode(65 + index)}. {product.productType || 'New Product'} 
                           {product.neckType && ` - ${product.neckType}`}
                         </span>
-                        {product.totalQuantity > 0 && (
-                          <Badge variant="secondary" className="ml-2">
+                        {product.totalQuantity > 0 &&
+                      <Badge variant="secondary" className="ml-2">
                             {product.totalQuantity} items
                           </Badge>
-                        )}
+                      }
                       </div>
                     </Button>
                   </CollapsibleTrigger>
                   
                   <div className="flex items-center gap-2">
-                    {product.itemTotal > 0 && (
-                      <Badge className="bg-green-100 text-green-800">
+                    {product.itemTotal > 0 &&
+                  <Badge className="bg-green-100 text-green-800">
                         ₹{product.itemTotal.toFixed(2)}
                       </Badge>
-                    )}
-                    {products.length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeProduct(product.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
+                  }
+                    {products.length > 1 &&
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeProduct(product.id)}
+                    className="text-red-600 hover:text-red-700">
+
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
+                  }
                   </div>
                 </div>
               </CardHeader>
@@ -253,19 +253,19 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
                     <div className="space-y-2">
                       <Label>Product Type *</Label>
                       <Select
-                        value={product.productType}
-                        onValueChange={(value) => updateProduct(product.id, { 
-                          productType: value,
-                          variants: [] // Reset variants when product type changes
-                        })}
-                      >
+                      value={product.productType}
+                      onValueChange={(value) => updateProduct(product.id, {
+                        productType: value,
+                        variants: [] // Reset variants when product type changes
+                      })}>
+
                         <SelectTrigger>
                           <SelectValue placeholder="Select product type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {productTypes.map((type) => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                          ))}
+                          {productTypes.map((type) =>
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -273,17 +273,17 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
                     <div className="space-y-2">
                       <Label>Neck Type *</Label>
                       <Select
-                        value={product.neckType}
-                        onValueChange={(value) => updateProduct(product.id, { neckType: value })}
-                        disabled={!product.productType}
-                      >
+                      value={product.neckType}
+                      onValueChange={(value) => updateProduct(product.id, { neckType: value })}
+                      disabled={!product.productType}>
+
                         <SelectTrigger>
                           <SelectValue placeholder="Select neck type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {neckTypes.map((type) => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                          ))}
+                          {neckTypes.map((type) =>
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -291,56 +291,56 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
                     <div className="space-y-2">
                       <Label>Unit Price (₹) *</Label>
                       <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={product.unitPrice || ''}
-                        onChange={(e) => updateProduct(product.id, { 
-                          unitPrice: parseFloat(e.target.value) || 0 
-                        })}
-                        placeholder="Enter unit price"
-                      />
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={product.unitPrice || ''}
+                      onChange={(e) => updateProduct(product.id, {
+                        unitPrice: parseFloat(e.target.value) || 0
+                      })}
+                      placeholder="Enter unit price" />
+
                     </div>
                   </div>
 
                   {/* Product Variants */}
-                  {product.productType && product.neckType && product.unitPrice > 0 && (
-                    <>
+                  {product.productType && product.neckType && product.unitPrice > 0 &&
+                <>
                       <Separator />
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <Label className="text-base font-medium">Items:</Label>
                           <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => addVariantToProduct(product.id)}
-                            className="flex items-center gap-2"
-                          >
+                        type="button"
+                        size="sm"
+                        onClick={() => addVariantToProduct(product.id)}
+                        className="flex items-center gap-2">
+
                             <Plus className="h-4 w-4" />
                             Add Item
                           </Button>
                         </div>
                         
                         <ProductVariantTable
-                          variants={product.variants}
-                          colors={colors}
-                          sizes={sizes}
-                          productType={product.productType}
-                          stockData={stockData}
-                          onUpdateVariant={(variantId, updates) => 
-                            updateVariant(product.id, variantId, updates)
-                          }
-                          onRemoveVariant={(variantId) => 
-                            removeVariant(product.id, variantId)
-                          }
-                        />
+                      variants={product.variants}
+                      colors={colors}
+                      sizes={sizes}
+                      productType={product.productType}
+                      stockData={stockData}
+                      onUpdateVariant={(variantId, updates) =>
+                      updateVariant(product.id, variantId, updates)
+                      }
+                      onRemoveVariant={(variantId) =>
+                      removeVariant(product.id, variantId)
+                      } />
+
                       </div>
                     </>
-                  )}
+                }
 
                   {/* Product Summary */}
-                  {product.totalQuantity > 0 && (
-                    <>
+                  {product.totalQuantity > 0 &&
+                <>
                       <Separator />
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <div className="flex flex-wrap gap-4 text-sm">
@@ -361,17 +361,17 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
                         </div>
                       </div>
                     </>
-                  )}
+                }
                 </CardContent>
               </CollapsibleContent>
             </Collapsible>
           </Card>
-        ))}
+        )}
       </div>
 
       {/* Overall Summary */}
-      {getTotalQuantity() > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
+      {getTotalQuantity() > 0 &&
+      <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
@@ -391,9 +391,9 @@ const MultiProductSection: React.FC<MultiProductSectionProps> = ({
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default MultiProductSection;

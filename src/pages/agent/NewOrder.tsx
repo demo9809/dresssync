@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Calendar, User, ShoppingCart, FileText } from 'lucide-react';
-import MultiProductSection from '@/components/MultiProductSection';
+import MultiProductOrderSection from '@/components/MultiProductOrderSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,15 +20,11 @@ interface ProductVariant {
   quantity: number;
 }
 
-interface ProductItem {
+interface ProductItemData {
   id: string;
   productType: string;
   neckType: string;
-  unitPrice: number;
   variants: ProductVariant[];
-  totalQuantity: number;
-  itemTotal: number;
-  isExpanded: boolean;
 }
 
 interface OrderFormData {
@@ -39,7 +35,7 @@ interface OrderFormData {
   eventDate: string;
   deliveryDate: string;
   specialInstructions: string;
-  products: ProductItem[];
+  products: ProductItemData[];
   totalAmount: number;
   orderType: string;
 }
@@ -68,43 +64,39 @@ const NewOrder: React.FC = () => {
   useEffect(() => {
     // Initialize with one empty product
     if (formData.products.length === 0) {
-      addNewProduct();
+      const initialProduct: ProductItemData = {
+        id: `product-${Date.now()}-${Math.random()}`,
+        productType: '',
+        neckType: '',
+        variants: [
+          {
+            id: `variant-${Date.now()}-${Math.random()}`,
+            size: '',
+            color: '',
+            quantity: 0
+          }
+        ]
+      };
+      setFormData(prev => ({ ...prev, products: [initialProduct] }));
     }
   }, []);
 
   useEffect(() => {
     // Calculate total amount whenever products change
-    const totalAmount = formData.products.reduce((sum, product) => sum + product.itemTotal, 0);
-    setFormData((prev) => ({ ...prev, totalAmount }));
+    const totalQuantity = formData.products.reduce((sum, product) => 
+      sum + product.variants.reduce((variantSum, variant) => 
+        variantSum + (variant.quantity || 0), 0
+      ), 0
+    );
+    
+    // For now, we'll use a base price calculation
+    // In a real app, you'd get pricing from your product configuration
+    const estimatedPrice = totalQuantity * 25; // $25 per item as base price
+    setFormData(prev => ({ ...prev, totalAmount: estimatedPrice }));
   }, [formData.products]);
 
-  const generateProductId = () => {
-    return `product_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  };
-
-  const addNewProduct = () => {
-    const newProduct: ProductItem = {
-      id: generateProductId(),
-      productType: '',
-      neckType: '',
-      unitPrice: 0,
-      variants: [],
-      totalQuantity: 0,
-      itemTotal: 0,
-      isExpanded: true
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      products: [...prev.products, newProduct]
-    }));
-  };
-
-  const updateProducts = (updatedProducts: ProductItem[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: updatedProducts
-    }));
+  const handleProductsChange = (updatedProducts: ProductItemData[]) => {
+    setFormData(prev => ({ ...prev, products: updatedProducts }));
   };
 
   const validateForm = (): boolean => {
@@ -136,23 +128,18 @@ const NewOrder: React.FC = () => {
     }
 
     formData.products.forEach((product, index) => {
-      const productLabel = `Product ${String.fromCharCode(65 + index)}`;
-      
+      const productLabel = `Product ${index + 1}`;
+
       if (!product.productType) {
         newErrors.push(`${productLabel}: Product type is required`);
       }
-      if (!product.neckType) {
-        newErrors.push(`${productLabel}: Neck type is required`);
-      }
-      if (product.unitPrice <= 0) {
-        newErrors.push(`${productLabel}: Unit price must be greater than 0`);
-      }
+
       if (product.variants.length === 0) {
-        newErrors.push(`${productLabel}: At least one item (size/color/quantity) is required`);
+        newErrors.push(`${productLabel}: At least one variant is required`);
       }
-      
+
       product.variants.forEach((variant, vIndex) => {
-        const variantLabel = `${productLabel} Item ${vIndex + 1}`;
+        const variantLabel = `${productLabel} Variant ${vIndex + 1}`;
         if (!variant.size) {
           newErrors.push(`${variantLabel}: Size is required`);
         }
@@ -164,10 +151,6 @@ const NewOrder: React.FC = () => {
         }
       });
     });
-
-    if (formData.totalAmount <= 0) {
-      newErrors.push('Order total must be greater than 0');
-    }
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -190,6 +173,13 @@ const NewOrder: React.FC = () => {
     try {
       const orderNumber = `ORD-${Date.now()}`;
 
+      // Calculate total quantity
+      const totalQuantity = formData.products.reduce((sum, product) => 
+        sum + product.variants.reduce((variantSum, variant) => 
+          variantSum + (variant.quantity || 0), 0
+        ), 0
+      );
+
       // Create the main order
       const orderData = {
         order_number: orderNumber,
@@ -198,10 +188,10 @@ const NewOrder: React.FC = () => {
         customer_phone: formData.customerPhone,
         customer_whatsapp: formData.customerWhatsapp || formData.customerPhone,
         customer_address: formData.customerAddress,
-        product_type: 'Multiple Products', // Indicator for multi-product order
-        product_color: 'Mixed', // Indicator for mixed colors
-        total_quantity: formData.products.reduce((sum, p) => sum + p.totalQuantity, 0),
-        size_breakdown: JSON.stringify({}), // Will be handled in order_items
+        product_type: 'Multiple Products',
+        product_color: 'Mixed',
+        total_quantity: totalQuantity,
+        size_breakdown: JSON.stringify({}),
         special_instructions: formData.specialInstructions,
         event_date: new Date(formData.eventDate).toISOString(),
         delivery_date: new Date(formData.deliveryDate).toISOString(),
@@ -222,13 +212,11 @@ const NewOrder: React.FC = () => {
         "PageSize": 1,
         "OrderByField": "ID",
         "IsAsc": false,
-        "Filters": [
-          {
-            "name": "order_number",
-            "op": "Equal",
-            "value": orderNumber
-          }
-        ]
+        "Filters": [{
+          "name": "order_number",
+          "op": "Equal",
+          "value": orderNumber
+        }]
       });
 
       if (fetchError) throw fetchError;
@@ -240,20 +228,24 @@ const NewOrder: React.FC = () => {
       for (const product of formData.products) {
         // Create a consolidated size breakdown for the product
         const sizeBreakdown: {[key: string]: number} = {};
-        
-        product.variants.forEach(variant => {
+
+        product.variants.forEach((variant) => {
           const key = `${variant.size}-${variant.color}`;
           sizeBreakdown[key] = (sizeBreakdown[key] || 0) + variant.quantity;
         });
 
+        const productQuantity = product.variants.reduce((sum, variant) => sum + variant.quantity, 0);
+        const unitPrice = 25; // Base price, should come from product configuration
+        const itemTotal = productQuantity * unitPrice;
+
         const orderItemData = {
           order_id: createdOrder.ID,
-          product_type: `${product.productType} (${product.neckType})`,
+          product_type: `${product.productType}${product.neckType ? ` (${product.neckType})` : ''}`,
           product_color: product.variants.map(v => v.color).join(', '),
           size_breakdown: JSON.stringify(sizeBreakdown),
-          item_quantity: product.totalQuantity,
-          unit_price: product.unitPrice,
-          item_total: product.itemTotal
+          item_quantity: productQuantity,
+          unit_price: unitPrice,
+          item_total: itemTotal
         };
 
         const { error: itemError } = await window.ezsite.apis.tableCreate(17047, orderItemData);
@@ -262,7 +254,7 @@ const NewOrder: React.FC = () => {
 
       toast({
         title: "Order Created Successfully",
-        description: `Order ${orderNumber} has been created with ${formData.products.length} product types`
+        description: `Order ${orderNumber} has been created with ${formData.products.length} product type(s)`
       });
 
       // Navigate to order list
@@ -281,14 +273,14 @@ const NewOrder: React.FC = () => {
   };
 
   const handleInputChange = (field: keyof OrderFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Order</h1>
-        <p className="text-gray-600">Create a comprehensive order with multiple product types, each with custom variants</p>
+        <p className="text-gray-600">Create a comprehensive order with multiple product types and variants</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -366,14 +358,10 @@ const NewOrder: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="products" className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <MultiProductSection
-                  products={formData.products}
-                  onUpdate={updateProducts}
-                />
-              </CardContent>
-            </Card>
+            <MultiProductOrderSection
+              products={formData.products}
+              onProductsChange={handleProductsChange}
+            />
           </TabsContent>
 
           <TabsContent value="details" className="space-y-4">
@@ -435,6 +423,21 @@ const NewOrder: React.FC = () => {
                     placeholder="Enter any special instructions for this order"
                     rows={3}
                   />
+                </div>
+
+                {/* Order Summary */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-2">Order Summary</h3>
+                  <div className="text-sm text-gray-600">
+                    <p>Total Items: {formData.products.reduce((sum, product) => 
+                      sum + product.variants.reduce((variantSum, variant) => 
+                        variantSum + (variant.quantity || 0), 0
+                      ), 0
+                    )}</p>
+                    <p className="text-lg font-semibold text-gray-900 mt-2">
+                      Estimated Total: ${formData.totalAmount.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
