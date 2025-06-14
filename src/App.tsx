@@ -22,8 +22,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () =>
-<QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
         <Toaster />
@@ -37,7 +37,7 @@ const App = () =>
             
             {/* Protected Manager Routes */}
             <Route path="/manager/*" element={
-          <ProtectedRoute requiredRole="manager">
+              <ProtectedRoute requiredRole="manager">
                 <Layout>
                   <Routes>
                     <Route path="dashboard" element={<ManagerDashboard />} />
@@ -51,11 +51,11 @@ const App = () =>
                   </Routes>
                 </Layout>
               </ProtectedRoute>
-          } />
+            } />
             
             {/* Protected Agent Routes */}
             <Route path="/agent/*" element={
-          <ProtectedRoute requiredRole="agent">
+              <ProtectedRoute requiredRole="agent">
                 <Layout>
                   <Routes>
                     <Route path="dashboard" element={<AgentDashboard />} />
@@ -66,13 +66,17 @@ const App = () =>
                   </Routes>
                 </Layout>
               </ProtectedRoute>
-          } />
+            } />
             
             {/* Default redirect based on auth */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             
-            {/* Direct routes for testing */}
+            {/* Direct routes for testing - redirect to proper manager routes */}
             <Route path="/stock" element={<Navigate to="/manager/stock" replace />} />
+            <Route path="/agents" element={<Navigate to="/manager/agents" replace />} />
+            <Route path="/reports" element={<Navigate to="/manager/reports" replace />} />
+            <Route path="/passwords" element={<Navigate to="/manager/passwords" replace />} />
+            <Route path="/configuration" element={<Navigate to="/manager/configuration" replace />} />
             
             {/* Legacy route redirects */}
             <Route path="/dashboard" element={<Navigate to="/login" replace />} />
@@ -85,7 +89,7 @@ const App = () =>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
-  </QueryClientProvider>;
-
+  </QueryClientProvider>
+);
 
 export default App;

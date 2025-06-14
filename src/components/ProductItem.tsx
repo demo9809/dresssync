@@ -44,13 +44,13 @@ const ProductItem: React.FC<ProductItemProps> = ({
     productType: data?.productType || '',
     neckType: data?.neckType || '',
     variants: data?.variants || [
-      {
-        id: `variant-${Date.now()}-${Math.random()}`,
-        size: '',
-        color: '',
-        quantity: 0
-      }
-    ]
+    {
+      id: `variant-${Date.now()}-${Math.random()}`,
+      size: '',
+      color: '',
+      quantity: 0
+    }]
+
   });
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
     try {
       setLoading(true);
       const config = await productConfig.getConfiguration();
-      
+
       setProductTypes(config.productTypes || []);
       setNeckTypes(config.neckTypes || []);
       setColors(config.colors || []);
@@ -83,19 +83,19 @@ const ProductItem: React.FC<ProductItemProps> = ({
   };
 
   const updateProductItem = (field: keyof ProductItemData, value: any) => {
-    setProductItem(prev => ({
+    setProductItem((prev) => ({
       ...prev,
       [field]: value
     }));
   };
 
   const updateVariant = (variantId: string, field: keyof ProductVariant, value: any) => {
-    setProductItem(prev => ({
+    setProductItem((prev) => ({
       ...prev,
-      variants: prev.variants.map(variant =>
-        variant.id === variantId
-          ? { ...variant, [field]: value }
-          : variant
+      variants: prev.variants.map((variant) =>
+      variant.id === variantId ?
+      { ...variant, [field]: value } :
+      variant
       )
     }));
   };
@@ -108,7 +108,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
       quantity: 0
     };
 
-    setProductItem(prev => ({
+    setProductItem((prev) => ({
       ...prev,
       variants: [...prev.variants, newVariant]
     }));
@@ -116,9 +116,9 @@ const ProductItem: React.FC<ProductItemProps> = ({
 
   const removeVariant = (variantId: string) => {
     if (productItem.variants.length > 1) {
-      setProductItem(prev => ({
+      setProductItem((prev) => ({
         ...prev,
-        variants: prev.variants.filter(variant => variant.id !== variantId)
+        variants: prev.variants.filter((variant) => variant.id !== variantId)
       }));
     }
   };
@@ -137,8 +137,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
             <div className="h-10 bg-gray-200 rounded"></div>
           </div>
         </div>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -152,8 +152,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
           variant="outline"
           size="sm"
           onClick={handleRemoveProduct}
-          className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
-        >
+          className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200">
+
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
@@ -166,11 +166,11 @@ const ProductItem: React.FC<ProductItemProps> = ({
               <SelectValue placeholder="Select Product type" />
             </SelectTrigger>
             <SelectContent>
-              {productTypes.map((type) => (
-                <SelectItem key={type} value={type}>
+              {productTypes.map((type) =>
+              <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -180,11 +180,11 @@ const ProductItem: React.FC<ProductItemProps> = ({
               <SelectValue placeholder="Select Neck type" />
             </SelectTrigger>
             <SelectContent>
-              {neckTypes.map((type) => (
-                <SelectItem key={type} value={type}>
+              {neckTypes.map((type) =>
+              <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -192,8 +192,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
 
       {/* Variants */}
       <div className="space-y-4">
-        {productItem.variants.map((variant, variantIndex) => (
-          <div key={variant.id} className="flex items-center gap-3">
+        {productItem.variants.map((variant, variantIndex) =>
+        <div key={variant.id} className="flex items-center gap-3">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Size */}
               <Select value={variant.size} onValueChange={(value) => updateVariant(variant.id, 'size', value)}>
@@ -201,11 +201,11 @@ const ProductItem: React.FC<ProductItemProps> = ({
                   <SelectValue placeholder="Select Size" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sizes.map((size) => (
-                    <SelectItem key={size} value={size}>
+                  {sizes.map((size) =>
+                <SelectItem key={size} value={size}>
                       {size}
                     </SelectItem>
-                  ))}
+                )}
                 </SelectContent>
               </Select>
 
@@ -215,66 +215,66 @@ const ProductItem: React.FC<ProductItemProps> = ({
                   <SelectValue placeholder="Select Color" />
                 </SelectTrigger>
                 <SelectContent>
-                  {colors.map((color) => (
-                    <SelectItem key={color} value={color}>
+                  {colors.map((color) =>
+                <SelectItem key={color} value={color}>
                       {color}
                     </SelectItem>
-                  ))}
+                )}
                 </SelectContent>
               </Select>
 
               {/* Quantity */}
               <Input
-                type="number"
-                placeholder="Quantity"
-                value={variant.quantity || ''}
-                onChange={(e) => updateVariant(variant.id, 'quantity', parseInt(e.target.value) || 0)}
-                min="0"
-                className="w-full"
-              />
+              type="number"
+              placeholder="Quantity"
+              value={variant.quantity || ''}
+              onChange={(e) => updateVariant(variant.id, 'quantity', parseInt(e.target.value) || 0)}
+              min="0"
+              className="w-full" />
+
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* Remove Variant Button */}
-              {productItem.variants.length > 1 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => removeVariant(variant.id)}
-                  className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
-                >
+              {productItem.variants.length > 1 &&
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => removeVariant(variant.id)}
+              className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200">
+
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              )}
+            }
 
               {/* Add Variant Button (only on last row) */}
-              {variantIndex === productItem.variants.length - 1 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addVariant}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200"
-                >
+              {variantIndex === productItem.variants.length - 1 &&
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addVariant}
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200">
+
                   <Plus className="h-4 w-4" />
                 </Button>
-              )}
+            }
             </div>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Summary */}
-      {productItem.variants.some(v => v.quantity > 0) && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
+      {productItem.variants.some((v) => v.quantity > 0) &&
+      <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="text-sm text-gray-600">
             <span className="font-medium">Total Quantity: </span>
             {productItem.variants.reduce((sum, variant) => sum + (variant.quantity || 0), 0)}
           </div>
         </div>
-      )}
-    </Card>
-  );
+      }
+    </Card>);
+
 };
 
 export default ProductItem;

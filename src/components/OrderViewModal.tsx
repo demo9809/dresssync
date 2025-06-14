@@ -3,13 +3,13 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle } from
-'@/components/ui/dialog';
+  DialogTitle
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Download, Phone, MapPin, Calendar, Package, Palette, Ruler } from 'lucide-react';
+import { FileText, Download, Phone, MapPin, Calendar, Package, Palette, Ruler, Eye, Printer } from 'lucide-react';
 import { pdfService } from '@/services/pdfService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,22 +44,25 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
   const loadOrderItems = async () => {
     setLoading(true);
     try {
+      console.log('Loading order items for order ID:', order.ID);
+      
       const { data, error } = await window.ezsite.apis.tablePage(17047, {
         "PageNo": 1,
         "PageSize": 100,
         "OrderByField": "ID",
         "IsAsc": true,
-        "Filters": [
-        {
+        "Filters": [{
           "name": "order_id",
           "op": "Equal",
-          "value": order.ID
+          "value": order.ID || order.id
         }]
-
       });
 
       if (error) throw error;
-      setOrderItems(data?.List || []);
+      
+      const items = data?.List || [];
+      console.log('Loaded order items:', items);
+      setOrderItems(items);
     } catch (error) {
       console.error('Error loading order items:', error);
       toast({
@@ -74,21 +77,21 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending':return 'secondary';
-      case 'in production':return 'default';
-      case 'shipped':return 'secondary';
-      case 'delivered':return 'default';
-      case 'cancelled':return 'destructive';
-      default:return 'secondary';
+      case 'pending': return 'secondary';
+      case 'in production': return 'default';
+      case 'shipped': return 'secondary';
+      case 'delivered': return 'default';
+      case 'cancelled': return 'destructive';
+      default: return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending':return 'destructive';
-      case 'partial':return 'secondary';
-      case 'complete':return 'default';
-      default:return 'secondary';
+      case 'pending': return 'destructive';
+      case 'partial': return 'secondary';
+      case 'complete': return 'default';
+      default: return 'secondary';
     }
   };
 
@@ -102,31 +105,71 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Not specified';
-    return new Date(dateString).toLocaleDateString();
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN');
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatCurrency = (amount: number | string) => {
+    const num = parseFloat(amount?.toString() || '0');
+    return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const generatePDF = async () => {
     try {
-      const pdfContent = {
-        orderNumber: order.order_number,
-        customerName: order.customer_name,
-        customerPhone: order.customer_phone,
-        customerAddress: order.customer_address,
-        orderItems: orderItems.map((item) => ({
-          productType: item.product_type,
-          productColor: item.product_color,
-          sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
-          quantity: item.item_quantity,
-          unitPrice: item.unit_price,
-          total: item.item_total
-        })),
-        totalAmount: order.total_amount,
-        eventDate: formatDate(order.event_date),
-        deliveryDate: formatDate(order.delivery_date),
-        specialInstructions: order.special_instructions
-      };
+      console.log('Generating PDF for order:', order);
+      console.log('Order items:', orderItems);
 
-      await pdfService.generateOrderPDF(pdfContent);
+      if (orderItems.length > 0) {
+        // Multi-product order
+        const pdfContent = {
+          orderNumber: order.order_number,
+          customerName: order.customer_name,
+          customerPhone: order.customer_phone,
+          customerAddress: order.customer_address,
+          orderItems: orderItems.map((item) => ({
+            productType: item.product_type,
+            productColor: item.product_color,
+            sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
+            quantity: item.item_quantity,
+            unitPrice: item.unit_price,
+            total: item.item_total
+          })),
+          totalAmount: order.total_amount,
+          eventDate: order.event_date,
+          deliveryDate: order.delivery_date,
+          specialInstructions: order.special_instructions
+        };
+
+        await pdfService.generateOrderPDF(pdfContent);
+      } else {
+        // Single product order
+        const orderForPdf = {
+          id: order.ID || order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          customer_whatsapp: order.customer_whatsapp,
+          customer_address: order.customer_address,
+          product_type: order.product_type,
+          product_color: order.product_color,
+          neck_type: order.neck_type || 'Round Neck',
+          total_quantity: order.total_quantity,
+          size_breakdown: order.size_breakdown,
+          special_instructions: order.special_instructions,
+          event_date: order.event_date,
+          delivery_date: order.delivery_date,
+          order_status: order.order_status,
+          total_amount: order.total_amount,
+          paid_amount: order.paid_amount,
+          payment_status: order.payment_status,
+          order_type: order.order_type
+        };
+
+        await pdfService.generateOrderPDF(orderForPdf);
+      }
 
       toast({
         title: "PDF Generated",
@@ -142,7 +185,129 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
     }
   };
 
+  const viewOrderHTML = () => {
+    try {
+      if (orderItems.length > 0) {
+        // Multi-product order
+        const pdfContent = {
+          orderNumber: order.order_number,
+          customerName: order.customer_name,
+          customerPhone: order.customer_phone,
+          customerAddress: order.customer_address,
+          orderItems: orderItems.map((item) => ({
+            productType: item.product_type,
+            productColor: item.product_color,
+            sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
+            quantity: item.item_quantity,
+            unitPrice: item.unit_price,
+            total: item.item_total
+          })),
+          totalAmount: order.total_amount,
+          eventDate: order.event_date,
+          deliveryDate: order.delivery_date,
+          specialInstructions: order.special_instructions
+        };
+
+        pdfService.viewOrderHTML(pdfContent);
+      } else {
+        // Single product order
+        const orderForPdf = {
+          id: order.ID || order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          customer_whatsapp: order.customer_whatsapp,
+          customer_address: order.customer_address,
+          product_type: order.product_type,
+          product_color: order.product_color,
+          neck_type: order.neck_type || 'Round Neck',
+          total_quantity: order.total_quantity,
+          size_breakdown: order.size_breakdown,
+          special_instructions: order.special_instructions,
+          event_date: order.event_date,
+          delivery_date: order.delivery_date,
+          order_status: order.order_status,
+          total_amount: order.total_amount,
+          paid_amount: order.paid_amount,
+          payment_status: order.payment_status,
+          order_type: order.order_type
+        };
+
+        pdfService.viewOrderHTML(orderForPdf);
+      }
+    } catch (error) {
+      console.error('Error viewing order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open order view",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const printOrder = async () => {
+    try {
+      if (orderItems.length > 0) {
+        // Multi-product order
+        const pdfContent = {
+          orderNumber: order.order_number,
+          customerName: order.customer_name,
+          customerPhone: order.customer_phone,
+          customerAddress: order.customer_address,
+          orderItems: orderItems.map((item) => ({
+            productType: item.product_type,
+            productColor: item.product_color,
+            sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
+            quantity: item.item_quantity,
+            unitPrice: item.unit_price,
+            total: item.item_total
+          })),
+          totalAmount: order.total_amount,
+          eventDate: order.event_date,
+          deliveryDate: order.delivery_date,
+          specialInstructions: order.special_instructions
+        };
+
+        await pdfService.printOrderPDF(pdfContent);
+      } else {
+        // Single product order
+        const orderForPdf = {
+          id: order.ID || order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          customer_whatsapp: order.customer_whatsapp,
+          customer_address: order.customer_address,
+          product_type: order.product_type,
+          product_color: order.product_color,
+          neck_type: order.neck_type || 'Round Neck',
+          total_quantity: order.total_quantity,
+          size_breakdown: order.size_breakdown,
+          special_instructions: order.special_instructions,
+          event_date: order.event_date,
+          delivery_date: order.delivery_date,
+          order_status: order.order_status,
+          total_amount: order.total_amount,
+          paid_amount: order.paid_amount,
+          payment_status: order.payment_status,
+          order_type: order.order_type
+        };
+
+        await pdfService.printOrderPDF(orderForPdf);
+      }
+    } catch (error) {
+      console.error('Error printing order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to print order",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (!order) return null;
+
+  const isMultiProductOrder = orderItems.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -150,10 +315,20 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Order Details - {order.order_number}</span>
-            <Button onClick={generatePDF} size="sm" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={viewOrderHTML} size="sm" variant="outline" className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </Button>
+              <Button onClick={printOrder} size="sm" variant="outline" className="flex items-center gap-2">
+                <Printer className="h-4 w-4" />
+                Print
+              </Button>
+              <Button onClick={generatePDF} size="sm" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -169,6 +344,11 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             <Badge variant="outline" className="text-sm">
               Type: {order.order_type}
             </Badge>
+            {isMultiProductOrder && (
+              <Badge variant="secondary" className="text-sm">
+                Multi-Product Order
+              </Badge>
+            )}
           </div>
 
           {/* Customer Information */}
@@ -188,12 +368,12 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <span className="font-medium">Phone: </span>
                 {order.customer_phone}
               </div>
-              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone &&
-              <div>
+              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone && (
+                <div>
                   <span className="font-medium">WhatsApp: </span>
                   {order.customer_whatsapp}
                 </div>
-              }
+              )}
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 text-gray-500" />
                 <div>
@@ -209,23 +389,23 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Order Items ({orderItems.length})
+                Order Items {isMultiProductOrder ? `(${orderItems.length})` : '(1)'}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ?
-              <div className="text-center py-4">Loading order items...</div> :
-              orderItems.length > 0 ?
-              <div className="space-y-4">
+              {loading ? (
+                <div className="text-center py-4">Loading order items...</div>
+              ) : isMultiProductOrder ? (
+                <div className="space-y-4">
                   {orderItems.map((item, index) => {
-                  const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
+                    const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
 
-                  return (
-                    <div key={item.ID} className="border rounded-lg p-4">
+                    return (
+                      <div key={item.ID} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium text-lg">Item {index + 1}</h4>
                           <Badge className="bg-green-100 text-green-800">
-                            ₹{item.item_total.toFixed(2)}
+                            {formatCurrency(item.item_total)}
                           </Badge>
                         </div>
                         
@@ -246,34 +426,66 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                           </div>
                         </div>
 
-                        {Object.keys(sizeBreakdown).length > 0 &&
-                      <div>
+                        {Object.keys(sizeBreakdown).length > 0 && (
+                          <div>
                             <div className="flex items-center gap-2 mb-2">
                               <Ruler className="h-4 w-4 text-gray-500" />
                               <span className="font-medium">Size Breakdown:</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(sizeBreakdown).map(([size, quantity]) =>
-                          <Badge key={size} variant="outline" className="text-xs">
+                                <Badge key={size} variant="outline" className="text-xs">
                                   {size}: {quantity}
                                 </Badge>
-                          )}
+                              )}
                             </div>
                           </div>
-                      }
+                        )}
 
                         <div className="mt-3 text-sm text-gray-600">
-                          <span>Unit Price: ₹{item.unit_price.toFixed(2)} × {item.item_quantity} = ₹{item.item_total.toFixed(2)}</span>
+                          <span>Unit Price: {formatCurrency(item.unit_price)} × {item.item_quantity} = {formatCurrency(item.item_total)}</span>
                         </div>
-                      </div>);
-
-                })}
-                </div> :
-
-              <div className="text-center py-4 text-gray-500">
-                  No order items found
+                      </div>
+                    );
+                  })}
                 </div>
-              }
+              ) : (
+                // Single product order
+                <div className="border rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">Product:</span>
+                      <span>{order.product_type}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">Color:</span>
+                      <span>{order.product_color}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Quantity:</span>
+                      <span>{order.total_quantity}</span>
+                    </div>
+                  </div>
+
+                  {order.size_breakdown && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Ruler className="h-4 w-4 text-gray-500" />
+                        <span className="font-medium">Size Breakdown:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(parseSizeBreakdown(order.size_breakdown)).map(([size, quantity]) =>
+                          <Badge key={size} variant="outline" className="text-xs">
+                            {size}: {quantity}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -308,26 +520,31 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Total Quantity:</span>
-                  <span className="font-medium">{order.total_quantity}</span>
+                  <span className="font-medium">
+                    {isMultiProductOrder 
+                      ? orderItems.reduce((sum, item) => sum + item.item_quantity, 0)
+                      : order.total_quantity
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Amount:</span>
-                  <span className="font-medium">₹{parseFloat(order.total_amount).toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(order.total_amount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Paid Amount:</span>
-                  <span className="font-medium">₹{parseFloat(order.paid_amount).toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(order.paid_amount || 0)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Balance:</span>
                   <span className="text-red-600">
-                    ₹{(parseFloat(order.total_amount) - parseFloat(order.paid_amount)).toFixed(2)}
+                    {formatCurrency((parseFloat(order.total_amount) || 0) - (parseFloat(order.paid_amount) || 0))}
                   </span>
                 </div>
               </div>
 
-              {order.special_instructions &&
-              <>
+              {order.special_instructions && (
+                <>
                   <Separator />
                   <div>
                     <span className="font-medium">Special Instructions:</span>
@@ -336,13 +553,13 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                     </p>
                   </div>
                 </>
-              }
+              )}
             </CardContent>
           </Card>
         </div>
       </DialogContent>
-    </Dialog>);
-
+    </Dialog>
+  );
 };
 
 export default OrderViewModal;

@@ -33,13 +33,13 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
       productType: '',
       neckType: '',
       variants: [
-        {
-          id: `variant-${Date.now()}-${Math.random()}`,
-          size: '',
-          color: '',
-          quantity: 0
-        }
-      ]
+      {
+        id: `variant-${Date.now()}-${Math.random()}`,
+        size: '',
+        color: '',
+        quantity: 0
+      }]
+
     };
 
     onProductsChange([...products, newProduct]);
@@ -47,32 +47,32 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
 
   const updateProduct = (updatedProduct: ProductItemData) => {
     onProductsChange(
-      products.map(product =>
-        product.id === updatedProduct.id ? updatedProduct : product
+      products.map((product) =>
+      product.id === updatedProduct.id ? updatedProduct : product
       )
     );
   };
 
   const removeProduct = (productId: string) => {
     if (products.length > 1) {
-      onProductsChange(products.filter(product => product.id !== productId));
+      onProductsChange(products.filter((product) => product.id !== productId));
     }
   };
 
   const getTotalQuantity = () => {
-    return products.reduce((total, product) => 
-      total + product.variants.reduce((variantTotal, variant) => 
-        variantTotal + (variant.quantity || 0), 0
-      ), 0
+    return products.reduce((total, product) =>
+    total + product.variants.reduce((variantTotal, variant) =>
+    variantTotal + (variant.quantity || 0), 0
+    ), 0
     );
   };
 
   const getValidProducts = () => {
-    return products.filter(product => 
-      product.productType && 
-      product.variants.some(variant => 
-        variant.size && variant.color && variant.quantity > 0
-      )
+    return products.filter((product) =>
+    product.productType &&
+    product.variants.some((variant) =>
+    variant.size && variant.color && variant.quantity > 0
+    )
     );
   };
 
@@ -103,15 +103,15 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
 
       {/* Product Items */}
       <div className="space-y-4">
-        {products.map((product, index) => (
-          <ProductItem
-            key={product.id}
-            data={product}
-            onUpdate={updateProduct}
-            onRemove={removeProduct}
-            index={index}
-          />
-        ))}
+        {products.map((product, index) =>
+        <ProductItem
+          key={product.id}
+          data={product}
+          onUpdate={updateProduct}
+          onRemove={removeProduct}
+          index={index} />
+
+        )}
       </div>
 
       {/* Add Product Button */}
@@ -119,20 +119,20 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
         <Button
           onClick={addProduct}
           variant="outline"
-          className="border-dashed border-2 border-blue-300 text-blue-600 hover:text-blue-800 hover:bg-blue-50 hover:border-blue-400 py-3 px-6"
-        >
+          className="border-dashed border-2 border-blue-300 text-blue-600 hover:text-blue-800 hover:bg-blue-50 hover:border-blue-400 py-3 px-6">
+
           <Plus className="h-4 w-4 mr-2" />
           Add Another Product
         </Button>
       </div>
 
       {/* Summary */}
-      {getTotalQuantity() > 0 && (
-        <Card className="p-4 bg-gray-50">
+      {getTotalQuantity() > 0 &&
+      <Card className="p-4 bg-gray-50">
           <h3 className="font-medium text-gray-900 mb-3">Order Summary</h3>
           <div className="space-y-2">
-            {getValidProducts().map((product, index) => (
-              <div key={product.id} className="flex justify-between items-center text-sm">
+            {getValidProducts().map((product, index) =>
+          <div key={product.id} className="flex justify-between items-center text-sm">
                 <span className="text-gray-600">
                   {product.productType} {product.neckType && `(${product.neckType})`}
                 </span>
@@ -140,7 +140,7 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
                   {product.variants.reduce((sum, variant) => sum + (variant.quantity || 0), 0)} items
                 </span>
               </div>
-            ))}
+          )}
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between items-center font-medium">
                 <span>Total Quantity</span>
@@ -149,9 +149,9 @@ const MultiProductOrderSection: React.FC<MultiProductOrderSectionProps> = ({
             </div>
           </div>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default MultiProductOrderSection;

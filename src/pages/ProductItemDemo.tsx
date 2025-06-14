@@ -19,30 +19,30 @@ interface ProductItemData {
 
 const ProductItemDemo: React.FC = () => {
   const [products, setProducts] = useState<ProductItemData[]>([
+  {
+    id: 'demo-product-1',
+    productType: '',
+    neckType: '',
+    variants: [
     {
-      id: 'demo-product-1',
-      productType: '',
-      neckType: '',
-      variants: [
-        {
-          id: 'demo-variant-1',
-          size: '',
-          color: '',
-          quantity: 0
-        }
-      ]
-    }
-  ]);
+      id: 'demo-variant-1',
+      size: '',
+      color: '',
+      quantity: 0
+    }]
+
+  }]
+  );
 
   const handleProductsChange = (updatedProducts: ProductItemData[]) => {
     setProducts(updatedProducts);
   };
 
   const getTotalQuantity = () => {
-    return products.reduce((total, product) => 
-      total + product.variants.reduce((variantTotal, variant) => 
-        variantTotal + (variant.quantity || 0), 0
-      ), 0
+    return products.reduce((total, product) =>
+    total + product.variants.reduce((variantTotal, variant) =>
+    variantTotal + (variant.quantity || 0), 0
+    ), 0
     );
   };
 
@@ -62,8 +62,8 @@ const ProductItemDemo: React.FC = () => {
           <CardContent>
             <MultiProductOrderSection
               products={products}
-              onProductsChange={handleProductsChange}
-            />
+              onProductsChange={handleProductsChange} />
+
           </CardContent>
         </Card>
 
@@ -119,8 +119,8 @@ const ProductItemDemo: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ProductItemDemo;

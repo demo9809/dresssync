@@ -69,34 +69,34 @@ const NewOrder: React.FC = () => {
         productType: '',
         neckType: '',
         variants: [
-          {
-            id: `variant-${Date.now()}-${Math.random()}`,
-            size: '',
-            color: '',
-            quantity: 0
-          }
-        ]
+        {
+          id: `variant-${Date.now()}-${Math.random()}`,
+          size: '',
+          color: '',
+          quantity: 0
+        }]
+
       };
-      setFormData(prev => ({ ...prev, products: [initialProduct] }));
+      setFormData((prev) => ({ ...prev, products: [initialProduct] }));
     }
   }, []);
 
   useEffect(() => {
     // Calculate total amount whenever products change
-    const totalQuantity = formData.products.reduce((sum, product) => 
-      sum + product.variants.reduce((variantSum, variant) => 
-        variantSum + (variant.quantity || 0), 0
-      ), 0
+    const totalQuantity = formData.products.reduce((sum, product) =>
+    sum + product.variants.reduce((variantSum, variant) =>
+    variantSum + (variant.quantity || 0), 0
+    ), 0
     );
-    
+
     // For now, we'll use a base price calculation
     // In a real app, you'd get pricing from your product configuration
     const estimatedPrice = totalQuantity * 25; // $25 per item as base price
-    setFormData(prev => ({ ...prev, totalAmount: estimatedPrice }));
+    setFormData((prev) => ({ ...prev, totalAmount: estimatedPrice }));
   }, [formData.products]);
 
   const handleProductsChange = (updatedProducts: ProductItemData[]) => {
-    setFormData(prev => ({ ...prev, products: updatedProducts }));
+    setFormData((prev) => ({ ...prev, products: updatedProducts }));
   };
 
   const validateForm = (): boolean => {
@@ -174,10 +174,10 @@ const NewOrder: React.FC = () => {
       const orderNumber = `ORD-${Date.now()}`;
 
       // Calculate total quantity
-      const totalQuantity = formData.products.reduce((sum, product) => 
-        sum + product.variants.reduce((variantSum, variant) => 
-          variantSum + (variant.quantity || 0), 0
-        ), 0
+      const totalQuantity = formData.products.reduce((sum, product) =>
+      sum + product.variants.reduce((variantSum, variant) =>
+      variantSum + (variant.quantity || 0), 0
+      ), 0
       );
 
       // Create the main order
@@ -227,7 +227,7 @@ const NewOrder: React.FC = () => {
       // Create order items for each product and its variants
       for (const product of formData.products) {
         // Create a consolidated size breakdown for the product
-        const sizeBreakdown: {[key: string]: number} = {};
+        const sizeBreakdown: {[key: string]: number;} = {};
 
         product.variants.forEach((variant) => {
           const key = `${variant.size}-${variant.color}`;
@@ -241,7 +241,7 @@ const NewOrder: React.FC = () => {
         const orderItemData = {
           order_id: createdOrder.ID,
           product_type: `${product.productType}${product.neckType ? ` (${product.neckType})` : ''}`,
-          product_color: product.variants.map(v => v.color).join(', '),
+          product_color: product.variants.map((v) => v.color).join(', '),
           size_breakdown: JSON.stringify(sizeBreakdown),
           item_quantity: productQuantity,
           unit_price: unitPrice,
@@ -273,7 +273,7 @@ const NewOrder: React.FC = () => {
   };
 
   const handleInputChange = (field: keyof OrderFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -317,8 +317,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerName}
                       onChange={(e) => handleInputChange('customerName', e.target.value)}
                       placeholder="Enter customer name"
-                      required
-                    />
+                      required />
+
                   </div>
 
                   <div className="space-y-2">
@@ -328,8 +328,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerPhone}
                       onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                       placeholder="Enter phone number"
-                      required
-                    />
+                      required />
+
                   </div>
                 </div>
 
@@ -339,8 +339,8 @@ const NewOrder: React.FC = () => {
                     id="customerWhatsapp"
                     value={formData.customerWhatsapp}
                     onChange={(e) => handleInputChange('customerWhatsapp', e.target.value)}
-                    placeholder="Enter WhatsApp number (optional)"
-                  />
+                    placeholder="Enter WhatsApp number (optional)" />
+
                 </div>
 
                 <div className="space-y-2">
@@ -350,8 +350,8 @@ const NewOrder: React.FC = () => {
                     value={formData.customerAddress}
                     onChange={(e) => handleInputChange('customerAddress', e.target.value)}
                     placeholder="Enter complete customer address"
-                    required
-                  />
+                    required />
+
                 </div>
               </CardContent>
             </Card>
@@ -360,8 +360,8 @@ const NewOrder: React.FC = () => {
           <TabsContent value="products" className="space-y-4">
             <MultiProductOrderSection
               products={formData.products}
-              onProductsChange={handleProductsChange}
-            />
+              onProductsChange={handleProductsChange} />
+
           </TabsContent>
 
           <TabsContent value="details" className="space-y-4">
@@ -381,8 +381,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.eventDate}
                       onChange={(e) => handleInputChange('eventDate', e.target.value)}
-                      required
-                    />
+                      required />
+
                   </div>
 
                   <div className="space-y-2">
@@ -392,8 +392,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.deliveryDate}
                       onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                      required
-                    />
+                      required />
+
                   </div>
                 </div>
 
@@ -401,8 +401,8 @@ const NewOrder: React.FC = () => {
                   <Label htmlFor="orderType">Order Type</Label>
                   <Select
                     value={formData.orderType}
-                    onValueChange={(value) => handleInputChange('orderType', value)}
-                  >
+                    onValueChange={(value) => handleInputChange('orderType', value)}>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -421,19 +421,19 @@ const NewOrder: React.FC = () => {
                     value={formData.specialInstructions}
                     onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
                     placeholder="Enter any special instructions for this order"
-                    rows={3}
-                  />
+                    rows={3} />
+
                 </div>
 
                 {/* Order Summary */}
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">Order Summary</h3>
                   <div className="text-sm text-gray-600">
-                    <p>Total Items: {formData.products.reduce((sum, product) => 
-                      sum + product.variants.reduce((variantSum, variant) => 
-                        variantSum + (variant.quantity || 0), 0
+                    <p>Total Items: {formData.products.reduce((sum, product) =>
+                      sum + product.variants.reduce((variantSum, variant) =>
+                      variantSum + (variant.quantity || 0), 0
                       ), 0
-                    )}</p>
+                      )}</p>
                     <p className="text-lg font-semibold text-gray-900 mt-2">
                       Estimated Total: ${formData.totalAmount.toFixed(2)}
                     </p>
@@ -445,18 +445,18 @@ const NewOrder: React.FC = () => {
         </Tabs>
 
         {/* Error Display */}
-        {errors.length > 0 && (
-          <Alert variant="destructive">
+        {errors.length > 0 &&
+        <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-1">
-                {errors.map((error, index) => (
-                  <div key={index}>• {error}</div>
-                ))}
+                {errors.map((error, index) =>
+              <div key={index}>• {error}</div>
+              )}
               </div>
             </AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Submit Button */}
         <div className="flex justify-end space-x-4 pt-4">
@@ -464,8 +464,8 @@ const NewOrder: React.FC = () => {
             type="button"
             variant="outline"
             onClick={() => navigate('/agent/orders')}
-            disabled={loading}
-          >
+            disabled={loading}>
+
             Cancel
           </Button>
           <Button type="submit" disabled={loading || formData.totalAmount <= 0}>
@@ -473,8 +473,8 @@ const NewOrder: React.FC = () => {
           </Button>
         </div>
       </form>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NewOrder;

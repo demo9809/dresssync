@@ -24,15 +24,80 @@ export interface DatabaseOrder {
   order_type: string;
 }
 
+export interface OrderItem {
+  productType: string;
+  productColor: string;
+  sizeBreakdown: { [size: string]: number };
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface OrderPDFContent {
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  orderItems?: OrderItem[];
+  totalAmount: number;
+  eventDate: string;
+  deliveryDate: string;
+  specialInstructions?: string;
+}
+
 export const pdfService = {
-  generateOrderHTML: (order: DatabaseOrder): string => {
+  generateOrderHTML: (order: DatabaseOrder | OrderPDFContent): string => {
+    // Determine if this is a multi-product order
+    const isMultiProduct = 'orderItems' in order && order.orderItems && order.orderItems.length > 0;
+    
+    // Format currency
+    const formatCurrency = (amount: number | string) => {
+      const num = parseFloat(amount?.toString() || '0');
+      return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    // Format date
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'Not specified';
+      try {
+        return new Date(dateString).toLocaleDateString('en-IN');
+      } catch {
+        return dateString;
+      }
+    };
+
+    // Generate size breakdown table
+    const generateSizeBreakdown = (sizeBreakdown: string | { [size: string]: number }) => {
+      try {
+        const breakdown = typeof sizeBreakdown === 'string' ? JSON.parse(sizeBreakdown || '{}') : sizeBreakdown;
+        const sizes = Object.keys(breakdown);
+        const quantities = Object.values(breakdown);
+        
+        if (sizes.length === 0) {
+          return '<div class="text-center text-gray-500">No size breakdown available</div>';
+        }
+
+        const headerRow = sizes.map(size => `<div class="size-header">${size}</div>`).join('');
+        const quantityRow = quantities.map(qty => `<div class="size-cell">${qty}</div>`).join('');
+        
+        return `
+          <div class="size-breakdown">
+            <div class="size-row">${headerRow}</div>
+            <div class="size-row">${quantityRow}</div>
+          </div>
+        `;
+      } catch {
+        return '<div class="text-center text-gray-500">Invalid size breakdown data</div>';
+      }
+    };
+
     // Create clean, professional HTML content for A4 portrait PDF
     const htmlContent = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Order ${order.id}</title>
+        <title>Order ${isMultiProduct ? (order as OrderPDFContent).orderNumber : (order as DatabaseOrder).order_number}</title>
         <style>
           @page {
             size: A4 portrait;
@@ -205,6 +270,40 @@ export const pdfService = {
             background-color: #f8f9fa;
           }
           
+          /* Product Items Table */
+          .product-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+          }
+          
+          .product-items-table th,
+          .product-items-table td {
+            border: 1px solid #bdc3c7;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+          }
+          
+          .product-items-table th {
+            background-color: #34495e;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+          }
+          
+          .product-items-table td {
+            background-color: #f8f9fa;
+          }
+          
+          .text-right {
+            text-align: right;
+          }
+          
+          .text-center {
+            text-align: center;
+          }
+          
           /* Status Badges */
           .status-badge {
             display: inline-block;
@@ -322,7 +421,7 @@ export const pdfService = {
             <div class="company-tagline">Professional Apparel Solutions</div>
             <div class="order-title">ORDER CONFIRMATION</div>
             <div class="order-details-header">
-              Order #${order.order_number} | Created: ${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}
+              Order #${isMultiProduct ? (order as OrderPDFContent).orderNumber : (order as DatabaseOrder).order_number} | Generated: ${new Date().toLocaleDateString('en-IN')} | ${new Date().toLocaleTimeString()}
             </div>
           </div>
 
@@ -336,19 +435,21 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Name:</div>
-                      <div class="detail-value">${order.customer_name}</div>
+                      <div class="detail-value">${isMultiProduct ? (order as OrderPDFContent).customerName : (order as DatabaseOrder).customer_name}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Phone:</div>
-                      <div class="detail-value">${order.customer_phone}</div>
+                      <div class="detail-value">${isMultiProduct ? (order as OrderPDFContent).customerPhone : (order as DatabaseOrder).customer_phone}</div>
                     </div>
+                    ${!isMultiProduct && (order as DatabaseOrder).customer_whatsapp ? `
                     <div class="detail-row">
                       <div class="detail-label">WhatsApp:</div>
-                      <div class="detail-value">${order.customer_whatsapp}</div>
+                      <div class="detail-value">${(order as DatabaseOrder).customer_whatsapp}</div>
                     </div>
+                    ` : ''}
                     <div class="detail-row">
                       <div class="detail-label">Address:</div>
-                      <div class="detail-value">${order.customer_address}</div>
+                      <div class="detail-value">${isMultiProduct ? (order as OrderPDFContent).customerAddress : (order as DatabaseOrder).customer_address}</div>
                     </div>
                   </div>
                 </div>
@@ -356,28 +457,39 @@ export const pdfService = {
               
               <div class="column">
                 <div class="section">
-                  <div class="section-header">Product Information</div>
+                  <div class="section-header">${isMultiProduct ? 'Order Information' : 'Product Information'}</div>
                   <div class="section-content">
+                    ${!isMultiProduct ? `
                     <div class="detail-row">
                       <div class="detail-label">Product Type:</div>
-                      <div class="detail-value">${order.product_type}</div>
+                      <div class="detail-value">${(order as DatabaseOrder).product_type}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Color:</div>
-                      <div class="detail-value">${order.product_color}</div>
+                      <div class="detail-value">${(order as DatabaseOrder).product_color}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Neck Type:</div>
-                      <div class="detail-value">${order.neck_type}</div>
+                      <div class="detail-value">${(order as DatabaseOrder).neck_type || 'Round Neck'}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Order Type:</div>
-                      <div class="detail-value">${order.order_type}</div>
+                      <div class="detail-value">${(order as DatabaseOrder).order_type}</div>
                     </div>
-                    ${order.special_instructions ? `
+                    ` : `
+                    <div class="detail-row">
+                      <div class="detail-label">Order Type:</div>
+                      <div class="detail-value">Multi-Product Order</div>
+                    </div>
+                    <div class="detail-row">
+                      <div class="detail-label">Total Products:</div>
+                      <div class="detail-value">${(order as OrderPDFContent).orderItems?.length || 0}</div>
+                    </div>
+                    `}
+                    ${((isMultiProduct ? (order as OrderPDFContent).specialInstructions : (order as DatabaseOrder).special_instructions)) ? `
                     <div class="detail-row">
                       <div class="detail-label">Special Instructions:</div>
-                      <div class="detail-value">${order.special_instructions}</div>
+                      <div class="detail-value">${isMultiProduct ? (order as OrderPDFContent).specialInstructions : (order as DatabaseOrder).special_instructions}</div>
                     </div>
                     ` : ''}
                   </div>
@@ -393,20 +505,22 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Event Date:</div>
-                      <div class="detail-value">${new Date(order.event_date).toLocaleDateString()}</div>
+                      <div class="detail-value">${formatDate(isMultiProduct ? (order as OrderPDFContent).eventDate : (order as DatabaseOrder).event_date)}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Delivery Date:</div>
-                      <div class="detail-value">${new Date(order.delivery_date).toLocaleDateString()}</div>
+                      <div class="detail-value">${formatDate(isMultiProduct ? (order as OrderPDFContent).deliveryDate : (order as DatabaseOrder).delivery_date)}</div>
                     </div>
+                    ${!isMultiProduct ? `
                     <div class="detail-row">
                       <div class="detail-label">Status:</div>
                       <div class="detail-value">
-                        <span class="status-badge status-${order.order_status.toLowerCase().replace(' ', '-')}">
-                          ${order.order_status}
+                        <span class="status-badge status-${(order as DatabaseOrder).order_status.toLowerCase().replace(' ', '-')}">
+                          ${(order as DatabaseOrder).order_status}
                         </span>
                       </div>
                     </div>
+                    ` : ''}
                   </div>
                 </div>
               </div>
@@ -417,29 +531,65 @@ export const pdfService = {
                   <div class="section-content">
                     <div class="detail-row">
                       <div class="detail-label">Total Amount:</div>
-                      <div class="detail-value">$${(order.total_amount || 0).toFixed(2)}</div>
+                      <div class="detail-value">${formatCurrency(isMultiProduct ? (order as OrderPDFContent).totalAmount : (order as DatabaseOrder).total_amount)}</div>
                     </div>
+                    ${!isMultiProduct ? `
                     <div class="detail-row">
                       <div class="detail-label">Amount Paid:</div>
-                      <div class="detail-value">$${(order.paid_amount || 0).toFixed(2)}</div>
+                      <div class="detail-value">${formatCurrency((order as DatabaseOrder).paid_amount || 0)}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Pending Amount:</div>
-                      <div class="detail-value">$${((order.total_amount || 0) - (order.paid_amount || 0)).toFixed(2)}</div>
+                      <div class="detail-value">${formatCurrency(((order as DatabaseOrder).total_amount || 0) - ((order as DatabaseOrder).paid_amount || 0))}</div>
                     </div>
                     <div class="detail-row">
                       <div class="detail-label">Payment Status:</div>
                       <div class="detail-value">
-                        <span class="status-badge status-${order.payment_status.toLowerCase()}">
-                          ${order.payment_status}
+                        <span class="status-badge status-${(order as DatabaseOrder).payment_status.toLowerCase()}">
+                          ${(order as DatabaseOrder).payment_status}
                         </span>
                       </div>
                     </div>
+                    ` : ''}
                   </div>
                 </div>
               </div>
             </div>
 
+            ${isMultiProduct ? `
+            <!-- Product Items -->
+            <div class="section">
+              <div class="section-header">Product Items</div>
+              <div class="section-content">
+                <table class="product-items-table">
+                  <thead>
+                    <tr>
+                      <th>Product Type</th>
+                      <th>Color</th>
+                      <th>Quantity</th>
+                      <th>Size Breakdown</th>
+                      <th>Unit Price</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${(order as OrderPDFContent).orderItems?.map((item, index) => `
+                    <tr>
+                      <td>${item.productType}</td>
+                      <td>${item.productColor}</td>
+                      <td class="text-center">${item.quantity}</td>
+                      <td class="text-center">
+                        ${Object.entries(item.sizeBreakdown).map(([size, qty]) => `${size}:${qty}`).join(', ')}
+                      </td>
+                      <td class="text-right">${formatCurrency(item.unitPrice)}</td>
+                      <td class="text-right">${formatCurrency(item.total)}</td>
+                    </tr>
+                    `).join('') || ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            ` : `
             <!-- Quantity Breakdown -->
             <div class="section">
               <div class="section-header">Quantity & Size Breakdown</div>
@@ -447,61 +597,48 @@ export const pdfService = {
                 <div class="size-breakdown-container">
                   <div class="summary-item">
                     <div class="summary-label">Total Quantity:</div>
-                    <div class="summary-value">${order.total_quantity} pieces</div>
+                    <div class="summary-value">${(order as DatabaseOrder).total_quantity} pieces</div>
                   </div>
                   
-                  <div class="size-breakdown">
-                    <div class="size-row">
-                      ${(() => {
-      try {
-        const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-        return Object.keys(sizeBreakdown).map((size) =>
-        `<div class="size-header">${size}</div>`
-        ).join('');
-      } catch {
-        return '<div class="size-header">No size breakdown available</div>';
-      }
-    })()}
-                    </div>
-                    <div class="size-row">
-                      ${(() => {
-      try {
-        const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-        return Object.values(sizeBreakdown).map((qty) =>
-        `<div class="size-cell">${qty}</div>`
-        ).join('');
-      } catch {
-        return '<div class="size-cell">N/A</div>';
-      }
-    })()}
-                    </div>
-                  </div>
+                  ${generateSizeBreakdown((order as DatabaseOrder).size_breakdown)}
                 </div>
               </div>
             </div>
+            `}
 
             <!-- Order Summary -->
             <div class="summary-section">
               <div class="summary-title">ORDER SUMMARY</div>
               <div class="summary-item">
                 <div class="summary-label">Order Number:</div>
-                <div class="summary-value">${order.order_number}</div>
+                <div class="summary-value">${isMultiProduct ? (order as OrderPDFContent).orderNumber : (order as DatabaseOrder).order_number}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Customer:</div>
-                <div class="summary-value">${order.customer_name}</div>
+                <div class="summary-value">${isMultiProduct ? (order as OrderPDFContent).customerName : (order as DatabaseOrder).customer_name}</div>
               </div>
+              ${!isMultiProduct ? `
               <div class="summary-item">
                 <div class="summary-label">Product:</div>
-                <div class="summary-value">${order.product_type} - ${order.product_color}</div>
+                <div class="summary-value">${(order as DatabaseOrder).product_type} - ${(order as DatabaseOrder).product_color}</div>
               </div>
               <div class="summary-item">
                 <div class="summary-label">Total Pieces:</div>
-                <div class="summary-value">${order.total_quantity}</div>
+                <div class="summary-value">${(order as DatabaseOrder).total_quantity}</div>
+              </div>
+              ` : `
+              <div class="summary-item">
+                <div class="summary-label">Product Items:</div>
+                <div class="summary-value">${(order as OrderPDFContent).orderItems?.length || 0} different products</div>
               </div>
               <div class="summary-item">
+                <div class="summary-label">Total Pieces:</div>
+                <div class="summary-value">${(order as OrderPDFContent).orderItems?.reduce((sum, item) => sum + item.quantity, 0) || 0}</div>
+              </div>
+              `}
+              <div class="summary-item">
                 <div class="summary-label">Total Amount:</div>
-                <div class="summary-value">$${(order.total_amount || 0).toFixed(2)}</div>
+                <div class="summary-value">${formatCurrency(isMultiProduct ? (order as OrderPDFContent).totalAmount : (order as DatabaseOrder).total_amount)}</div>
               </div>
             </div>
           </div>
@@ -509,7 +646,7 @@ export const pdfService = {
           <!-- Footer -->
           <div class="footer">
             <div class="footer-company">DressSync - Professional Apparel Solutions</div>
-            <div>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>
+            <div>Generated on ${new Date().toLocaleDateString('en-IN')} at ${new Date().toLocaleTimeString()}</div>
             <div>Contact us: support@dresssync.com | 1-800-DRESSSYNC</div>
           </div>
         </div>
@@ -520,7 +657,7 @@ export const pdfService = {
     return htmlContent;
   },
 
-  generateOrderPDF: async (order: DatabaseOrder): Promise<void> => {
+  generateOrderPDF: async (order: DatabaseOrder | OrderPDFContent): Promise<void> => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
 
@@ -533,9 +670,12 @@ export const pdfService = {
       document.body.appendChild(tempDiv);
 
       // Configure html2pdf options for A4 portrait
+      const orderNumber = 'orderNumber' in order ? order.orderNumber : order.order_number;
+      const customerName = 'customerName' in order ? order.customerName : order.customer_name;
+      
       const opt = {
         margin: [15, 15, 15, 15], // top, right, bottom, left in mm
-        filename: `Order_${order.order_number}_${order.customer_name.replace(/\s+/g, '_')}.pdf`,
+        filename: `Order_${orderNumber}_${customerName.replace(/\s+/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: {
           scale: 2,
@@ -564,7 +704,7 @@ export const pdfService = {
     }
   },
 
-  viewOrderHTML: (order: DatabaseOrder): void => {
+  viewOrderHTML: (order: DatabaseOrder | OrderPDFContent): void => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
 
@@ -583,7 +723,7 @@ export const pdfService = {
     }
   },
 
-  printOrderPDF: async (order: DatabaseOrder): Promise<void> => {
+  printOrderPDF: async (order: DatabaseOrder | OrderPDFContent): Promise<void> => {
     try {
       const htmlContent = pdfService.generateOrderHTML(order);
 
