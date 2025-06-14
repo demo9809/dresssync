@@ -7,24 +7,28 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Plus, FileText, AlertCircle, Calendar, Phone, MapPin, User } from 'lucide-react';
-import ProductSection from '@/components/ProductSection';
-import { orderService } from '@/services/orderService';
-import { pdfService } from '@/services/pdfService';
+import { AlertCircle, Calendar, User, ShoppingCart, FileText } from 'lucide-react';
+import MultiProductSection from '@/components/MultiProductSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+
+interface ProductVariant {
+  id: string;
+  size: string;
+  color: string;
+  quantity: number;
+}
 
 interface ProductItem {
   id: string;
   productType: string;
-  productColor: string;
-  sizeBreakdown: {[size: string]: number;};
-  totalQuantity: number;
+  neckType: string;
   unitPrice: number;
+  variants: ProductVariant[];
+  totalQuantity: number;
   itemTotal: number;
+  isExpanded: boolean;
 }
 
 interface OrderFormData {
@@ -82,11 +86,12 @@ const NewOrder: React.FC = () => {
     const newProduct: ProductItem = {
       id: generateProductId(),
       productType: '',
-      productColor: '',
-      sizeBreakdown: {},
-      totalQuantity: 0,
+      neckType: '',
       unitPrice: 0,
-      itemTotal: 0
+      variants: [],
+      totalQuantity: 0,
+      itemTotal: 0,
+      isExpanded: true
     };
 
     setFormData((prev) => ({
@@ -95,22 +100,11 @@ const NewOrder: React.FC = () => {
     }));
   };
 
-  const updateProduct = (updatedProduct: ProductItem) => {
+  const updateProducts = (updatedProducts: ProductItem[]) => {
     setFormData((prev) => ({
       ...prev,
-      products: prev.products.map((product) =>
-      product.id === updatedProduct.id ? updatedProduct : product
-      )
+      products: updatedProducts
     }));
-  };
-
-  const removeProduct = (productId: string) => {
-    if (formData.products.length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        products: prev.products.filter((product) => product.id !== productId)
-      }));
-    }
   };
 
   const validateForm = (): boolean => {
@@ -142,18 +136,33 @@ const NewOrder: React.FC = () => {
     }
 
     formData.products.forEach((product, index) => {
+      const productLabel = `Product ${String.fromCharCode(65 + index)}`;
+      
       if (!product.productType) {
-        newErrors.push(`Product ${index + 1}: Product type is required`);
+        newErrors.push(`${productLabel}: Product type is required`);
       }
-      if (!product.productColor) {
-        newErrors.push(`Product ${index + 1}: Product color is required`);
-      }
-      if (product.totalQuantity === 0) {
-        newErrors.push(`Product ${index + 1}: At least one size quantity is required`);
+      if (!product.neckType) {
+        newErrors.push(`${productLabel}: Neck type is required`);
       }
       if (product.unitPrice <= 0) {
-        newErrors.push(`Product ${index + 1}: Unit price must be greater than 0`);
+        newErrors.push(`${productLabel}: Unit price must be greater than 0`);
       }
+      if (product.variants.length === 0) {
+        newErrors.push(`${productLabel}: At least one item (size/color/quantity) is required`);
+      }
+      
+      product.variants.forEach((variant, vIndex) => {
+        const variantLabel = `${productLabel} Item ${vIndex + 1}`;
+        if (!variant.size) {
+          newErrors.push(`${variantLabel}: Size is required`);
+        }
+        if (!variant.color) {
+          newErrors.push(`${variantLabel}: Color is required`);
+        }
+        if (variant.quantity <= 0) {
+          newErrors.push(`${variantLabel}: Quantity must be greater than 0`);
+        }
+      });
     });
 
     if (formData.totalAmount <= 0) {
@@ -214,12 +223,12 @@ const NewOrder: React.FC = () => {
         "OrderByField": "ID",
         "IsAsc": false,
         "Filters": [
-        {
-          "name": "order_number",
-          "op": "Equal",
-          "value": orderNumber
-        }]
-
+          {
+            "name": "order_number",
+            "op": "Equal",
+            "value": orderNumber
+          }
+        ]
       });
 
       if (fetchError) throw fetchError;
@@ -227,13 +236,21 @@ const NewOrder: React.FC = () => {
       const createdOrder = ordersData?.List?.[0];
       if (!createdOrder) throw new Error('Failed to retrieve created order');
 
-      // Create order items
+      // Create order items for each product and its variants
       for (const product of formData.products) {
+        // Create a consolidated size breakdown for the product
+        const sizeBreakdown: {[key: string]: number} = {};
+        
+        product.variants.forEach(variant => {
+          const key = `${variant.size}-${variant.color}`;
+          sizeBreakdown[key] = (sizeBreakdown[key] || 0) + variant.quantity;
+        });
+
         const orderItemData = {
           order_id: createdOrder.ID,
-          product_type: product.productType,
-          product_color: product.productColor,
-          size_breakdown: JSON.stringify(product.sizeBreakdown),
+          product_type: `${product.productType} (${product.neckType})`,
+          product_color: product.variants.map(v => v.color).join(', '),
+          size_breakdown: JSON.stringify(sizeBreakdown),
           item_quantity: product.totalQuantity,
           unit_price: product.unitPrice,
           item_total: product.itemTotal
@@ -245,7 +262,7 @@ const NewOrder: React.FC = () => {
 
       toast({
         title: "Order Created Successfully",
-        description: `Order ${orderNumber} has been created successfully`
+        description: `Order ${orderNumber} has been created with ${formData.products.length} product types`
       });
 
       // Navigate to order list
@@ -267,15 +284,11 @@ const NewOrder: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const getTotalQuantity = () => {
-    return formData.products.reduce((sum, product) => sum + product.totalQuantity, 0);
-  };
-
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Order</h1>
-        <p className="text-gray-600">Create a comprehensive order with multiple products</p>
+        <p className="text-gray-600">Create a comprehensive order with multiple product types, each with custom variants</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -312,8 +325,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerName}
                       onChange={(e) => handleInputChange('customerName', e.target.value)}
                       placeholder="Enter customer name"
-                      required />
-
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -323,8 +336,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerPhone}
                       onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                       placeholder="Enter phone number"
-                      required />
-
+                      required
+                    />
                   </div>
                 </div>
 
@@ -334,8 +347,8 @@ const NewOrder: React.FC = () => {
                     id="customerWhatsapp"
                     value={formData.customerWhatsapp}
                     onChange={(e) => handleInputChange('customerWhatsapp', e.target.value)}
-                    placeholder="Enter WhatsApp number (optional)" />
-
+                    placeholder="Enter WhatsApp number (optional)"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -345,8 +358,8 @@ const NewOrder: React.FC = () => {
                     value={formData.customerAddress}
                     onChange={(e) => handleInputChange('customerAddress', e.target.value)}
                     placeholder="Enter complete customer address"
-                    required />
-
+                    required
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -354,57 +367,11 @@ const NewOrder: React.FC = () => {
 
           <TabsContent value="products" className="space-y-4">
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    Products ({formData.products.length})
-                  </CardTitle>
-                  <Button
-                    type="button"
-                    onClick={addNewProduct}
-                    className="flex items-center gap-2">
-
-                    <Plus className="h-4 w-4" />
-                    Add Product
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {formData.products.map((product, index) =>
-                  <ProductSection
-                    key={product.id}
-                    product={product}
-                    onUpdate={updateProduct}
-                    onRemove={removeProduct}
-                    showRemove={formData.products.length > 1} />
-
-                  )}
-                </div>
-
-                {/* Order Summary */}
-                {formData.products.some((p) => p.totalQuantity > 0) &&
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-semibold mb-3">Order Summary</h3>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Total Products: </span>
-                        <Badge variant="secondary">{formData.products.length}</Badge>
-                      </div>
-                      <div>
-                        <span className="font-medium">Total Quantity: </span>
-                        <Badge variant="secondary">{getTotalQuantity()}</Badge>
-                      </div>
-                      <div>
-                        <span className="font-medium">Total Amount: </span>
-                        <Badge className="bg-green-100 text-green-800">
-                          ₹{formData.totalAmount.toFixed(2)}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                }
+              <CardContent className="pt-6">
+                <MultiProductSection
+                  products={formData.products}
+                  onUpdate={updateProducts}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -426,8 +393,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.eventDate}
                       onChange={(e) => handleInputChange('eventDate', e.target.value)}
-                      required />
-
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -437,8 +404,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.deliveryDate}
                       onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                      required />
-
+                      required
+                    />
                   </div>
                 </div>
 
@@ -446,8 +413,8 @@ const NewOrder: React.FC = () => {
                   <Label htmlFor="orderType">Order Type</Label>
                   <Select
                     value={formData.orderType}
-                    onValueChange={(value) => handleInputChange('orderType', value)}>
-
+                    onValueChange={(value) => handleInputChange('orderType', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -466,8 +433,8 @@ const NewOrder: React.FC = () => {
                     value={formData.specialInstructions}
                     onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
                     placeholder="Enter any special instructions for this order"
-                    rows={3} />
-
+                    rows={3}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -475,18 +442,18 @@ const NewOrder: React.FC = () => {
         </Tabs>
 
         {/* Error Display */}
-        {errors.length > 0 &&
-        <Alert variant="destructive">
+        {errors.length > 0 && (
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-1">
-                {errors.map((error, index) =>
-              <div key={index}>• {error}</div>
-              )}
+                {errors.map((error, index) => (
+                  <div key={index}>• {error}</div>
+                ))}
               </div>
             </AlertDescription>
           </Alert>
-        }
+        )}
 
         {/* Submit Button */}
         <div className="flex justify-end space-x-4 pt-4">
@@ -494,8 +461,8 @@ const NewOrder: React.FC = () => {
             type="button"
             variant="outline"
             onClick={() => navigate('/agent/orders')}
-            disabled={loading}>
-
+            disabled={loading}
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={loading || formData.totalAmount <= 0}>
@@ -503,8 +470,8 @@ const NewOrder: React.FC = () => {
           </Button>
         </div>
       </form>
-    </div>);
-
+    </div>
+  );
 };
 
 export default NewOrder;

@@ -58,6 +58,38 @@ const mockStock: StockItem[] = [
   size: 'M',
   quantity: 20,
   minThreshold: 12
+},
+{
+  id: '6',
+  productType: 'T-shirt',
+  color: 'Red',
+  size: 'M',
+  quantity: 45,
+  minThreshold: 15
+},
+{
+  id: '7',
+  productType: 'T-shirt',
+  color: 'Red',
+  size: 'L',
+  quantity: 40,
+  minThreshold: 12
+},
+{
+  id: '8',
+  productType: 'Uniform',
+  color: 'Blue',
+  size: 'M',
+  quantity: 35,
+  minThreshold: 20
+},
+{
+  id: '9',
+  productType: 'Uniform',
+  color: 'Blue',
+  size: 'L',
+  quantity: 30,
+  minThreshold: 18
 }];
 
 
@@ -84,7 +116,7 @@ export const stockService = {
   productType: string,
   color: string,
   sizeBreakdown: Record<string, number>)
-  : Promise<{available: boolean;shortfall: Record<string, number>;}> => {
+  : Promise<{available: boolean;shortfall: Record<string, number>;}>=> {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const stock = mockStock.filter((item) =>
@@ -239,7 +271,7 @@ export const productConfig = {
       return data.List?.map((item: any) => item.config_value) || [];
     } catch (error) {
       console.error('Error fetching colors:', error);
-      return ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green']; // Fallback
+      return ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow', 'Blue']; // Fallback
     }
   },
 
@@ -260,7 +292,7 @@ export const productConfig = {
       return data.List?.map((item: any) => item.config_value) || [];
     } catch (error) {
       console.error('Error fetching neck types:', error);
-      return ['Round Neck', 'V-Neck', 'Polo Collar', 'Henley']; // Fallback
+      return ['Round', 'V-Neck', 'Polo Collar', 'Henley']; // Fallback
     }
   },
 
@@ -285,9 +317,41 @@ export const productConfig = {
     }
   },
 
+  // Get all configuration at once
+  getConfiguration: async (): Promise<{
+    productTypes: string[];
+    colors: string[];
+    neckTypes: string[];
+    sizes: string[];
+  }> => {
+    try {
+      const [productTypes, colors, neckTypes, sizes] = await Promise.all([
+        productConfig.getProductTypes(),
+        productConfig.getColors(),
+        productConfig.getNeckTypes(),
+        productConfig.getSizes()
+      ]);
+
+      return {
+        productTypes,
+        colors,
+        neckTypes,
+        sizes
+      };
+    } catch (error) {
+      console.error('Error fetching configuration:', error);
+      return {
+        productTypes: ['T-shirt', 'Jersey', 'Uniform', 'Polo Shirt', 'Hoodie'],
+        colors: ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow', 'Blue'],
+        neckTypes: ['Round', 'V-Neck', 'Polo Collar', 'Henley'],
+        sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+      };
+    }
+  },
+
   // Legacy static arrays for backward compatibility
   productTypes: ['T-shirt', 'Jersey', 'Uniform', 'Polo Shirt', 'Hoodie'],
-  colors: ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow'],
-  neckTypes: ['Round Neck', 'V-Neck', 'Polo Collar', 'Henley', 'Crew Neck'],
+  colors: ['Navy Blue', 'Red', 'Black', 'White', 'Royal Blue', 'Green', 'Yellow', 'Blue'],
+  neckTypes: ['Round', 'V-Neck', 'Polo Collar', 'Henley', 'Crew Neck'],
   sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
 };
