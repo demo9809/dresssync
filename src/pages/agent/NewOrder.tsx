@@ -21,7 +21,7 @@ interface ProductItem {
   id: string;
   productType: string;
   productColor: string;
-  sizeBreakdown: { [size: string]: number };
+  sizeBreakdown: {[size: string]: number;};
   totalQuantity: number;
   unitPrice: number;
   itemTotal: number;
@@ -71,7 +71,7 @@ const NewOrder: React.FC = () => {
   useEffect(() => {
     // Calculate total amount whenever products change
     const totalAmount = formData.products.reduce((sum, product) => sum + product.itemTotal, 0);
-    setFormData(prev => ({ ...prev, totalAmount }));
+    setFormData((prev) => ({ ...prev, totalAmount }));
   }, [formData.products]);
 
   const generateProductId = () => {
@@ -89,26 +89,26 @@ const NewOrder: React.FC = () => {
       itemTotal: 0
     };
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       products: [...prev.products, newProduct]
     }));
   };
 
   const updateProduct = (updatedProduct: ProductItem) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      products: prev.products.map(product => 
-        product.id === updatedProduct.id ? updatedProduct : product
+      products: prev.products.map((product) =>
+      product.id === updatedProduct.id ? updatedProduct : product
       )
     }));
   };
 
   const removeProduct = (productId: string) => {
     if (formData.products.length > 1) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        products: prev.products.filter(product => product.id !== productId)
+        products: prev.products.filter((product) => product.id !== productId)
       }));
     }
   };
@@ -171,7 +171,7 @@ const NewOrder: React.FC = () => {
       toast({
         title: "Validation Error",
         description: "Please fix the errors before submitting",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -180,7 +180,7 @@ const NewOrder: React.FC = () => {
 
     try {
       const orderNumber = `ORD-${Date.now()}`;
-      
+
       // Create the main order
       const orderData = {
         order_number: orderNumber,
@@ -214,16 +214,16 @@ const NewOrder: React.FC = () => {
         "OrderByField": "ID",
         "IsAsc": false,
         "Filters": [
-          {
-            "name": "order_number",
-            "op": "Equal",
-            "value": orderNumber
-          }
-        ]
+        {
+          "name": "order_number",
+          "op": "Equal",
+          "value": orderNumber
+        }]
+
       });
 
       if (fetchError) throw fetchError;
-      
+
       const createdOrder = ordersData?.List?.[0];
       if (!createdOrder) throw new Error('Failed to retrieve created order');
 
@@ -245,7 +245,7 @@ const NewOrder: React.FC = () => {
 
       toast({
         title: "Order Created Successfully",
-        description: `Order ${orderNumber} has been created successfully`,
+        description: `Order ${orderNumber} has been created successfully`
       });
 
       // Navigate to order list
@@ -256,7 +256,7 @@ const NewOrder: React.FC = () => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create order",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -264,7 +264,7 @@ const NewOrder: React.FC = () => {
   };
 
   const handleInputChange = (field: keyof OrderFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const getTotalQuantity = () => {
@@ -312,8 +312,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerName}
                       onChange={(e) => handleInputChange('customerName', e.target.value)}
                       placeholder="Enter customer name"
-                      required
-                    />
+                      required />
+
                   </div>
 
                   <div className="space-y-2">
@@ -323,8 +323,8 @@ const NewOrder: React.FC = () => {
                       value={formData.customerPhone}
                       onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                       placeholder="Enter phone number"
-                      required
-                    />
+                      required />
+
                   </div>
                 </div>
 
@@ -334,8 +334,8 @@ const NewOrder: React.FC = () => {
                     id="customerWhatsapp"
                     value={formData.customerWhatsapp}
                     onChange={(e) => handleInputChange('customerWhatsapp', e.target.value)}
-                    placeholder="Enter WhatsApp number (optional)"
-                  />
+                    placeholder="Enter WhatsApp number (optional)" />
+
                 </div>
 
                 <div className="space-y-2">
@@ -345,8 +345,8 @@ const NewOrder: React.FC = () => {
                     value={formData.customerAddress}
                     onChange={(e) => handleInputChange('customerAddress', e.target.value)}
                     placeholder="Enter complete customer address"
-                    required
-                  />
+                    required />
+
                 </div>
               </CardContent>
             </Card>
@@ -363,8 +363,8 @@ const NewOrder: React.FC = () => {
                   <Button
                     type="button"
                     onClick={addNewProduct}
-                    className="flex items-center gap-2"
-                  >
+                    className="flex items-center gap-2">
+
                     <Plus className="h-4 w-4" />
                     Add Product
                   </Button>
@@ -372,20 +372,20 @@ const NewOrder: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {formData.products.map((product, index) => (
-                    <ProductSection
-                      key={product.id}
-                      product={product}
-                      onUpdate={updateProduct}
-                      onRemove={removeProduct}
-                      showRemove={formData.products.length > 1}
-                    />
-                  ))}
+                  {formData.products.map((product, index) =>
+                  <ProductSection
+                    key={product.id}
+                    product={product}
+                    onUpdate={updateProduct}
+                    onRemove={removeProduct}
+                    showRemove={formData.products.length > 1} />
+
+                  )}
                 </div>
 
                 {/* Order Summary */}
-                {formData.products.some(p => p.totalQuantity > 0) && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                {formData.products.some((p) => p.totalQuantity > 0) &&
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                     <h3 className="font-semibold mb-3">Order Summary</h3>
                     <div className="flex flex-wrap gap-4 text-sm">
                       <div>
@@ -404,7 +404,7 @@ const NewOrder: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
           </TabsContent>
@@ -426,8 +426,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.eventDate}
                       onChange={(e) => handleInputChange('eventDate', e.target.value)}
-                      required
-                    />
+                      required />
+
                   </div>
 
                   <div className="space-y-2">
@@ -437,8 +437,8 @@ const NewOrder: React.FC = () => {
                       type="date"
                       value={formData.deliveryDate}
                       onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                      required
-                    />
+                      required />
+
                   </div>
                 </div>
 
@@ -446,8 +446,8 @@ const NewOrder: React.FC = () => {
                   <Label htmlFor="orderType">Order Type</Label>
                   <Select
                     value={formData.orderType}
-                    onValueChange={(value) => handleInputChange('orderType', value)}
-                  >
+                    onValueChange={(value) => handleInputChange('orderType', value)}>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -466,8 +466,8 @@ const NewOrder: React.FC = () => {
                     value={formData.specialInstructions}
                     onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
                     placeholder="Enter any special instructions for this order"
-                    rows={3}
-                  />
+                    rows={3} />
+
                 </div>
               </CardContent>
             </Card>
@@ -475,18 +475,18 @@ const NewOrder: React.FC = () => {
         </Tabs>
 
         {/* Error Display */}
-        {errors.length > 0 && (
-          <Alert variant="destructive">
+        {errors.length > 0 &&
+        <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-1">
-                {errors.map((error, index) => (
-                  <div key={index}>• {error}</div>
-                ))}
+                {errors.map((error, index) =>
+              <div key={index}>• {error}</div>
+              )}
               </div>
             </AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Submit Button */}
         <div className="flex justify-end space-x-4 pt-4">
@@ -494,8 +494,8 @@ const NewOrder: React.FC = () => {
             type="button"
             variant="outline"
             onClick={() => navigate('/agent/orders')}
-            disabled={loading}
-          >
+            disabled={loading}>
+
             Cancel
           </Button>
           <Button type="submit" disabled={loading || formData.totalAmount <= 0}>
@@ -503,8 +503,8 @@ const NewOrder: React.FC = () => {
           </Button>
         </div>
       </form>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NewOrder;

@@ -3,8 +3,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  DialogTitle } from
+'@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,12 +50,12 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
         "OrderByField": "ID",
         "IsAsc": true,
         "Filters": [
-          {
-            "name": "order_id",
-            "op": "Equal",
-            "value": order.ID
-          }
-        ]
+        {
+          "name": "order_id",
+          "op": "Equal",
+          "value": order.ID
+        }]
+
       });
 
       if (error) throw error;
@@ -65,7 +65,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
       toast({
         title: "Error",
         description: "Failed to load order items",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -74,21 +74,21 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending': return 'secondary';
-      case 'in production': return 'default';
-      case 'shipped': return 'secondary';
-      case 'delivered': return 'default';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
+      case 'pending':return 'secondary';
+      case 'in production':return 'default';
+      case 'shipped':return 'secondary';
+      case 'delivered':return 'default';
+      case 'cancelled':return 'destructive';
+      default:return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending': return 'destructive';
-      case 'partial': return 'secondary';
-      case 'complete': return 'default';
-      default: return 'secondary';
+      case 'pending':return 'destructive';
+      case 'partial':return 'secondary';
+      case 'complete':return 'default';
+      default:return 'secondary';
     }
   };
 
@@ -112,7 +112,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
         customerName: order.customer_name,
         customerPhone: order.customer_phone,
         customerAddress: order.customer_address,
-        orderItems: orderItems.map(item => ({
+        orderItems: orderItems.map((item) => ({
           productType: item.product_type,
           productColor: item.product_color,
           sizeBreakdown: parseSizeBreakdown(item.size_breakdown),
@@ -127,17 +127,17 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
       };
 
       await pdfService.generateOrderPDF(pdfContent);
-      
+
       toast({
         title: "PDF Generated",
-        description: "Order PDF has been downloaded successfully",
+        description: "Order PDF has been downloaded successfully"
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
         title: "Error",
         description: "Failed to generate PDF",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -188,12 +188,12 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <span className="font-medium">Phone: </span>
                 {order.customer_phone}
               </div>
-              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone && (
-                <div>
+              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone &&
+              <div>
                   <span className="font-medium">WhatsApp: </span>
                   {order.customer_whatsapp}
                 </div>
-              )}
+              }
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 text-gray-500" />
                 <div>
@@ -213,15 +213,15 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading order items...</div>
-              ) : orderItems.length > 0 ? (
-                <div className="space-y-4">
+              {loading ?
+              <div className="text-center py-4">Loading order items...</div> :
+              orderItems.length > 0 ?
+              <div className="space-y-4">
                   {orderItems.map((item, index) => {
-                    const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
-                    
-                    return (
-                      <div key={item.ID} className="border rounded-lg p-4">
+                  const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
+
+                  return (
+                    <div key={item.ID} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium text-lg">Item {index + 1}</h4>
                           <Badge className="bg-green-100 text-green-800">
@@ -246,34 +246,34 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                           </div>
                         </div>
 
-                        {Object.keys(sizeBreakdown).length > 0 && (
-                          <div>
+                        {Object.keys(sizeBreakdown).length > 0 &&
+                      <div>
                             <div className="flex items-center gap-2 mb-2">
                               <Ruler className="h-4 w-4 text-gray-500" />
                               <span className="font-medium">Size Breakdown:</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              {Object.entries(sizeBreakdown).map(([size, quantity]) => (
-                                <Badge key={size} variant="outline" className="text-xs">
+                              {Object.entries(sizeBreakdown).map(([size, quantity]) =>
+                          <Badge key={size} variant="outline" className="text-xs">
                                   {size}: {quantity}
                                 </Badge>
-                              ))}
+                          )}
                             </div>
                           </div>
-                        )}
+                      }
 
                         <div className="mt-3 text-sm text-gray-600">
                           <span>Unit Price: ₹{item.unit_price.toFixed(2)} × {item.item_quantity} = ₹{item.item_total.toFixed(2)}</span>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-gray-500">
+                      </div>);
+
+                })}
+                </div> :
+
+              <div className="text-center py-4 text-gray-500">
                   No order items found
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
 
@@ -326,8 +326,8 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 </div>
               </div>
 
-              {order.special_instructions && (
-                <>
+              {order.special_instructions &&
+              <>
                   <Separator />
                   <div>
                     <span className="font-medium">Special Instructions:</span>
@@ -336,13 +336,13 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                     </p>
                   </div>
                 </>
-              )}
+              }
             </CardContent>
           </Card>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default OrderViewModal;

@@ -68,9 +68,9 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
   const getAvailableStock = (productType: string, color: string, size: string): number => {
     const stockItem = stockData.find(
-      item => item.product_type === productType && 
-              item.color === color && 
-              item.size === size
+      (item) => item.product_type === productType &&
+      item.color === color &&
+      item.size === size
     );
     return stockItem ? stockItem.quantity : 0;
   };
@@ -133,16 +133,16 @@ const ProductSection: React.FC<ProductSectionProps> = ({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Product Item</CardTitle>
-          {showRemove && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onRemove(product.id)}
-              className="text-red-600 hover:text-red-700"
-            >
+          {showRemove &&
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onRemove(product.id)}
+            className="text-red-600 hover:text-red-700">
+
               <Trash2 className="h-4 w-4" />
             </Button>
-          )}
+          }
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -152,15 +152,15 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             <Label htmlFor={`product-type-${product.id}`}>Product Type</Label>
             <Select
               value={product.productType}
-              onValueChange={updateProductType}
-            >
+              onValueChange={updateProductType}>
+
               <SelectTrigger id={`product-type-${product.id}`}>
                 <SelectValue placeholder="Select product type" />
               </SelectTrigger>
               <SelectContent>
-                {productTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
+                {productTypes.map((type) =>
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -170,15 +170,15 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             <Select
               value={product.productColor}
               onValueChange={updateProductColor}
-              disabled={!product.productType}
-            >
+              disabled={!product.productType}>
+
               <SelectTrigger id={`product-color-${product.id}`}>
                 <SelectValue placeholder="Select color" />
               </SelectTrigger>
               <SelectContent>
-                {colors.map(color => (
-                  <SelectItem key={color} value={color}>{color}</SelectItem>
-                ))}
+                {colors.map((color) =>
+                <SelectItem key={color} value={color}>{color}</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -194,23 +194,23 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             step="0.01"
             value={product.unitPrice || ''}
             onChange={(e) => updateUnitPrice(parseFloat(e.target.value) || 0)}
-            placeholder="Enter unit price"
-          />
+            placeholder="Enter unit price" />
+
         </div>
 
         {/* Size Breakdown */}
-        {product.productType && product.productColor && (
-          <>
+        {product.productType && product.productColor &&
+        <>
             <Separator />
             <div className="space-y-3">
               <Label className="text-base font-medium">Size Breakdown</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {sizes.map(size => {
-                  const availableStock = getAvailableStock(product.productType, product.productColor, size);
-                  const currentQuantity = product.sizeBreakdown[size] || 0;
-                  
-                  return (
-                    <div key={size} className="space-y-2">
+                {sizes.map((size) => {
+                const availableStock = getAvailableStock(product.productType, product.productColor, size);
+                const currentQuantity = product.sizeBreakdown[size] || 0;
+
+                return (
+                  <div key={size} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-sm font-medium">{size}</Label>
                         <Badge variant="outline" className="text-xs">
@@ -219,49 +219,49 @@ const ProductSection: React.FC<ProductSectionProps> = ({
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSizeQuantity(size, Math.max(0, currentQuantity - 1))}
-                          disabled={currentQuantity <= 0}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateSizeQuantity(size, Math.max(0, currentQuantity - 1))}
+                        disabled={currentQuantity <= 0}>
+
                           <Minus className="h-3 w-3" />
                         </Button>
                         <Input
-                          type="number"
-                          min="0"
-                          max={availableStock}
-                          value={currentQuantity}
-                          onChange={(e) => {
-                            const qty = Math.min(parseInt(e.target.value) || 0, availableStock);
-                            updateSizeQuantity(size, qty);
-                          }}
-                          className="w-16 text-center"
-                        />
+                        type="number"
+                        min="0"
+                        max={availableStock}
+                        value={currentQuantity}
+                        onChange={(e) => {
+                          const qty = Math.min(parseInt(e.target.value) || 0, availableStock);
+                          updateSizeQuantity(size, qty);
+                        }}
+                        className="w-16 text-center" />
+
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSizeQuantity(size, Math.min(availableStock, currentQuantity + 1))}
-                          disabled={currentQuantity >= availableStock}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateSizeQuantity(size, Math.min(availableStock, currentQuantity + 1))}
+                        disabled={currentQuantity >= availableStock}>
+
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
-                      {currentQuantity > availableStock && (
-                        <p className="text-xs text-red-600">
+                      {currentQuantity > availableStock &&
+                    <p className="text-xs text-red-600">
                           Exceeds available stock
                         </p>
-                      )}
-                    </div>
-                  );
-                })}
+                    }
+                    </div>);
+
+              })}
               </div>
             </div>
           </>
-        )}
+        }
 
         {/* Summary */}
-        {product.totalQuantity > 0 && (
-          <>
+        {product.totalQuantity > 0 &&
+        <>
             <Separator />
             <div className="flex flex-wrap gap-4 text-sm">
               <div>
@@ -278,10 +278,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({
               </div>
             </div>
           </>
-        )}
+        }
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default ProductSection;
