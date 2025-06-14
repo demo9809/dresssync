@@ -8,6 +8,11 @@ import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import StockManagement from "./pages/manager/StockManagement";
+import AgentManagement from "./pages/manager/AgentManagement";
+import OrderManagement from "./pages/manager/OrderManagement";
+import ReportsPage from "./pages/manager/ReportsPage";
+import PasswordManagement from "./pages/manager/PasswordManagement";
+import ConfigurationManager from "./pages/manager/ConfigurationManager";
 
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import NewOrder from "./pages/agent/NewOrder";
@@ -16,8 +21,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () =>
-<QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
         <Toaster />
@@ -28,20 +33,25 @@ const App = () =>
             
             {/* Protected Manager Routes */}
             <Route path="/manager/*" element={
-          <ProtectedRoute requiredRole="manager">
+              <ProtectedRoute requiredRole="manager">
                 <Layout>
                   <Routes>
                     <Route path="dashboard" element={<ManagerDashboard />} />
                     <Route path="stock" element={<StockManagement />} />
+                    <Route path="agents" element={<AgentManagement />} />
+                    <Route path="orders" element={<OrderManagement />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="passwords" element={<PasswordManagement />} />
+                    <Route path="configuration" element={<ConfigurationManager />} />
                     <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
                   </Routes>
                 </Layout>
               </ProtectedRoute>
-          } />
+            } />
             
             {/* Protected Agent Routes */}
             <Route path="/agent/*" element={
-          <ProtectedRoute requiredRole="agent">
+              <ProtectedRoute requiredRole="agent">
                 <Layout>
                   <Routes>
                     <Route path="dashboard" element={<AgentDashboard />} />
@@ -52,7 +62,7 @@ const App = () =>
                   </Routes>
                 </Layout>
               </ProtectedRoute>
-          } />
+            } />
             
             {/* Default redirect based on auth */}
             <Route path="/" element={<Navigate to="/login" replace />} />
@@ -71,7 +81,7 @@ const App = () =>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
-  </QueryClientProvider>;
-
+  </QueryClientProvider>
+);
 
 export default App;

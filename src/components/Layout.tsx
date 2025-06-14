@@ -12,8 +12,13 @@ import {
   LogOut,
   Plus,
   History,
-  User } from
-'lucide-react';
+  User,
+  Users,
+  ClipboardList,
+  BarChart3,
+  Settings,
+  KeyRound
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -38,21 +43,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const managerNavItems = [
-  { path: '/manager/dashboard', label: 'Dashboard', icon: Home },
-  { path: '/manager/stock', label: 'Stock Management', icon: Package }];
-
+    { path: '/manager/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/manager/stock', label: 'Stock Management', icon: Package },
+    { path: '/manager/agents', label: 'Agent Management', icon: Users },
+    { path: '/manager/orders', label: 'Order Management', icon: ClipboardList },
+    { path: '/manager/reports', label: 'Reports & Analytics', icon: BarChart3 },
+    { path: '/manager/passwords', label: 'Password Management', icon: KeyRound },
+    { path: '/manager/configuration', label: 'Configuration', icon: Settings }
+  ];
 
   const agentNavItems = [
-  { path: '/agent/dashboard', label: 'Dashboard', icon: Home },
-  { path: '/agent/orders/new', label: 'New Order', icon: Plus },
-  { path: '/agent/orders', label: 'My Orders', icon: ShoppingCart },
-  { path: '/agent/history', label: 'Order History', icon: History }];
-
+    { path: '/agent/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/agent/orders/new', label: 'New Order', icon: Plus },
+    { path: '/agent/orders', label: 'My Orders', icon: ShoppingCart },
+    { path: '/agent/history', label: 'Order History', icon: History }
+  ];
 
   const navItems = user?.role === 'manager' ? managerNavItems : agentNavItems;
 
-  const NavContent = () =>
-  <div className="flex flex-col h-full">
+  const NavContent = () => (
+    <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -69,25 +79,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
 
-        return (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-            isActive ?
-            'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' :
-            'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
-            }>
-
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
               <Icon size={20} />
               <span className="font-medium">{item.label}</span>
-            </Link>);
-
-      })}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="p-4 border-t">
@@ -104,41 +114,41 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
         
         <Button
-        onClick={handleLogout}
-        variant="outline"
-        className="w-full flex items-center justify-center space-x-2">
-
+          onClick={handleLogout}
+          variant="outline"
+          className="w-full flex items-center justify-center space-x-2"
+        >
           <LogOut size={16} />
           <span>Logout</span>
         </Button>
       </div>
-    </div>;
+    </div>
+  );
 
-
-  const MobileBottomNav = () =>
-  <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 lg:hidden">
+  const MobileBottomNav = () => (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 lg:hidden">
       <div className="flex justify-around items-center py-2">
         {navItems.slice(0, 4).map((item) => {
-        const Icon = item.icon;
-        const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
 
-        return (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-            isActive ?
-            'text-blue-600' :
-            'text-gray-500 hover:text-gray-700'}`
-            }>
-
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
               <Icon size={20} />
               <span className="text-xs font-medium truncate max-w-[60px]">
                 {item.label.split(' ')[0]}
               </span>
-            </Link>);
-
-      })}
+            </Link>
+          );
+        })}
         
         {/* Profile/Menu Button */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -153,8 +163,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </SheetContent>
         </Sheet>
       </div>
-    </div>;
-
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -196,8 +206,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Mobile Bottom Navigation */}
       {isMobile && <MobileBottomNav />}
-    </div>);
-
+    </div>
+  );
 };
 
 export default Layout;
