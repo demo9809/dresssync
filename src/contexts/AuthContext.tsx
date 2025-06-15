@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export interface User {
-  id: string;
-  name: string;
+interface User {
+  id: number;
   email: string;
-  role: 'manager' | 'agent';
-  phone?: string;
+  name: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -17,74 +16,97 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
-const mockUsers: Record<string, User & {password: string;}> = {
-  'manager@dresssync.com': {
-    id: '1',
-    name: 'John Manager',
-    email: 'manager@dresssync.com',
-    role: 'manager',
-    phone: '+1234567890',
-    password: 'manager123'
-  },
-  'agent@dresssync.com': {
-    id: '2',
-    name: 'Jane Agent',
-    email: 'agent@dresssync.com',
-    role: 'agent',
-    phone: '+1234567891',
-    password: 'agent123'
-  }
-};
-
-export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem('dresssync_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const userData = mockUsers[email];
-    if (userData && userData.password === password) {
-      const { password: _, ...userWithoutPassword } = userData;
-      setUser(userWithoutPassword);
-      localStorage.setItem('dresssync_user', JSON.stringify(userWithoutPassword));
-      setIsLoading(false);
-      return true;
-    }
-
-    setIsLoading(false);
-    return false;
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('dresssync_user');
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-      {children}
-    </AuthContext.Provider>);
-
-};
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is logged in on app start
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('user_data');
+      
+      if (token && userData) {
+        const user = JSON.parse(userData);
+        setUser(user);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // Use the global API service
+      const { error } = await window.ezsite.apis.login({ email, password });
+      
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Get updated user info
+      const { data, error: userError } = await window.ezsite.apis.getUserInfo();
+      
+      if (userError) {
+        throw new Error(userError);
+      }
+
+      setUser({
+        id: data.ID,
+        email: data.Email,
+        name: data.Name,
+        role: data.Role || 'agent'
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await window.ezsite.apis.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+    }
+  };
+
+  const value = {
+    user,
+    login,
+    logout,
+    isLoading,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

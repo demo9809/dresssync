@@ -3,8 +3,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
+  DialogTitle } from
+'@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
     setLoading(true);
     try {
       console.log('Loading order items for order ID:', order.ID);
-      
+
       const { data, error } = await window.ezsite.apis.tablePage(17047, {
         "PageNo": 1,
         "PageSize": 100,
@@ -59,7 +59,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
       });
 
       if (error) throw error;
-      
+
       const items = data?.List || [];
       console.log('Loaded order items:', items);
       setOrderItems(items);
@@ -77,21 +77,21 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending': return 'secondary';
-      case 'in production': return 'default';
-      case 'shipped': return 'secondary';
-      case 'delivered': return 'default';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
+      case 'pending':return 'secondary';
+      case 'in production':return 'default';
+      case 'shipped':return 'secondary';
+      case 'delivered':return 'default';
+      case 'cancelled':return 'destructive';
+      default:return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending': return 'destructive';
-      case 'partial': return 'secondary';
-      case 'complete': return 'default';
-      default: return 'secondary';
+      case 'pending':return 'destructive';
+      case 'partial':return 'secondary';
+      case 'complete':return 'default';
+      default:return 'secondary';
     }
   };
 
@@ -344,11 +344,11 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             <Badge variant="outline" className="text-sm">
               Type: {order.order_type}
             </Badge>
-            {isMultiProductOrder && (
-              <Badge variant="secondary" className="text-sm">
+            {isMultiProductOrder &&
+            <Badge variant="secondary" className="text-sm">
                 Multi-Product Order
               </Badge>
-            )}
+            }
           </div>
 
           {/* Customer Information */}
@@ -368,12 +368,12 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <span className="font-medium">Phone: </span>
                 {order.customer_phone}
               </div>
-              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone && (
-                <div>
+              {order.customer_whatsapp && order.customer_whatsapp !== order.customer_phone &&
+              <div>
                   <span className="font-medium">WhatsApp: </span>
                   {order.customer_whatsapp}
                 </div>
-              )}
+              }
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 text-gray-500" />
                 <div>
@@ -393,15 +393,15 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading order items...</div>
-              ) : isMultiProductOrder ? (
-                <div className="space-y-4">
+              {loading ?
+              <div className="text-center py-4">Loading order items...</div> :
+              isMultiProductOrder ?
+              <div className="space-y-4">
                   {orderItems.map((item, index) => {
-                    const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
+                  const sizeBreakdown = parseSizeBreakdown(item.size_breakdown);
 
-                    return (
-                      <div key={item.ID} className="border rounded-lg p-4">
+                  return (
+                    <div key={item.ID} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium text-lg">Item {index + 1}</h4>
                           <Badge className="bg-green-100 text-green-800">
@@ -426,32 +426,32 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                           </div>
                         </div>
 
-                        {Object.keys(sizeBreakdown).length > 0 && (
-                          <div>
+                        {Object.keys(sizeBreakdown).length > 0 &&
+                      <div>
                             <div className="flex items-center gap-2 mb-2">
                               <Ruler className="h-4 w-4 text-gray-500" />
                               <span className="font-medium">Size Breakdown:</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(sizeBreakdown).map(([size, quantity]) =>
-                                <Badge key={size} variant="outline" className="text-xs">
+                          <Badge key={size} variant="outline" className="text-xs">
                                   {size}: {quantity}
                                 </Badge>
-                              )}
+                          )}
                             </div>
                           </div>
-                        )}
+                      }
 
                         <div className="mt-3 text-sm text-gray-600">
                           <span>Unit Price: {formatCurrency(item.unit_price)} × {item.item_quantity} = {formatCurrency(item.item_total)}</span>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                // Single product order
-                <div className="border rounded-lg p-4">
+                      </div>);
+
+                })}
+                </div> :
+
+              // Single product order
+              <div className="border rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-gray-500" />
@@ -469,23 +469,23 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                     </div>
                   </div>
 
-                  {order.size_breakdown && (
-                    <div>
+                  {order.size_breakdown &&
+                <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Ruler className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">Size Breakdown:</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(parseSizeBreakdown(order.size_breakdown)).map(([size, quantity]) =>
-                          <Badge key={size} variant="outline" className="text-xs">
+                    <Badge key={size} variant="outline" className="text-xs">
                             {size}: {quantity}
                           </Badge>
-                        )}
+                    )}
                       </div>
                     </div>
-                  )}
+                }
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
 
@@ -521,9 +521,9 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <div className="flex justify-between">
                   <span>Total Quantity:</span>
                   <span className="font-medium">
-                    {isMultiProductOrder 
-                      ? orderItems.reduce((sum, item) => sum + item.item_quantity, 0)
-                      : order.total_quantity
+                    {isMultiProductOrder ?
+                    orderItems.reduce((sum, item) => sum + item.item_quantity, 0) :
+                    order.total_quantity
                     }
                   </span>
                 </div>
@@ -543,8 +543,8 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 </div>
               </div>
 
-              {order.special_instructions && (
-                <>
+              {order.special_instructions &&
+              <>
                   <Separator />
                   <div>
                     <span className="font-medium">Special Instructions:</span>
@@ -553,13 +553,13 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                     </p>
                   </div>
                 </>
-              )}
+              }
             </CardContent>
           </Card>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default OrderViewModal;

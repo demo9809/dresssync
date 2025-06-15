@@ -19,8 +19,8 @@ import {
   RefreshCw,
   Clock,
   CheckCircle,
-  TrendingUp
-} from 'lucide-react';
+  TrendingUp } from
+'lucide-react';
 import { pdfService } from '@/services/pdfService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -56,7 +56,7 @@ const OrderList: React.FC = () => {
     try {
       setIsLoading(true);
       console.log('Loading orders for user:', user);
-      
+
       // Fetch orders from the database
       const { data, error } = await window.ezsite.apis.tablePage(11425, {
         "PageNo": 1,
@@ -71,7 +71,7 @@ const OrderList: React.FC = () => {
       });
 
       if (error) throw error;
-      
+
       const ordersList = data?.List || [];
       console.log('Loaded orders:', ordersList);
       setOrders(ordersList);
@@ -94,11 +94,11 @@ const OrderList: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) =>
-        order.order_number?.toLowerCase().includes(query) ||
-        order.customer_name?.toLowerCase().includes(query) ||
-        order.product_type?.toLowerCase().includes(query) ||
-        order.product_color?.toLowerCase().includes(query) ||
-        order.id?.toString().includes(query)
+      order.order_number?.toLowerCase().includes(query) ||
+      order.customer_name?.toLowerCase().includes(query) ||
+      order.product_type?.toLowerCase().includes(query) ||
+      order.product_color?.toLowerCase().includes(query) ||
+      order.id?.toString().includes(query)
       );
     }
 
@@ -121,11 +121,11 @@ const OrderList: React.FC = () => {
   const calculateSummary = () => {
     const totalOrders = filteredOrders.length;
     const totalAmount = filteredOrders.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0);
-    const pendingOrders = filteredOrders.filter(order => 
-      order.order_status === 'Pending' || order.order_status === 'In Production'
+    const pendingOrders = filteredOrders.filter((order) =>
+    order.order_status === 'Pending' || order.order_status === 'In Production'
     ).length;
-    const completedOrders = filteredOrders.filter(order => 
-      order.order_status === 'Delivered'
+    const completedOrders = filteredOrders.filter((order) =>
+    order.order_status === 'Delivered'
     ).length;
 
     setSummary({ totalOrders, totalAmount, pendingOrders, completedOrders });
@@ -134,7 +134,7 @@ const OrderList: React.FC = () => {
   const handleDownloadPDF = async (order: any) => {
     try {
       console.log('Generating PDF for order:', order);
-      
+
       // Load order items for PDF generation
       const { data: itemsData, error: itemsError } = await window.ezsite.apis.tablePage(17047, {
         "PageNo": 1,
@@ -205,21 +205,21 @@ const OrderList: React.FC = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'delivered': return 'default';
-      case 'shipped': return 'secondary';
-      case 'in production': return 'outline';
-      case 'pending': return 'destructive';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
+      case 'delivered':return 'default';
+      case 'shipped':return 'secondary';
+      case 'in production':return 'outline';
+      case 'pending':return 'destructive';
+      case 'cancelled':return 'destructive';
+      default:return 'secondary';
     }
   };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'complete': return 'default';
-      case 'partial': return 'secondary';
-      case 'pending': return 'destructive';
-      default: return 'secondary';
+      case 'complete':return 'default';
+      case 'partial':return 'secondary';
+      case 'pending':return 'destructive';
+      default:return 'secondary';
     }
   };
 
@@ -243,11 +243,11 @@ const OrderList: React.FC = () => {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           {[...Array(5)].map((_, i) =>
-            <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
+          <div key={i} className="h-32 bg-gray-200 rounded-lg mb-4"></div>
           )}
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -259,11 +259,11 @@ const OrderList: React.FC = () => {
           <p className="text-gray-600 mt-1">Manage and track your customer orders</p>
         </div>
         <div className="flex gap-2 mt-4 md:mt-0">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={loadOrders}
-            className="flex items-center gap-2"
-          >
+            className="flex items-center gap-2">
+
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
@@ -338,8 +338,8 @@ const OrderList: React.FC = () => {
                   placeholder="Search orders by ID, customer name, or product..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             
@@ -374,18 +374,18 @@ const OrderList: React.FC = () => {
             </div>
           </div>
           
-          {filteredOrders.length > 0 && (
-            <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+          {filteredOrders.length > 0 &&
+          <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
               <span>Showing {filteredOrders.length} of {orders.length} orders</span>
               <span>Total value: {formatCurrency(summary.totalAmount)}</span>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
       {/* Orders List */}
-      {filteredOrders.length === 0 ? (
-        <Card>
+      {filteredOrders.length === 0 ?
+      <Card>
           <CardContent className="text-center py-12">
             <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -393,24 +393,24 @@ const OrderList: React.FC = () => {
             </h3>
             <p className="text-gray-600 mb-6">
               {orders.length === 0 ?
-                'Start creating orders to track your sales' :
-                'Try adjusting your search or filter criteria'
-              }
+            'Start creating orders to track your sales' :
+            'Try adjusting your search or filter criteria'
+            }
             </p>
-            {orders.length === 0 && (
-              <Link to="/agent/orders/new">
+            {orders.length === 0 &&
+          <Link to="/agent/orders/new">
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Order
                 </Button>
               </Link>
-            )}
+          }
           </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => (
-            <Card key={order.id} className="hover:shadow-md transition-shadow">
+        </Card> :
+
+      <div className="space-y-4">
+          {filteredOrders.map((order) =>
+        <Card key={order.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1">
@@ -432,12 +432,12 @@ const OrderList: React.FC = () => {
                         <Badge variant={getPaymentStatusBadgeVariant(order.payment_status)}>
                           Payment: {order.payment_status}
                         </Badge>
-                        {isMultiProductOrder(order) && (
-                          <Badge variant="outline" className="flex items-center gap-1">
+                        {isMultiProductOrder(order) &&
+                    <Badge variant="outline" className="flex items-center gap-1">
                             <ShoppingCart className="w-3 h-3" />
                             Multi-Product
                           </Badge>
-                        )}
+                    }
                       </div>
                     </div>
                     
@@ -445,19 +445,19 @@ const OrderList: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Package className="w-4 h-4 text-gray-400" />
                         <div>
-                          {isMultiProductOrder(order) ? (
-                            <>
+                          {isMultiProductOrder(order) ?
+                      <>
                               <p className="text-sm font-medium">Multiple Products</p>
                               <p className="text-xs text-gray-500">Mixed colors & types</p>
-                            </>
-                          ) : (
-                            <>
+                            </> :
+
+                      <>
                               <p className="text-sm font-medium">{order.product_type}</p>
                               <p className="text-xs text-gray-500">
                                 {order.product_color}
                               </p>
                             </>
-                          )}
+                      }
                         </div>
                       </div>
                       
@@ -480,69 +480,69 @@ const OrderList: React.FC = () => {
                           <p className="text-xs text-gray-500">
                             {order.total_quantity} pieces
                           </p>
-                          {parseFloat(order.paid_amount) > 0 && (
-                            <p className="text-xs text-green-600">
+                          {parseFloat(order.paid_amount) > 0 &&
+                      <p className="text-xs text-green-600">
                               Paid: {formatCurrency(order.paid_amount)}
                             </p>
-                          )}
+                      }
                         </div>
                       </div>
                     </div>
                     
                     {/* Size Breakdown - only for single product orders */}
-                    {!isMultiProductOrder(order) && (
-                      <div className="flex flex-wrap gap-2 mb-4">
+                    {!isMultiProductOrder(order) &&
+                <div className="flex flex-wrap gap-2 mb-4">
                         {(() => {
-                          try {
-                            const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
-                            return Object.entries(sizeBreakdown).map(([size, qty]) =>
-                              <Badge key={size} variant="outline" className="text-xs">
+                    try {
+                      const sizeBreakdown = JSON.parse(order.size_breakdown || '{}');
+                      return Object.entries(sizeBreakdown).map(([size, qty]) =>
+                      <Badge key={size} variant="outline" className="text-xs">
                                 {size}: {qty as number}
                               </Badge>
-                            );
-                          } catch {
-                            return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
-                          }
-                        })()}
+                      );
+                    } catch {
+                      return <Badge variant="outline" className="text-xs">No size breakdown</Badge>;
+                    }
+                  })()}
                       </div>
-                    )}
+                }
 
                     {/* Multi-product indicator */}
-                    {isMultiProductOrder(order) && (
-                      <div className="mb-4">
+                    {isMultiProductOrder(order) &&
+                <div className="mb-4">
                         <Badge variant="outline" className="text-xs">
                           View details to see all products and sizes
                         </Badge>
                       </div>
-                    )}
+                }
 
                     {/* Special Instructions */}
-                    {order.special_instructions && (
-                      <div className="mb-4">
+                    {order.special_instructions &&
+                <div className="mb-4">
                         <p className="text-xs text-gray-600">
                           <span className="font-medium">Note:</span> {order.special_instructions}
                         </p>
                       </div>
-                    )}
+                }
                   </div>
                   
                   <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-2 mt-4 lg:mt-0 lg:ml-6">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center space-x-2"
-                      onClick={() => handleViewOrder(order)}
-                    >
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                  onClick={() => handleViewOrder(order)}>
+
                       <Eye className="w-4 h-4" />
                       <span>View</span>
                     </Button>
                     
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center space-x-2"
-                      onClick={() => handleDownloadPDF(order)}
-                    >
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                  onClick={() => handleDownloadPDF(order)}>
+
                       <Download className="w-4 h-4" />
                       <span>PDF</span>
                     </Button>
@@ -550,18 +550,18 @@ const OrderList: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+        )}
         </div>
-      )}
+      }
       
       {/* Order View Modal */}
       <OrderViewModal
         order={selectedOrder}
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
-    </div>
-  );
+        onClose={handleCloseModal} />
+
+    </div>);
+
 };
 
 export default OrderList;

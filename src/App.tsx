@@ -1,95 +1,106 @@
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./components/Layout";
-import LoginPage from "./pages/LoginPage";
-import ManagerDashboard from "./pages/manager/ManagerDashboard";
-import StockManagement from "./pages/manager/StockManagement";
-import AgentManagement from "./pages/manager/AgentManagement";
-import OrderManagement from "./pages/manager/OrderManagement";
-import ReportsPage from "./pages/manager/ReportsPage";
-import PasswordManagement from "./pages/manager/PasswordManagement";
-import ConfigurationManager from "./pages/manager/ConfigurationManager";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
-import AgentDashboard from "./pages/agent/AgentDashboard";
-import NewOrder from "./pages/agent/NewOrder";
-import OrderList from "./pages/agent/OrderList";
-import ProductItemDemo from "./pages/ProductItemDemo";
-import NotFound from "./pages/NotFound";
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
 
-const queryClient = new QueryClient();
+// Pages
+import InstallationPage from './pages/InstallationPage';
+import LoginPage from './pages/LoginPage';
+import NotFound from './pages/NotFound';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
+// Manager Pages
+import ManagerDashboard from './pages/manager/ManagerDashboard';
+import StockManagement from './pages/manager/StockManagement';
+import AgentManagement from './pages/manager/AgentManagement';
+import OrderManagement from './pages/manager/OrderManagement';
+import ReportsPage from './pages/manager/ReportsPage';
+import PasswordManagement from './pages/manager/PasswordManagement';
+import ConfigurationManager from './pages/manager/ConfigurationManager';
+
+// Agent Pages
+import AgentDashboard from './pages/agent/AgentDashboard';
+import NewOrder from './pages/agent/NewOrder';
+import OrderList from './pages/agent/OrderList';
+
+// Demo Page
+import ProductItemDemo from './pages/ProductItemDemo';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Router>
+            <div className="App">
+              <Routes>
+                {/* Installation Route */}
+                <Route path="/install" element={<InstallationPage />} />
+                
+                {/* Public Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                
+                {/* Protected Routes */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                
+                {/* Manager Routes */}
+                <Route path="/manager" element={
+                  <ProtectedRoute allowedRoles={['manager']}>
+                    <Layout>
+                      <Routes>
+                        <Route index element={<ManagerDashboard />} />
+                        <Route path="dashboard" element={<ManagerDashboard />} />
+                        <Route path="stock" element={<StockManagement />} />
+                        <Route path="agents" element={<AgentManagement />} />
+                        <Route path="orders" element={<OrderManagement />} />
+                        <Route path="reports" element={<ReportsPage />} />
+                        <Route path="passwords" element={<PasswordManagement />} />
+                        <Route path="configuration" element={<ConfigurationManager />} />
+                      </Routes>
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Agent Routes */}
+                <Route path="/agent" element={
+                  <ProtectedRoute allowedRoles={['agent']}>
+                    <Layout>
+                      <Routes>
+                        <Route index element={<AgentDashboard />} />
+                        <Route path="dashboard" element={<AgentDashboard />} />
+                        <Route path="new-order" element={<NewOrder />} />
+                        <Route path="orders" element={<OrderList />} />
+                      </Routes>
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Demo Route */}
+                <Route path="/demo" element={<ProductItemDemo />} />
+                
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </Router>
+        </AuthProvider>
         <Toaster />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* Demo Route - No authentication required for testing */}
-            <Route path="/demo" element={<ProductItemDemo />} />
-            
-            {/* Protected Manager Routes */}
-            <Route path="/manager/*" element={
-              <ProtectedRoute requiredRole="manager">
-                <Layout>
-                  <Routes>
-                    <Route path="dashboard" element={<ManagerDashboard />} />
-                    <Route path="stock" element={<StockManagement />} />
-                    <Route path="agents" element={<AgentManagement />} />
-                    <Route path="orders" element={<OrderManagement />} />
-                    <Route path="reports" element={<ReportsPage />} />
-                    <Route path="passwords" element={<PasswordManagement />} />
-                    <Route path="configuration" element={<ConfigurationManager />} />
-                    <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
-                  </Routes>
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Protected Agent Routes */}
-            <Route path="/agent/*" element={
-              <ProtectedRoute requiredRole="agent">
-                <Layout>
-                  <Routes>
-                    <Route path="dashboard" element={<AgentDashboard />} />
-                    <Route path="orders/new" element={<NewOrder />} />
-                    <Route path="orders" element={<OrderList />} />
-                    <Route path="history" element={<OrderList />} />
-                    <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
-                  </Routes>
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Default redirect based on auth */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            
-            {/* Direct routes for testing - redirect to proper manager routes */}
-            <Route path="/stock" element={<Navigate to="/manager/stock" replace />} />
-            <Route path="/agents" element={<Navigate to="/manager/agents" replace />} />
-            <Route path="/reports" element={<Navigate to="/manager/reports" replace />} />
-            <Route path="/passwords" element={<Navigate to="/manager/passwords" replace />} />
-            <Route path="/configuration" element={<Navigate to="/manager/configuration" replace />} />
-            
-            {/* Legacy route redirects */}
-            <Route path="/dashboard" element={<Navigate to="/login" replace />} />
-            <Route path="/orders/*" element={<Navigate to="/login" replace />} />
-            <Route path="/history" element={<Navigate to="/login" replace />} />
-            
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

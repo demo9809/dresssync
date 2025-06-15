@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DB_TYPE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=textile_manager
+      - DB_USER=textile_user
+      - DB_PASSWORD=textile_password
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+    depends_on:
+      - postgres
+    volumes:
+      - uploads:/app/uploads
+      - ./logs:/app/logs
+    restart: unless-stopped
+    
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=textile_manager
+      - POSTGRES_USER=textile_user
+      - POSTGRES_PASSWORD=textile_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads:

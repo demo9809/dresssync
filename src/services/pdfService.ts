@@ -27,7 +27,7 @@ export interface DatabaseOrder {
 export interface OrderItem {
   productType: string;
   productColor: string;
-  sizeBreakdown: { [size: string]: number };
+  sizeBreakdown: {[size: string]: number;};
   quantity: number;
   unitPrice: number;
   total: number;
@@ -49,7 +49,7 @@ export const pdfService = {
   generateOrderHTML: (order: DatabaseOrder | OrderPDFContent): string => {
     // Determine if this is a multi-product order
     const isMultiProduct = 'orderItems' in order && order.orderItems && order.orderItems.length > 0;
-    
+
     // Format currency
     const formatCurrency = (amount: number | string) => {
       const num = parseFloat(amount?.toString() || '0');
@@ -67,19 +67,19 @@ export const pdfService = {
     };
 
     // Generate size breakdown table
-    const generateSizeBreakdown = (sizeBreakdown: string | { [size: string]: number }) => {
+    const generateSizeBreakdown = (sizeBreakdown: string | {[size: string]: number;}) => {
       try {
         const breakdown = typeof sizeBreakdown === 'string' ? JSON.parse(sizeBreakdown || '{}') : sizeBreakdown;
         const sizes = Object.keys(breakdown);
         const quantities = Object.values(breakdown);
-        
+
         if (sizes.length === 0) {
           return '<div class="text-center text-gray-500">No size breakdown available</div>';
         }
 
-        const headerRow = sizes.map(size => `<div class="size-header">${size}</div>`).join('');
-        const quantityRow = quantities.map(qty => `<div class="size-cell">${qty}</div>`).join('');
-        
+        const headerRow = sizes.map((size) => `<div class="size-header">${size}</div>`).join('');
+        const quantityRow = quantities.map((qty) => `<div class="size-cell">${qty}</div>`).join('');
+
         return `
           <div class="size-breakdown">
             <div class="size-row">${headerRow}</div>
@@ -486,7 +486,7 @@ export const pdfService = {
                       <div class="detail-value">${(order as OrderPDFContent).orderItems?.length || 0}</div>
                     </div>
                     `}
-                    ${((isMultiProduct ? (order as OrderPDFContent).specialInstructions : (order as DatabaseOrder).special_instructions)) ? `
+                    ${(isMultiProduct ? (order as OrderPDFContent).specialInstructions : (order as DatabaseOrder).special_instructions) ? `
                     <div class="detail-row">
                       <div class="detail-label">Special Instructions:</div>
                       <div class="detail-value">${isMultiProduct ? (order as OrderPDFContent).specialInstructions : (order as DatabaseOrder).special_instructions}</div>
@@ -672,7 +672,7 @@ export const pdfService = {
       // Configure html2pdf options for A4 portrait
       const orderNumber = 'orderNumber' in order ? order.orderNumber : order.order_number;
       const customerName = 'customerName' in order ? order.customerName : order.customer_name;
-      
+
       const opt = {
         margin: [15, 15, 15, 15], // top, right, bottom, left in mm
         filename: `Order_${orderNumber}_${customerName.replace(/\s+/g, '_')}.pdf`,
