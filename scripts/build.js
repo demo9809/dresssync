@@ -4,28 +4,28 @@ const path = require('path');
 
 async function buildProject() {
   console.log('🚀 Starting build process...');
-  
+
   try {
     // Build frontend
     console.log('📦 Building frontend...');
     await execCommand('npm run build');
-    
+
     // Build backend
     console.log('🔧 Building backend...');
     await execCommand('cd server && npm run build');
-    
+
     // Create release directory
     const releaseDir = path.join(__dirname, '../release');
     await fs.mkdir(releaseDir, { recursive: true });
-    
+
     // Copy frontend build
     console.log('📁 Copying frontend build...');
     await execCommand(`cp -r dist ${releaseDir}/frontend`);
-    
+
     // Copy backend
     console.log('📁 Copying backend...');
     await execCommand(`cp -r server ${releaseDir}/backend`);
-    
+
     // Create start script
     const startScript = `#!/bin/bash
 echo "Starting Textile Manager..."
@@ -43,10 +43,10 @@ echo "Setup complete! Access the application at http://localhost:3001"
 # Wait for backend process
 wait $BACKEND_PID
 `;
-    
+
     await fs.writeFile(path.join(releaseDir, 'start.sh'), startScript);
     await execCommand(`chmod +x ${releaseDir}/start.sh`);
-    
+
     // Create README
     const readme = `# Textile Manager - Production Build
 
@@ -84,12 +84,12 @@ After running the installation wizard, you can modify the \`.env\` file in the b
 
 Check the logs directory for troubleshooting information.
 `;
-    
+
     await fs.writeFile(path.join(releaseDir, 'README.md'), readme);
-    
+
     console.log('✅ Build completed successfully!');
     console.log(`📁 Release files are in: ${releaseDir}`);
-    
+
   } catch (error) {
     console.error('❌ Build failed:', error);
     process.exit(1);

@@ -61,12 +61,12 @@ async function startServer() {
   try {
     // Check if installation is required
     const isInstalled = process.env.INSTALLATION_COMPLETE === 'true';
-    
+
     if (isInstalled) {
       await setupDatabase();
       console.log('Database connection established');
     }
-    
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Installation status: ${isInstalled ? 'Complete' : 'Required'}`);

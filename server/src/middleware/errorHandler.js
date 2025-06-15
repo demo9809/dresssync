@@ -3,7 +3,7 @@ function errorHandler(err, req, res, next) {
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map(e => e.message);
+    const errors = Object.values(err.errors).map((e) => e.message);
     return res.status(400).json({ error: 'Validation failed', details: errors });
   }
 
@@ -30,10 +30,10 @@ function errorHandler(err, req, res, next) {
   }
 
   // Default error
-  res.status(500).json({ 
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message 
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production' ?
+    'Internal server error' :
+    err.message
   });
 }
 

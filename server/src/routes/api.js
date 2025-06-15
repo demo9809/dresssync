@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
@@ -33,7 +33,7 @@ const upload = multer({
     const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    
+
     if (mimetype && extname) {
       return cb(null, true);
     } else {
@@ -59,7 +59,7 @@ router.post('/table/:tableId/page', async (req, res) => {
   try {
     const tableId = req.params.tableId;
     const tableName = TABLE_MAPPING[tableId];
-    
+
     if (!tableName) {
       return res.status(400).json({ error: 'Invalid table ID' });
     }
@@ -75,7 +75,7 @@ router.post('/table/:tableId/page', async (req, res) => {
     // Build WHERE clause
     let whereClause = '';
     let params = [];
-    
+
     if (Filters && Filters.length > 0) {
       const conditions = [];
       for (const filter of Filters) {
@@ -128,7 +128,7 @@ router.post('/table/:tableId/page', async (req, res) => {
     // Get paginated data
     const offset = (PageNo - 1) * PageSize;
     const orderDirection = IsAsc ? 'ASC' : 'DESC';
-    
+
     const dataResult = await query(
       `SELECT * FROM ${tableName}${whereClause} ORDER BY ${OrderByField} ${orderDirection} LIMIT ? OFFSET ?`,
       [...params, PageSize, offset]
@@ -136,7 +136,7 @@ router.post('/table/:tableId/page', async (req, res) => {
 
     res.json({
       data: {
-        List: dataResult.map(row => ({ ...row, ID: row.id })),
+        List: dataResult.map((row) => ({ ...row, ID: row.id })),
         VirtualCount: totalCount
       }
     });
@@ -151,7 +151,7 @@ router.post('/table/:tableId/create', async (req, res) => {
   try {
     const tableId = req.params.tableId;
     const tableName = TABLE_MAPPING[tableId];
-    
+
     if (!tableName) {
       return res.status(400).json({ error: 'Invalid table ID' });
     }
@@ -181,14 +181,14 @@ router.post('/table/:tableId/update', async (req, res) => {
   try {
     const tableId = req.params.tableId;
     const tableName = TABLE_MAPPING[tableId];
-    
+
     if (!tableName) {
       return res.status(400).json({ error: 'Invalid table ID' });
     }
 
     const data = { ...req.body };
     const recordId = data.ID || data.id;
-    
+
     if (!recordId) {
       return res.status(400).json({ error: 'Record ID is required' });
     }
@@ -198,7 +198,7 @@ router.post('/table/:tableId/update', async (req, res) => {
 
     const fields = Object.keys(data);
     const values = Object.values(data);
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
+    const setClause = fields.map((field) => `${field} = ?`).join(', ');
 
     const result = await execute(
       `UPDATE ${tableName} SET ${setClause} WHERE id = ?`,
@@ -217,13 +217,13 @@ router.post('/table/:tableId/delete', async (req, res) => {
   try {
     const tableId = req.params.tableId;
     const tableName = TABLE_MAPPING[tableId];
-    
+
     if (!tableName) {
       return res.status(400).json({ error: 'Invalid table ID' });
     }
 
     const { ID } = req.body;
-    
+
     if (!ID) {
       return res.status(400).json({ error: 'Record ID is required' });
     }
@@ -250,7 +250,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     // Store file info in database (you may want to create a files table)
     // For now, just return the file ID and path
-    
+
     res.json({
       data: {
         id: fileId,

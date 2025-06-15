@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const token = localStorage.getItem('auth_token');
       const userData = localStorage.getItem('user_data');
-      
+
       if (token && userData) {
         const user = JSON.parse(userData);
         setUser(user);
@@ -59,14 +59,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Use the global API service
       const { error } = await window.ezsite.apis.login({ email, password });
-      
+
       if (error) {
         throw new Error(error);
       }
 
       // Get updated user info
       const { data, error: userError } = await window.ezsite.apis.getUserInfo();
-      
+
       if (userError) {
         throw new Error(userError);
       }
@@ -101,12 +101,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     login,
     logout,
-    isLoading,
+    isLoading
   };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };

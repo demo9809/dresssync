@@ -35,8 +35,8 @@ const InstallationPage: React.FC = () => {
             <span>Checking installation status...</span>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   if (isInstalled) {
@@ -55,14 +55,14 @@ const InstallationPage: React.FC = () => {
             </p>
             <Button
               onClick={() => window.location.href = '/login'}
-              className="w-full"
-            >
+              className="w-full">
+
               Go to Login
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   return <InstallationWizard />;

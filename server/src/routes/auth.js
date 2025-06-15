@@ -9,10 +9,10 @@ const router = express.Router();
 
 // Register
 router.post('/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('name').trim().isLength({ min: 1 })
-], async (req, res) => {
+body('email').isEmail().normalizeEmail(),
+body('password').isLength({ min: 6 }),
+body('name').trim().isLength({ min: 1 })],
+async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -45,9 +45,9 @@ router.post('/register', [
 
 // Login
 router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').exists()
-], async (req, res) => {
+body('email').isEmail().normalizeEmail(),
+body('password').exists()],
+async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -72,10 +72,10 @@ router.post('/login', [
 
     // Generate JWT
     const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role 
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
@@ -101,7 +101,7 @@ router.post('/login', [
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const users = await query('SELECT id, email, name, role, created_at FROM users WHERE id = ?', [req.user.userId]);
-    
+
     if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }

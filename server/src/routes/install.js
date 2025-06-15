@@ -20,11 +20,11 @@ router.get('/status', async (req, res) => {
 // Test database connection
 router.post('/test-db', async (req, res) => {
   const { dbType, host, port, database, username, password, sqlitePath } = req.body;
-  
+
   try {
     // Temporarily set environment variables for testing
     const originalEnv = { ...process.env };
-    
+
     process.env.DB_TYPE = dbType;
     process.env.DB_HOST = host;
     process.env.DB_PORT = port;
@@ -32,15 +32,15 @@ router.post('/test-db', async (req, res) => {
     process.env.DB_USER = username;
     process.env.DB_PASSWORD = password;
     if (sqlitePath) process.env.SQLITE_PATH = sqlitePath;
-    
+
     await setupDatabase();
-    
+
     // Test a simple query
     await query('SELECT 1 as test');
-    
+
     // Restore original environment
     Object.assign(process.env, originalEnv);
-    
+
     res.json({ success: true, message: 'Database connection successful' });
   } catch (error) {
     console.error('Database test failed:', error);
@@ -56,7 +56,7 @@ router.post('/install', async (req, res) => {
       adminUser,
       appConfig
     } = req.body;
-    
+
     // Update environment variables
     const envContent = `# Database Configuration
 DB_TYPE=${dbConfig.dbType}
@@ -91,29 +91,29 @@ INSTALLATION_COMPLETE=true
 `;
 
     await fs.writeFile(path.join(__dirname, '../../.env'), envContent);
-    
+
     // Reload environment
     require('dotenv').config({ path: path.join(__dirname, '../../.env') });
-    
+
     // Setup database connection
     await setupDatabase();
-    
+
     // Run migrations
     await runMigrations();
-    
+
     // Create admin user
     const hashedPassword = await bcrypt.hash(adminUser.password, 12);
     await execute(`
       INSERT INTO users (email, password, name, role, created_at)
       VALUES (?, ?, ?, 'manager', NOW())
     `, [adminUser.email, hashedPassword, adminUser.name]);
-    
+
     // Seed initial data
     await seedInitialData();
-    
-    res.json({ 
-      success: true, 
-      message: 'Installation completed successfully' 
+
+    res.json({
+      success: true,
+      message: 'Installation completed successfully'
     });
   } catch (error) {
     console.error('Installation failed:', error);
@@ -135,7 +135,7 @@ async function seedInitialData() {
   const productTypes = ['T-shirt', 'Jersey', 'Polo Shirt', 'Hoodie'];
   const colors = ['White', 'Black', 'Red', 'Blue', 'Green', 'Yellow', 'Navy', 'Gray'];
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-  
+
   // Insert product types
   for (let i = 0; i < productTypes.length; i++) {
     await execute(`
@@ -143,7 +143,7 @@ async function seedInitialData() {
       VALUES ('product_type', ?, ?, true, NOW())
     `, [productTypes[i], i + 1]);
   }
-  
+
   // Insert colors
   for (let i = 0; i < colors.length; i++) {
     await execute(`
@@ -151,7 +151,7 @@ async function seedInitialData() {
       VALUES ('color', ?, ?, true, NOW())
     `, [colors[i], i + 1]);
   }
-  
+
   // Insert sizes
   for (let i = 0; i < sizes.length; i++) {
     await execute(`
@@ -159,7 +159,7 @@ async function seedInitialData() {
       VALUES ('size', ?, ?, true, NOW())
     `, [sizes[i], i + 1]);
   }
-  
+
   // Insert initial stock items
   for (const productType of productTypes) {
     for (const color of colors) {

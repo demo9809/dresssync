@@ -34,9 +34,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
+      refetchOnWindowFocus: false
+    }
+  }
 });
 
 function App() {
@@ -53,11 +53,11 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
                 
-                {/* Protected Routes */}
+                {/* Root redirect to login */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 
-                {/* Manager Routes */}
-                <Route path="/manager" element={
+                {/* Manager Routes with Layout */}
+                <Route path="/manager/*" element={
                   <ProtectedRoute allowedRoles={['manager']}>
                     <Layout>
                       <Routes>
@@ -74,8 +74,8 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                {/* Agent Routes */}
-                <Route path="/agent" element={
+                {/* Agent Routes with Layout */}
+                <Route path="/agent/*" element={
                   <ProtectedRoute allowedRoles={['agent']}>
                     <Layout>
                       <Routes>
@@ -87,6 +87,16 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
+                
+                {/* Direct routes for backward compatibility */}
+                <Route path="/dashboard" element={<Navigate to="/manager/dashboard" replace />} />
+                <Route path="/stock" element={<Navigate to="/manager/stock" replace />} />
+                <Route path="/agents" element={<Navigate to="/manager/agents" replace />} />
+                <Route path="/orders" element={<Navigate to="/manager/orders" replace />} />
+                <Route path="/reports" element={<Navigate to="/manager/reports" replace />} />
+                <Route path="/passwords" element={<Navigate to="/manager/passwords" replace />} />
+                <Route path="/configuration" element={<Navigate to="/manager/configuration" replace />} />
+                <Route path="/new-order" element={<Navigate to="/agent/new-order" replace />} />
                 
                 {/* Demo Route */}
                 <Route path="/demo" element={<ProductItemDemo />} />

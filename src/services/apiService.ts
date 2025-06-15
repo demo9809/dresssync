@@ -10,29 +10,29 @@ class ApiService {
 
   private async request(endpoint: string, options: RequestInit = {}): Promise<any> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers,
-      },
+        ...options.headers
+      }
     };
 
     if (this.token) {
       config.headers = {
         ...config.headers,
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.token}`
       };
     }
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle different response types
       const contentType = response.headers.get('content-type');
       let data;
-      
+
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
       } else {
@@ -59,7 +59,7 @@ class ApiService {
   }
 
   // Authentication methods
-  async register(credentials: { email: string; password: string; name: string }) {
+  async register(credentials: {email: string;password: string;name: string;}) {
     try {
       // Mock implementation for now
       console.log('Register:', credentials);
@@ -69,11 +69,11 @@ class ApiService {
     }
   }
 
-  async login(credentials: { email: string; password: string }) {
+  async login(credentials: {email: string;password: string;}) {
     try {
       // Mock implementation for now
       console.log('Login:', credentials);
-      
+
       // Simulate successful login
       const mockUser = {
         id: 1,
@@ -81,13 +81,13 @@ class ApiService {
         name: 'Test User',
         role: credentials.email.includes('admin') ? 'manager' : 'agent'
       };
-      
+
       const mockToken = 'mock-jwt-token';
-      
+
       this.token = mockToken;
       localStorage.setItem('auth_token', mockToken);
       localStorage.setItem('user_data', JSON.stringify(mockUser));
-      
+
       return { error: null };
     } catch (error) {
       return { error: (error as Error).message };
@@ -127,7 +127,7 @@ class ApiService {
     }
   }
 
-  async sendResetPwdEmail(email: { email: string }) {
+  async sendResetPwdEmail(email: {email: string;}) {
     try {
       console.log('Send reset password email:', email);
       return { error: null };
@@ -136,7 +136,7 @@ class ApiService {
     }
   }
 
-  async resetPassword(resetInfo: { token: string; password: string }) {
+  async resetPassword(resetInfo: {token: string;password: string;}) {
     try {
       console.log('Reset password:', resetInfo);
       return { error: null };
@@ -149,10 +149,10 @@ class ApiService {
   async tablePage(tableId: number, queryParams: any) {
     try {
       console.log('Table page request:', { tableId, queryParams });
-      
+
       // Mock data based on table ID
       const mockData = this.getMockTableData(tableId, queryParams);
-      
+
       return { data: mockData, error: null };
     } catch (error) {
       return { data: null, error: (error as Error).message };
@@ -161,7 +161,7 @@ class ApiService {
 
   private getMockTableData(tableId: number, queryParams: any) {
     const { PageSize = 10 } = queryParams;
-    
+
     switch (tableId) {
       case 11424: // agents
         return {
@@ -179,7 +179,7 @@ class ApiService {
           })),
           VirtualCount: 25
         };
-        
+
       case 11425: // orders
         return {
           List: Array.from({ length: Math.min(PageSize, 8) }, (_, i) => ({
@@ -189,14 +189,14 @@ class ApiService {
             customer_phone: `+1234567890${i}`,
             product_type: ['T-shirt', 'Jersey', 'Polo Shirt'][i % 3],
             product_color: ['White', 'Black', 'Blue'][i % 3],
-            total_quantity: 50 + (i * 10),
+            total_quantity: 50 + i * 10,
             order_status: ['Pending', 'In Production', 'Shipped'][i % 3],
-            total_amount: 500.00 + (i * 100),
+            total_amount: 500.00 + i * 100,
             payment_status: ['Pending', 'Partial', 'Complete'][i % 3]
           })),
           VirtualCount: 42
         };
-        
+
       case 11426: // stock_items
         return {
           List: Array.from({ length: Math.min(PageSize, 12) }, (_, i) => ({
@@ -209,22 +209,22 @@ class ApiService {
           })),
           VirtualCount: 50
         };
-        
+
       case 11428: // product_config
         return {
           List: [
-            { ID: 1, config_type: 'product_type', config_value: 'T-shirt', display_order: 1, is_active: true },
-            { ID: 2, config_type: 'product_type', config_value: 'Jersey', display_order: 2, is_active: true },
-            { ID: 3, config_type: 'color', config_value: 'White', display_order: 1, is_active: true },
-            { ID: 4, config_type: 'color', config_value: 'Black', display_order: 2, is_active: true },
-            { ID: 5, config_type: 'size', config_value: 'S', display_order: 1, is_active: true },
-            { ID: 6, config_type: 'size', config_value: 'M', display_order: 2, is_active: true },
-            { ID: 7, config_type: 'size', config_value: 'L', display_order: 3, is_active: true },
-            { ID: 8, config_type: 'size', config_value: 'XL', display_order: 4, is_active: true }
-          ],
+          { ID: 1, config_type: 'product_type', config_value: 'T-shirt', display_order: 1, is_active: true },
+          { ID: 2, config_type: 'product_type', config_value: 'Jersey', display_order: 2, is_active: true },
+          { ID: 3, config_type: 'color', config_value: 'White', display_order: 1, is_active: true },
+          { ID: 4, config_type: 'color', config_value: 'Black', display_order: 2, is_active: true },
+          { ID: 5, config_type: 'size', config_value: 'S', display_order: 1, is_active: true },
+          { ID: 6, config_type: 'size', config_value: 'M', display_order: 2, is_active: true },
+          { ID: 7, config_type: 'size', config_value: 'L', display_order: 3, is_active: true },
+          { ID: 8, config_type: 'size', config_value: 'XL', display_order: 4, is_active: true }],
+
           VirtualCount: 8
         };
-        
+
       default:
         return { List: [], VirtualCount: 0 };
     }
@@ -248,7 +248,7 @@ class ApiService {
     }
   }
 
-  async tableDelete(tableId: number, params: { ID: number }) {
+  async tableDelete(tableId: number, params: {ID: number;}) {
     try {
       console.log('Table delete:', { tableId, params });
       return { error: null };
@@ -258,10 +258,10 @@ class ApiService {
   }
 
   // File upload
-  async upload(fileInfo: { filename: string; file: File }) {
+  async upload(fileInfo: {filename: string;file: File;}) {
     try {
       console.log('File upload:', fileInfo.filename);
-      
+
       // Mock successful upload
       return {
         data: {
